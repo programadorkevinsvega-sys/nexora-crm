@@ -14,6 +14,7 @@ import {
   Globe,
   Flame,
   Plus,
+  Sparkles,
 } from "lucide-react"
 import { Card } from "@/src/presentation/crm/components/ui/Card"
 import type { WorkflowStep } from "@/src/domain/crm/automation/workflow.entity"
@@ -25,6 +26,7 @@ export const PALETTE_ITEMS = [
       { type: "ACTION", action: "SEND_WHATSAPP", label: "WhatsApp Oficial", desc: "Meta Cloud API", icon: MessageSquare, color: "text-emerald-500" },
       { type: "ACTION", action: "SEND_EMAIL", label: "Email Transaccional", desc: "SMTP / AWS SES", icon: Mail, color: "text-blue-500" },
       { type: "ACTION", action: "SEND_SMS", label: "SMS Twilio", desc: "Texto directo", icon: Smartphone, color: "text-indigo-500" },
+      { type: "ACTION", action: "AI_DRAFT_MESSAGE", label: "Redactar con IA Bot", desc: "Copilot RAG automático", icon: Sparkles, color: "text-purple-400" },
     ],
   },
   {
