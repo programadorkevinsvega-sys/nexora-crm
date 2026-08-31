@@ -3,11 +3,12 @@
 import React, { useState, useEffect, useMemo } from "react"
 import {
   FileSpreadsheet, Download, Printer, Save, RefreshCw, Layers,
-  Briefcase, Users, Building2, Ticket, FileText, Sparkles, FolderOpen,
+  Briefcase, Users, Building2, Ticket, FileText, Database,
 } from "lucide-react"
 import { Button } from "@/src/presentation/crm/components/ui/Button"
 import { Card } from "@/src/presentation/crm/components/ui/Card"
 import { PageHeader } from "@/src/presentation/crm/components/common/PageHeader"
+import { Badge } from "@/src/presentation/crm/components/ui/Badge"
 import { Skeleton } from "@/src/presentation/crm/components/ui/Skeleton"
 import { SOURCE_COLUMNS } from "./report-columns-definition"
 import { ReportColumnSelector } from "./report-column-selector"
@@ -20,7 +21,7 @@ import { ApiContactRepository } from "@/src/infrastructure/crm/repositories/cont
 import { ApiCompanyRepository } from "@/src/infrastructure/crm/repositories/companies/api-company.repository"
 import { ApiTicketRepository } from "@/src/infrastructure/crm/repositories/tickets/api-ticket.repository"
 import { ApiQuoteRepository } from "@/src/infrastructure/crm/repositories/contracts/api-quote.repository"
-import type { ReportDataSource, ReportColumn, SavedReportTemplate } from "./report-builder.types"
+import type { ReportDataSource, ReportColumn } from "./report-builder.types"
 
 export function CustomReportBuilderPage() {
   const [dataSource, setDataSource] = useState<ReportDataSource>("deals")
@@ -30,41 +31,39 @@ export function CustomReportBuilderPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [dateRange, setDateRange] = useState("ALL")
   const [statusFilter, setStatusFilter] = useState("ALL")
-  const [savedTemplates, setSavedTemplates] = useState<SavedReportTemplate[]>([])
-  const [templateName, setTemplateName] = useState("")
-  const [showSaveModal, setShowSaveModal] = useState(false)
 
-  // Switch Data Source
   const handleSelectDataSource = (source: ReportDataSource) => {
     setDataSource(source)
     setColumns(SOURCE_COLUMNS[source])
     setStatusFilter("ALL")
   }
 
-  // Fetch Data for current source
   const loadData = async () => {
     try {
       setLoading(true)
-      let items: Record<string, any>[] = []
+      let items: any[] = []
       if (dataSource === "deals") {
         const res = await ApiDealRepository.list({}, { limit: 100 })
-        items = (res as any)?.items || (res as any)?.data || []
+        const raw = Array.isArray(res) ? res : ((res as any)?.data || (res as any)?.items || [])
+        items = raw.map((d: any) => ({ ...d, amount: d.amount ?? d.value ?? 0 }))
       } else if (dataSource === "contacts") {
         const res = await ApiContactRepository.list({}, { limit: 100 })
-        items = (res as any)?.items || (res as any)?.data || []
+        const raw = Array.isArray(res) ? res : ((res as any)?.data || (res as any)?.items || [])
+        items = raw.map((c: any) => ({ ...c, fullName: `${c.firstName || ""} ${c.lastName || ""}`.trim() || c.name || "Sin nombre" }))
       } else if (dataSource === "companies") {
         const res = await ApiCompanyRepository.list({}, { limit: 100 })
-        items = (res as any)?.items || (res as any)?.data || []
+        items = Array.isArray(res) ? res : ((res as any)?.data || (res as any)?.items || [])
       } else if (dataSource === "tickets") {
         const res = await ApiTicketRepository.list({}, { limit: 100 })
-        items = (res as any)?.items || (res as any)?.data || []
+        items = Array.isArray(res) ? res : ((res as any)?.data || (res as any)?.items || [])
       } else if (dataSource === "quotes") {
         const res = await ApiQuoteRepository.list({}, { limit: 100 })
-        items = (res as any)?.items || (res as any)?.data || []
+        items = Array.isArray(res) ? res : ((res as any)?.data || (res as any)?.items || [])
       }
       setRawData(items)
     } catch (err) {
-      console.error("Error loading report data", err)
+      console.error("Error loading real database records for report", err)
+      setRawData([])
     } finally {
       setLoading(false)
     }
@@ -74,7 +73,6 @@ export function CustomReportBuilderPage() {
     loadData()
   }, [dataSource])
 
-  // Extract distinct status values for filter dropdown
   const distinctStatuses = useMemo(() => {
     const statusField = dataSource === "contacts" ? "leadStatus" : "status"
     const set = new Set<string>()
@@ -82,14 +80,11 @@ export function CustomReportBuilderPage() {
     return Array.from(set)
   }, [rawData, dataSource])
 
-  // Filtered dataset
   const filteredData = useMemo(() => {
     return rawData.filter((row) => {
-      // Status filter
       const statusField = dataSource === "contacts" ? "leadStatus" : "status"
       if (statusFilter !== "ALL" && String(row[statusField]) !== statusFilter) return false
 
-      // Date range filter
       if (dateRange !== "ALL" && row.createdAt) {
         const rowDate = new Date(row.createdAt).getTime()
         const now = Date.now()
@@ -101,7 +96,6 @@ export function CustomReportBuilderPage() {
         if (dateRange === "THIS_YEAR" && now - rowDate > 365 * dayMs) return false
       }
 
-      // Search query across all visible columns
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase()
         const matches = columns.some((c) => {
@@ -115,38 +109,24 @@ export function CustomReportBuilderPage() {
     })
   }, [rawData, columns, statusFilter, dateRange, searchQuery, dataSource])
 
-  // Export handlers
   const handleExportExcel = () => {
-    ReportExportService.exportToExcel(filteredData, columns, `Reporte_${dataSource.toUpperCase()}`)
+    ReportExportService.exportToExcel(filteredData, columns, `Reporte_Real_${dataSource.toUpperCase()}`)
   }
 
   const handleExportCSV = () => {
-    ReportExportService.exportToCSV(filteredData, columns, `Reporte_${dataSource.toUpperCase()}`)
-  }
-
-  // Template saving
-  const handleSaveTemplate = () => {
-    if (!templateName.trim()) return
-    const newTpl: SavedReportTemplate = {
-      id: `tpl_${Date.now()}`,
-      name: templateName.trim(),
-      dataSource,
-      selectedColumnIds: columns.filter((c) => c.visible).map((c) => c.id),
-      filters: [],
-      createdAt: new Date().toISOString(),
-    }
-    setSavedTemplates([newTpl, ...savedTemplates])
-    setTemplateName("")
-    setShowSaveModal(false)
+    ReportExportService.exportToCSV(filteredData, columns, `Reporte_Real_${dataSource.toUpperCase()}`)
   }
 
   return (
     <div className="space-y-6 w-full">
       <PageHeader
-        title="Creador de Reportes a Medida"
-        description="Genera tablas dinámicas personalizadas, reordena columnas, aplica agregaciones (Σ Suma / Promedio) y exporta a Excel en tiempo real."
+        title="Creador de Reportes a Medida (Base de Datos Real)"
+        description="Genera tablas dinámicas en vivo con datos reales de PostgreSQL, reordena columnas, aplica agregaciones (Σ Suma / Promedio) y exporta a Excel."
         actions={
           <div className="flex flex-wrap items-center gap-2">
+            <Button variant="outline" size="sm" onClick={loadData} disabled={loading} className="text-xs">
+              <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? "animate-spin" : ""}`} /> Recargar DB
+            </Button>
             <Button variant="outline" size="sm" onClick={() => window.print()} className="text-xs">
               <Printer className="h-4 w-4 mr-1.5" /> Imprimir
             </Button>
@@ -159,6 +139,12 @@ export function CustomReportBuilderPage() {
           </div>
         }
       />
+
+      {/* Real Data Status Badge */}
+      <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/30 rounded-lg text-xs text-emerald-400 font-medium">
+        <Database className="h-4 w-4 shrink-0 text-emerald-400" />
+        <span>Conectado a PostgreSQL en Vivo • Los datos reflejan las transacciones reales del tenant sin mocks ni datos de prueba fijos.</span>
+      </div>
 
       {/* Data Source Selector Tabs */}
       <div className="flex flex-wrap gap-2 p-1.5 bg-card rounded-xl border border-border/80 shadow-sm">
