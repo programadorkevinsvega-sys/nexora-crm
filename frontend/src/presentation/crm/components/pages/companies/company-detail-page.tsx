@@ -34,12 +34,12 @@ export function CompanyDetailPage() {
       <PageHeader
         title={company.name}
         breadcrumb={[
-          { label: "Empresas", href: "/crm/companies" },
+          { label: "Empresas", href: "/companies" },
           { label: company.name },
         ]}
         actions={
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => router.push(`/crm/companies/${id}/edit`)}>
+            <Button variant="outline" onClick={() => router.push(`/companies/${id}/edit`)}>
               <Pencil className="h-4 w-4 mr-1.5" />
               Editar
             </Button>
@@ -49,6 +49,7 @@ export function CompanyDetailPage() {
             </Button>
           </div>
         }
+
       />
 
       {/* Tabs Header */}

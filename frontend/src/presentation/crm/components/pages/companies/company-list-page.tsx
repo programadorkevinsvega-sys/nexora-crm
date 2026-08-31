@@ -2,7 +2,8 @@
 
 import { useCallback, useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import { Plus } from "lucide-react"
+import { Plus, GitFork } from "lucide-react"
+
 import { Button } from "@/src/presentation/crm/components/ui/Button"
 import { DataTable, type ColumnDef } from "@/src/presentation/crm/components/common/DataTable"
 import { PageHeader } from "@/src/presentation/crm/components/common/PageHeader"
@@ -39,17 +40,34 @@ export function CompanyListPage() {
   const { mutate: deleteCompany } = useDeleteCompany()
 
   const columns: ColumnDef<Company>[] = [
-    { key: "name", header: "Name", render: (row) => <span className="font-medium text-paper">{row.name}</span> },
-    { key: "taxId", header: "Tax ID", render: (row) => <span>{row.taxId || "—"}</span> },
-    { key: "website", header: "Website", render: (row) => <span>{row.website || "—"}</span> },
-    { key: "industry", header: "Industry" },
-    { key: "createdAt", header: "Created", render: (row) => new Date(row.createdAt).toLocaleDateString() },
+    { key: "name", header: "Empresa", render: (row) => <span className="font-semibold text-zinc-100">{row.name}</span> },
+    { key: "taxId", header: "Tax ID / NIT", render: (row) => <span>{row.taxId || "—"}</span> },
+    { key: "industry", header: "Industria", render: (row) => <span>{row.industry || "General"}</span> },
+    {
+      key: "orgChart",
+      header: "Jerarquía",
+      render: (row) => (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation()
+            router.push(`/companies/${row.id}`)
+          }}
+          className="gap-1.5 text-xs text-cyan-300 border-cyan-800/40 hover:bg-cyan-950/40 h-7"
+        >
+          <GitFork className="h-3.5 w-3.5" />
+          <span>Organigrama</span>
+        </Button>
+      ),
+    },
+    { key: "createdAt", header: "Fecha Creación", render: (row) => new Date(row.createdAt).toLocaleDateString() },
     {
       key: "actions",
       header: "",
       render: (row) => (
         <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); setDeleteId(row.id) }}>
-          Delete
+          Eliminar
         </Button>
       ),
     },
@@ -61,16 +79,16 @@ export function CompanyListPage() {
   return (
     <div className="space-y-4">
       <PageHeader
-        title="Companies"
-        description="Manage your companies"
+        title="Empresas & Cuentas Corporativas"
+        description="Gestión de empresas B2B, organigramas interactivos y empleados asociados."
         actions={
           <Button onClick={() => setShowCreateModal(true)}>
-            <Plus className="h-4 w-4" />
-            Add Company
+            <Plus className="h-4 w-4 mr-1.5" />
+            Nueva Empresa
           </Button>
         }
       />
-      <SearchInput value={search} onChange={handleSearchChange} placeholder="Search companies..." />
+      <SearchInput value={search} onChange={handleSearchChange} placeholder="Buscar empresas..." />
 
       {isLoading ? (
         <Skeleton className="h-64" />
@@ -81,8 +99,9 @@ export function CompanyListPage() {
           nextCursor={nextCursor}
           onLoadMore={loadMore}
           loadingMore={isLoadingMore}
-          onRowClick={(row) => router.push(`/crm/companies/${row.id}`)}
+          onRowClick={(row) => router.push(`/companies/${row.id}`)}
         />
+
       ) : (
         <EmptyState title="No companies found" />
       )}
