@@ -10,6 +10,7 @@ import {
   useMetaStatus, useMetaCallback, useMetaSyncForms,
   useMetaDisconnect, useMetaLogs,
 } from "@/src/application/crm/di/hooks"
+import { MetaConnectModal } from "./meta-connect-modal"
 import { MetaConnectCard } from "./meta-connect-card"
 import { MetaFormsSync } from "./meta-forms-sync"
 import { MetaPipelineConfig } from "./meta-pipeline-config"
@@ -24,14 +25,14 @@ export function MetaLeadsPage() {
   const { data: logsResult } = useMetaLogs()
 
   const [showSimulateModal, setShowSimulateModal] = useState(false)
+  const [showConnectModal, setShowConnectModal] = useState(false)
 
   if (isLoading) return <Skeleton className="h-96 w-full rounded-2xl" />
 
   const logs = Array.isArray(logsResult) ? logsResult : []
 
   const handleConnect = () => {
-    // Directly triggers the secure OAuth authorization flow
-    connectMeta("oauth_auth_code_meta_business")
+    setShowConnectModal(true)
   }
 
   return (
@@ -89,6 +90,11 @@ export function MetaLeadsPage() {
       {/* Simulate Modal */}
       {showSimulateModal && (
         <MetaSimulateModal onClose={() => setShowSimulateModal(false)} />
+      )}
+
+      {/* Connect Modal */}
+      {showConnectModal && (
+        <MetaConnectModal onClose={() => setShowConnectModal(false)} />
       )}
     </div>
   )

@@ -78,17 +78,22 @@ export function MetaConnectCard({
                 <span className="text-[10px] uppercase font-mono text-zinc-400">Página de Facebook Activa</span>
                 <p className="font-semibold text-zinc-100 flex items-center gap-1.5">
                   <Building2 className="h-3.5 w-3.5 text-blue-400" />
-                  {integration.selectedPageName || "Nexora Enterprise Software"}
+                  {integration.selectedPageName || "Página Conectada"}
                 </p>
-                <span className="text-[11px] text-zinc-400 font-mono">ID: {integration.selectedPageId || "page_33445566"}</span>
+                {integration.selectedPageId && (
+                  <span className="text-[11px] text-zinc-400 font-mono">ID: {integration.selectedPageId}</span>
+                )}
               </div>
 
               <div className="p-3 rounded-xl bg-zinc-900 border border-zinc-800 space-y-1">
                 <span className="text-[10px] uppercase font-mono text-zinc-400">Cuenta de Anuncios (Ads)</span>
-                <p className="font-semibold text-zinc-100">{integration.adAccountName || "Nexora Growth Ads"}</p>
-                <span className="text-[11px] text-zinc-400 font-mono">ID: {integration.adAccountId || "act_90881122"}</span>
+                <p className="font-semibold text-zinc-100">{integration.adAccountName || "Cuenta de Anuncios Activa"}</p>
+                {integration.adAccountId && (
+                  <span className="text-[11px] text-zinc-400 font-mono">ID: {integration.adAccountId}</span>
+                )}
               </div>
             </div>
+
           )}
         </div>
 

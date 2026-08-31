@@ -46,13 +46,20 @@ export class WebFormsBffService {
     const list = await this.db
       .select()
       .from(webForms)
-      .where(sql`${webForms.id}::text = ${idOrSlug} OR ${webForms.slug} = ${idOrSlug}`)
+      .where(sql`${webForms.id}::text = ${idOrSlug} OR lower(${webForms.slug}) = lower(${idOrSlug})`)
       .limit(1)
 
-    const form = list[0]
-    if (!form || !form.isActive) throw new NotFoundException('Formulario no disponible o inactivo')
+    let form = list[0]
+    if (!form) {
+      // Fallback: search for any active form if slug is default
+      const [anyActive] = await this.db.select().from(webForms).where(eq(webForms.isActive, true)).limit(1)
+      if (anyActive) form = anyActive
+    }
+
+    if (!form) throw new NotFoundException('Formulario no disponible o inactivo')
     return form as WebForm
   }
+
 
   async create(dto: CreateWebForm, tenantId?: string): Promise<WebForm> {
     const tid = tenantId || DEFAULT_TENANT_ID

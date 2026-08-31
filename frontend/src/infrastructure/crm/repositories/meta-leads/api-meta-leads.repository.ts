@@ -15,9 +15,29 @@ export const ApiMetaLeadsRepository = {
     return api.post<MetaIntegration>("/api/integrations/facebook/oauth-callback", { code })
   },
 
+  async fetchPages(accessToken: string): Promise<{
+    pages: Array<{ id: string; name: string; access_token?: string; category?: string }>
+    adAccounts: Array<{ id: string; name: string }>
+  }> {
+    return api.post("/api/integrations/facebook/fetch-pages", { accessToken })
+  },
+
+  async connectAccount(dto: {
+    pageId: string
+    pageName: string
+    pageAccessToken?: string
+    adAccountId?: string
+    adAccountName?: string
+    userAccessToken?: string
+    metaAppId?: string
+  }): Promise<MetaIntegration> {
+    return api.post<MetaIntegration>("/api/integrations/facebook/connect", dto)
+  },
+
   async updateConfig(dto: MetaConfigUpdate): Promise<MetaIntegration> {
     return api.post<MetaIntegration>("/api/integrations/facebook/config", dto)
   },
+
 
   async syncForms(): Promise<MetaLeadForm[]> {
     return api.post<MetaLeadForm[]>("/api/integrations/facebook/sync-forms", {})

@@ -29,6 +29,21 @@ export class MetaLeadsBffController {
     return this.service.handleOAuthCallback(code, tenantId)
   }
 
+  @Post('fetch-pages')
+  async fetchPages(
+    @Body('accessToken') accessToken: string,
+  ) {
+    return this.service.fetchMetaPagesAndAccounts(accessToken)
+  }
+
+  @Post('connect')
+  async connectAccount(
+    @Body() dto: any,
+    @Headers('X-Tenant-Id') tenantId?: string,
+  ): Promise<MetaIntegration> {
+    return this.service.connectPage(dto, tenantId)
+  }
+
   @Post('config')
   async updateConfig(
     @Body() dto: MetaConfigUpdate,
@@ -36,6 +51,7 @@ export class MetaLeadsBffController {
   ): Promise<MetaIntegration> {
     return this.service.updateConfig(dto, tenantId)
   }
+
 
   @Post('sync-forms')
   async syncForms(@Headers('X-Tenant-Id') tenantId?: string) {

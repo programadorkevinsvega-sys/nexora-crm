@@ -118,7 +118,7 @@ export default function PublicFormPage() {
             <div className="space-y-4">
               {fields.map((field) => (
                 <div key={field.id} className="space-y-1.5 text-left">
-                  <label className="block text-xs font-semibold">
+                  <label className="block text-xs font-semibold" style={{ color: form.textColor || "#f4f4f5" }}>
                     {field.label}
                     {field.required && <span className="text-rose-400 ml-1">*</span>}
                   </label>
@@ -129,14 +129,22 @@ export default function PublicFormPage() {
                       placeholder={field.placeholder || ""}
                       value={formData[field.id] || ""}
                       onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
-                      className="w-full rounded-xl border border-zinc-800 bg-zinc-950/80 px-3.5 py-2.5 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-cyan-400 resize-none"
+                      style={{
+                        borderRadius: form.borderRadius || "12px",
+                        color: form.textColor || "#f4f4f5",
+                      }}
+                      className="w-full border border-zinc-800 bg-zinc-950/80 px-3.5 py-2.5 text-xs placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-cyan-400 resize-none"
                     />
                   ) : field.type === "select" ? (
                     <select
                       required={field.required}
                       value={formData[field.id] || ""}
                       onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
-                      className="w-full rounded-xl border border-zinc-800 bg-zinc-950/80 px-3.5 py-2.5 text-xs text-zinc-100 focus:outline-none focus:ring-1 focus:ring-cyan-400"
+                      style={{
+                        borderRadius: form.borderRadius || "12px",
+                        color: form.textColor || "#f4f4f5",
+                      }}
+                      className="w-full border border-zinc-800 bg-zinc-950/80 px-3.5 py-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-cyan-400"
                     >
                       <option value="">{field.placeholder || "Selecciona una opción"}</option>
                       {(field.options || []).map((opt, idx) => (
@@ -150,10 +158,15 @@ export default function PublicFormPage() {
                       placeholder={field.placeholder || ""}
                       value={formData[field.id] || ""}
                       onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
-                      className="w-full rounded-xl border border-zinc-800 bg-zinc-950/80 px-3.5 py-2.5 text-xs text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-cyan-400"
+                      style={{
+                        borderRadius: form.borderRadius || "12px",
+                        color: form.textColor || "#f4f4f5",
+                      }}
+                      className="w-full border border-zinc-800 bg-zinc-950/80 px-3.5 py-2.5 text-xs placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-cyan-400"
                     />
                   )}
                 </div>
+
               ))}
             </div>
 

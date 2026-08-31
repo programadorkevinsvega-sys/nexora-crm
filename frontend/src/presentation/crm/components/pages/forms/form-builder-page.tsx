@@ -167,8 +167,10 @@ export function FormBuilderPage() {
               setFields(newFields)
             }}
             onUpdateFieldLabel={(idx, label) => setFields((f) => f.map((item, i) => i === idx ? { ...item, label } : item))}
+            onUpdateFieldOptions={(idx, options) => setFields((f) => f.map((item, i) => i === idx ? { ...item, options } : item))}
           />
         </div>
+
 
         {/* Right: Customization & Leads Settings */}
         <div className="lg:col-span-3 rounded-2xl border border-zinc-800 bg-zinc-950/70 p-4 shadow-md space-y-4">

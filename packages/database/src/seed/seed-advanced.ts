@@ -9,6 +9,8 @@ import {
   apiKeys, webhookEndpoints, webhookDeliveryLogs,
   auditLogs, webForms, metaIntegrations, metaLeadAdLogs,
 } from '@crm/database'
+import { eq } from 'drizzle-orm'
+
 
 
 
@@ -270,35 +272,68 @@ export async function seedAdvancedData(
     updatedAt: now,
   }).onConflictDoNothing()
 
-  // 10. Meta Facebook Lead Ads Integration & Real-time Logs
-  const metaIntegrationId = crypto.randomUUID()
-  await db.insert(metaIntegrations).values({
-    id: metaIntegrationId,
+  // Demo Web Form (Contacto Web)
+  await db.insert(webForms).values({
+    id: crypto.randomUUID(),
     tenantId,
-    status: 'CONNECTED',
-    metaAppId: '104857291029384',
-    metaUserId: 'meta_usr_99887711',
-    metaUserName: 'Nexora Marketing Director',
-    accessToken: 'EAAB_demo_token_nexora_enterprise_long_lived',
-    tokenExpiresAt: new Date(Date.now() + 60 * 86400000),
-    selectedPageId: 'page_33445566',
-    selectedPageName: 'Nexora Enterprise Software & AI',
-    pageAccessToken: 'EAAP_page_token_nexora_leads_retrieval',
-    adAccountId: 'act_90881122',
-    adAccountName: 'Cuenta Publicitaria Nexora Growth LATAM',
-    webhookSecret: 'fb_verify_nexora_secret_token_2026',
-    leadGenForms: [
-      { formId: 'meta_form_101', formName: 'Formulario Clientes Potenciales - Facebook Ads', status: 'ACTIVE', leadsCount: 48, defaultLeadStatus: 'NEW' },
-      { formId: 'meta_form_102', formName: 'Registro Demo Software LATAM 2026', status: 'ACTIVE', leadsCount: 26, defaultLeadStatus: 'QUALIFIED' },
-      { formId: 'meta_form_103', formName: 'Descarga Ebook Arquitectura CRM Enterprise', status: 'ACTIVE', leadsCount: 54, defaultLeadStatus: 'NEW' },
+    name: 'Formulario de Contacto Web',
+    slug: 'contacto-web',
+    title: 'Contáctanos',
+    description: 'Déjanos tus datos y un especialista de ventas se pondrá en contacto contigo a la brevedad.',
+    fields: [
+      { id: 'f1', label: 'Nombre Completo', type: 'text', placeholder: 'Ej. Juan Pérez', required: true, mappedContactField: 'firstName', options: [] },
+      { id: 'f2', label: 'Correo Electrónico Corporativo', type: 'email', placeholder: 'juan@empresa.com', required: true, mappedContactField: 'email', options: [] },
+      { id: 'f3', label: 'Teléfono / WhatsApp', type: 'phone', placeholder: '+57 300 123 4567', required: false, mappedContactField: 'phone', options: [] },
+      { id: 'f4', label: 'Tipo de Consulta', type: 'select', placeholder: 'Selecciona una categoría', required: false, mappedContactField: 'custom', options: ['Ventas & Cotización', 'Soporte Técnico', 'Alianzas & Partners', 'Facturación'] },
+      { id: 'f5', label: 'Mensaje o Requerimiento', type: 'textarea', placeholder: 'Cuéntanos sobre tu proyecto...', required: false, mappedContactField: 'notes', options: [] },
     ],
-    autoCreateDeal: true,
-    lastSyncAt: now,
+    buttonText: 'Enviar Solicitud',
+    successMessage: '¡Gracias! Hemos recibido tu mensaje con éxito.',
+    leadSource: 'Formulario Web',
+    defaultLeadStatus: 'NEW',
+    primaryColor: '#06b6d4',
+    backgroundColor: '#09090b',
+    textColor: '#f4f4f5',
+    borderRadius: '12px',
+    submissionsCount: 8,
+    isActive: true,
     createdAt: now,
     updatedAt: now,
   }).onConflictDoNothing()
 
+
+  // 10. Meta Facebook Lead Ads Integration & Real-time Logs
+  let [existingMeta] = await db.select().from(metaIntegrations).where(eq(metaIntegrations.tenantId, tenantId)).limit(1)
+  let metaIntegrationId = existingMeta?.id
+
+  if (!metaIntegrationId) {
+    metaIntegrationId = crypto.randomUUID()
+    await db.insert(metaIntegrations).values({
+      id: metaIntegrationId,
+      tenantId,
+      status: 'DISCONNECTED',
+      metaAppId: null,
+      metaUserId: null,
+      metaUserName: null,
+      accessToken: null,
+      tokenExpiresAt: null,
+      selectedPageId: null,
+      selectedPageName: null,
+      pageAccessToken: null,
+      adAccountId: null,
+      adAccountName: null,
+      webhookSecret: `fb_verify_${crypto.randomUUID().slice(0, 8)}`,
+      leadGenForms: [],
+      autoCreateDeal: true,
+      lastSyncAt: null,
+      createdAt: now,
+      updatedAt: now,
+    }).onConflictDoNothing()
+  }
+
+
   // Demo Meta Lead Ad Logs
+
   const metaDemoLogs = [
     { name: 'Carolina Herrera', em: 'carolina.herrera@techlogistics.com', cmp: 'Campaña Conversión LATAM Q3', ad: 'Anuncio Video Demo Interactivo 30s', st: 'PROCESSED' },
     { name: 'Andrés Felipe Castro', em: 'af.castro@finovate.io', cmp: 'Campaña Retargeting High LTV', ad: 'Carrusel Beneficios Enterprise Core', st: 'PROCESSED' },

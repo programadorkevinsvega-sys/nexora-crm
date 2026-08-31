@@ -1555,6 +1555,24 @@ export function useSimulateMetaLead() {
     },
     onError: (e: unknown) => useToastStore.getState().addToast(e instanceof Error ? e.message : "Error al simular lead", "error"),
   })
+export function useFetchMetaPages() {
+  return useMutation({
+    mutationFn: async (accessToken: string) => ApiMetaLeadsRepository.fetchPages(accessToken),
+    onError: (e: unknown) => useToastStore.getState().addToast(e instanceof Error ? e.message : "Error al consultar páginas de Meta", "error"),
+  })
 }
+
+export function useConnectMetaAccount() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (dto: Parameters<typeof ApiMetaLeadsRepository.connectAccount>[0]) => ApiMetaLeadsRepository.connectAccount(dto),
+    onSuccess: () => {
+      useToastStore.getState().addToast("Página de Facebook conectada exitosamente", "success")
+      qc.invalidateQueries({ queryKey: ["meta"] })
+    },
+    onError: (e: unknown) => useToastStore.getState().addToast(e instanceof Error ? e.message : "Error al conectar página", "error"),
+  })
+}
+
 
 

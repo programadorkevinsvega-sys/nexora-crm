@@ -70,3 +70,20 @@ export const SimulateMetaLeadSchema = z.object({
   jobTitle: z.string().optional(),
 })
 export type SimulateMetaLead = z.infer<typeof SimulateMetaLeadSchema>
+
+export const FetchMetaPagesInputSchema = z.object({
+  accessToken: z.string().min(1, 'Access Token is required'),
+})
+export type FetchMetaPagesInput = z.infer<typeof FetchMetaPagesInputSchema>
+
+export const ConnectMetaPageInputSchema = z.object({
+  pageId: z.string().min(1, 'Page ID is required'),
+  pageName: z.string().min(1, 'Page Name is required'),
+  pageAccessToken: z.string().optional(),
+  adAccountId: z.string().optional(),
+  adAccountName: z.string().optional(),
+  userAccessToken: z.string().optional(),
+  metaAppId: z.string().optional(),
+})
+export type ConnectMetaPageInput = z.infer<typeof ConnectMetaPageInputSchema>
+
