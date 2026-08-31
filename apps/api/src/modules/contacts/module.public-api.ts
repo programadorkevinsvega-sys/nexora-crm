@@ -1,0 +1,20 @@
+export type { CreateContactInputDto } from './application/dto/CreateContactInputDto'
+export type { CreateContactOutputDto } from './application/dto/CreateContactOutputDto'
+export type { UpdateContactInputDto } from './application/dto/UpdateContactInputDto'
+export type { GetContactInputDto } from './application/dto/GetContactInputDto'
+export type { DeleteContactInputDto } from './application/dto/DeleteContactInputDto'
+export type { ContactOutputDto } from './application/dto/ContactOutputDto'
+export type { ListContactsInputDto } from './application/dto/ListContactsInputDto'
+export type { PaginatedContactsOutputDto } from './application/dto/PaginatedContactsOutputDto'
+
+export type { ICreateContactUseCase } from './application/ports/in/ICreateContactUseCase'
+export type { IUpdateContactUseCase } from './application/ports/in/IUpdateContactUseCase'
+export type { IDeleteContactUseCase } from './application/ports/in/IDeleteContactUseCase'
+export type { IGetContactUseCase } from './application/ports/in/IGetContactUseCase'
+export type { IListContactsUseCase } from './application/ports/in/IListContactsUseCase'
+
+export type { ContactCreatedEventV1 } from './infrastructure/messaging/nats/schemas/contact-created.v1'
+export type { ContactUpdatedEventV1 } from './infrastructure/messaging/nats/schemas/contact-updated.v1'
+export type { ContactDeletedEventV1 } from './infrastructure/messaging/nats/schemas/contact-deleted.v1'
+
+export { ContactsModule } from './module.config'

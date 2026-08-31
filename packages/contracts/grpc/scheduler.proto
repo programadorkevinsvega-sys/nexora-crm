@@ -1,0 +1,169 @@
+syntax = "proto3";
+
+package crm.scheduler;
+
+option go_package = "github.com/ultra-erp/crm/grpc/scheduler";
+
+import "common.proto";
+
+message TaskResponse { string json = 1; }
+message ExecutionResponse { string json = 1; }
+message ReminderResponse { string json = 1; }
+message SlaConfigResponse { string json = 1; }
+message SlaViolationResponse { string json = 1; }
+
+message CreateTaskRequest {
+  optional string tenant_id = 1;
+  string name = 2;
+  optional string description = 3;
+  string cron_expression = 4;
+  string task_type = 5;
+  optional string target_service = 6;
+  optional string target_endpoint = 7;
+  optional string target_payload_json = 8;
+  optional bool enabled = 9;
+  optional int32 max_retries = 10;
+  optional int32 timeout_seconds = 11;
+  optional string created_by_user_id = 12;
+}
+
+message UpdateTaskRequest {
+  string id = 1;
+  optional string tenant_id = 2;
+  optional string name = 3;
+  optional string description = 4;
+  optional string cron_expression = 5;
+  optional string target_service = 6;
+  optional string target_endpoint = 7;
+  optional string target_payload_json = 8;
+  optional bool enabled = 9;
+  optional int32 max_retries = 10;
+  optional int32 timeout_seconds = 11;
+}
+
+message ListTasksRequest {
+  optional string tenant_id = 1;
+  optional bool enabled = 2;
+  optional string task_type = 3;
+  optional string cursor = 4;
+  optional int32 limit = 5;
+}
+
+message ExecuteTaskRequest {
+  string id = 1;
+  optional string tenant_id = 2;
+}
+
+message ListExecutionsRequest {
+  string task_id = 1;
+  optional string tenant_id = 2;
+  optional string status = 3;
+  optional string cursor = 4;
+  optional int32 limit = 5;
+}
+
+message CreateReminderRequest {
+  optional string tenant_id = 1;
+  string user_id = 2;
+  string title = 3;
+  optional string description = 4;
+  optional string entity_type = 5;
+  optional string entity_id = 6;
+  string remind_at = 7;
+  optional string repeat_interval = 8;
+  optional int32 repeat_count = 9;
+}
+
+message UpdateReminderRequest {
+  string id = 1;
+  optional string tenant_id = 2;
+  optional string title = 3;
+  optional string description = 4;
+  optional string remind_at = 5;
+  optional bool reminded = 6;
+}
+
+message ListRemindersRequest {
+  optional string tenant_id = 1;
+  optional string user_id = 2;
+  optional string entity_type = 3;
+  optional string entity_id = 4;
+  optional bool pending_only = 5;
+  optional string cursor = 6;
+  optional int32 limit = 7;
+}
+
+message CreateSlaConfigRequest {
+  string tenant_id = 1;
+  string name = 2;
+  string entity_type = 3;
+  optional string condition_field = 4;
+  optional string condition_operator = 5;
+  optional string condition_value = 6;
+  int32 response_time_minutes = 7;
+  optional int32 resolution_time_minutes = 8;
+  optional string escalation_user_id = 9;
+  optional string escalation_email = 10;
+  optional bool enabled = 11;
+}
+
+message UpdateSlaConfigRequest {
+  string id = 1;
+  optional string tenant_id = 2;
+  optional string name = 3;
+  optional int32 response_time_minutes = 4;
+  optional int32 resolution_time_minutes = 5;
+  optional string escalation_user_id = 6;
+  optional string escalation_email = 7;
+  optional bool enabled = 8;
+}
+
+message ListSlaConfigsRequest {
+  string tenant_id = 1;
+  optional string entity_type = 2;
+  optional bool enabled = 3;
+}
+
+message CheckSlaViolationsRequest {
+  optional string tenant_id = 1;
+  optional string entity_type = 2;
+}
+
+message ListViolationsRequest {
+  optional string tenant_id = 1;
+  optional string sla_config_id = 2;
+  optional string entity_type = 3;
+  optional string status = 4;
+  optional string cursor = 5;
+  optional int32 limit = 6;
+}
+
+message ResolveViolationRequest {
+  string id = 1;
+  optional string tenant_id = 2;
+  optional string notes = 3;
+}
+
+service SchedulerService {
+  rpc CreateTask(CreateTaskRequest) returns (TaskResponse);
+  rpc UpdateTask(UpdateTaskRequest) returns (TaskResponse);
+  rpc DeleteTask(crm.common.IdRequest) returns (crm.common.IdResponse);
+  rpc ListTasks(ListTasksRequest) returns (crm.common.PaginatedResponse);
+  rpc GetTask(crm.common.IdRequest) returns (TaskResponse);
+  rpc ExecuteTask(ExecuteTaskRequest) returns (ExecutionResponse);
+  rpc ListTaskExecutions(ListExecutionsRequest) returns (crm.common.PaginatedResponse);
+
+  rpc CreateReminder(CreateReminderRequest) returns (ReminderResponse);
+  rpc UpdateReminder(UpdateReminderRequest) returns (ReminderResponse);
+  rpc DeleteReminder(crm.common.IdRequest) returns (crm.common.IdResponse);
+  rpc ListReminders(ListRemindersRequest) returns (crm.common.PaginatedResponse);
+  rpc GetReminder(crm.common.IdRequest) returns (ReminderResponse);
+
+  rpc CreateSlaConfig(CreateSlaConfigRequest) returns (SlaConfigResponse);
+  rpc UpdateSlaConfig(UpdateSlaConfigRequest) returns (SlaConfigResponse);
+  rpc DeleteSlaConfig(crm.common.IdRequest) returns (crm.common.IdResponse);
+  rpc ListSlaConfigs(ListSlaConfigsRequest) returns (crm.common.PaginatedResponse);
+  rpc CheckSlaViolations(CheckSlaViolationsRequest) returns (crm.common.PaginatedResponse);
+  rpc ListSlaViolations(ListViolationsRequest) returns (crm.common.PaginatedResponse);
+  rpc ResolveSlaViolation(ResolveViolationRequest) returns (SlaViolationResponse);
+}

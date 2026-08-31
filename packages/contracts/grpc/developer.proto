@@ -1,0 +1,80 @@
+syntax = "proto3";
+package crm.developer;
+import "common.proto";
+
+message DeveloperResponse {
+  string json = 1;
+}
+
+message CreateApiKeyRequest {
+  string tenant_id = 1;
+  string name = 2;
+  repeated string scopes = 3;
+  optional string expires_at = 4;
+}
+
+message GetApiKeysRequest {
+  string tenant_id = 1;
+}
+
+message RevokeApiKeyRequest {
+  string tenant_id = 1;
+  string id = 2;
+}
+
+message ValidateApiKeyRequest {
+  string raw_key = 1;
+}
+
+message ValidateApiKeyResponse {
+  bool valid = 1;
+  string tenant_id = 2;
+  repeated string scopes = 3;
+  string key_id = 4;
+}
+
+message CreateWebhookRequest {
+  string tenant_id = 1;
+  string name = 2;
+  string url = 3;
+  repeated string events = 4;
+}
+
+message GetWebhooksRequest {
+  string tenant_id = 1;
+}
+
+message DeleteWebhookRequest {
+  string tenant_id = 1;
+  string id = 2;
+}
+
+message GetDeliveryLogsRequest {
+  string tenant_id = 1;
+  string endpoint_id = 2;
+}
+
+message DispatchWebhookRequest {
+  string tenant_id = 1;
+  string event = 2;
+  string payload_json = 3;
+}
+
+message DeleteApiKeyRequest {
+  string tenant_id = 1;
+  string id = 2;
+}
+
+service DeveloperService {
+  rpc CreateApiKey(CreateApiKeyRequest) returns (DeveloperResponse);
+  rpc GetApiKeys(GetApiKeysRequest) returns (DeveloperResponse);
+  rpc RevokeApiKey(RevokeApiKeyRequest) returns (DeveloperResponse);
+  rpc DeleteApiKey(DeleteApiKeyRequest) returns (DeveloperResponse);
+  rpc ValidateApiKey(ValidateApiKeyRequest) returns (ValidateApiKeyResponse);
+  rpc CreateWebhookEndpoint(CreateWebhookRequest) returns (DeveloperResponse);
+  rpc GetWebhookEndpoints(GetWebhooksRequest) returns (DeveloperResponse);
+  rpc DeleteWebhookEndpoint(DeleteWebhookRequest) returns (DeveloperResponse);
+  rpc GetDeliveryLogs(GetDeliveryLogsRequest) returns (DeveloperResponse);
+  rpc DispatchWebhookEvent(DispatchWebhookRequest) returns (DeveloperResponse);
+}
+

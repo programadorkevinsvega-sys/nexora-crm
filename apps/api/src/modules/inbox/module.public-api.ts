@@ -1,0 +1,8 @@
+export { InboxModule } from './interfaces/http/inbox.module'
+export { InboxConversation } from './domain/entities/inbox-conversation.entity'
+export { InboxMessage } from './domain/entities/inbox-message.entity'
+export { InboxRepository } from './domain/repositories/inbox.repository'
+export { SendInboxMessageHandler } from './application/commands/inbox.handlers'
+export { ListInboxConversationsHandler, GetInboxConversationHandler } from './application/queries/inbox.handlers'
+export { SendInboxMessageCommand } from './application/commands/inbox.commands'
+export { ListInboxConversationsQuery, GetInboxConversationQuery } from './application/queries/inbox.queries'

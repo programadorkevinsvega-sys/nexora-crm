@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package crm.analytics;
+
+import "common.proto";
+
+message RevenueMetricsResponse {
+  string json = 1;
+}
+
+message FunnelMetricsResponse {
+  string json = 1;
+}
+
+message CohortMetricsResponse {
+  string json = 1;
+}
+
+service AnalyticsService {
+  rpc GetRevenueMetrics(crm.common.TenantRequest) returns (RevenueMetricsResponse);
+  rpc GetFunnelMetrics(crm.common.TenantRequest) returns (FunnelMetricsResponse);
+  rpc GetCohortMetrics(crm.common.TenantRequest) returns (CohortMetricsResponse);
+}

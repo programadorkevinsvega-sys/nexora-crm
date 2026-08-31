@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package crm.contracts;
+
+option go_package = "github.com/ultra-erp/crm/grpc/contracts";
+
+import "common.proto";
+
+message QuoteResponse { string json = 1; }
+message ContractResponse { string json = 1; }
+
+message CreateQuoteRequest {
+  string tenant_id = 1; string deal_id = 2; string quote_number = 3; string valid_until = 4;
+  optional string terms_and_conditions = 5; optional double subtotal = 6;
+  optional double tax_total = 7; optional double grand_total = 8;
+}
+
+message RejectQuoteRequest {
+  string tenant_id = 1; string id = 2; string reason = 3;
+}
+
+message CreateContractRequest {
+  string tenant_id = 1; string company_id = 2; string name = 3; string start_date = 4;
+  optional string deal_id = 5; optional string end_date = 6; optional bool auto_renew = 7;
+  optional double mrr_value = 8; optional string owner_user_id = 9;
+}
+
+message UpdateContractRequest {
+  string tenant_id = 1; string id = 2;
+  optional string name = 3; optional string start_date = 4; optional string end_date = 5;
+  optional bool auto_renew = 6; optional double mrr_value = 7;
+  optional string status = 8; optional string owner_user_id = 9;
+}
+
+message UpdateContractStatusRequest {
+  string tenant_id = 1; string id = 2; string status = 3;
+}
+
+message ListQuotesRequest {
+  string tenant_id = 1; optional string deal_id = 2; optional string status = 3;
+  optional string cursor = 4; optional int32 limit = 5;
+}
+
+message ListContractsRequest {
+  string tenant_id = 1; optional string company_id = 2; optional string status = 3;
+  optional string cursor = 4; optional int32 limit = 5;
+}
+
+service QuoteService {
+  rpc CreateQuote(CreateQuoteRequest) returns (QuoteResponse);
+  rpc GetQuote(crm.common.IdRequest) returns (QuoteResponse);
+  rpc ListQuotes(ListQuotesRequest) returns (crm.common.PaginatedResponse);
+  rpc SendQuote(crm.common.IdRequest) returns (crm.common.Empty);
+  rpc AcceptQuote(crm.common.IdRequest) returns (crm.common.Empty);
+  rpc RejectQuote(RejectQuoteRequest) returns (crm.common.Empty);
+}
+
+service ContractService {
+  rpc CreateContract(CreateContractRequest) returns (ContractResponse);
+  rpc GetContract(crm.common.IdRequest) returns (ContractResponse);
+  rpc ListContracts(ListContractsRequest) returns (crm.common.PaginatedResponse);
+  rpc UpdateContract(UpdateContractRequest) returns (crm.common.Empty);
+  rpc Renew(crm.common.IdRequest) returns (crm.common.Empty);
+  rpc UpdateContractStatus(UpdateContractStatusRequest) returns (crm.common.Empty);
+}

@@ -1,0 +1,10 @@
+export const LEAD_STATUSES = ["NEW", "CONTACTED", "QUALIFIED", "CUSTOMER", "CHURNED"] as const
+export const DEAL_STATUSES = ["OPEN", "WON", "LOST"] as const
+export const TICKET_STATUSES = ["OPEN", "PENDING", "RESOLVED", "CLOSED"] as const
+export const TICKET_PRIORITIES = ["LOW", "MEDIUM", "HIGH", "CRITICAL"] as const
+export const CAMPAIGN_STATUSES = ["PLANNED", "ACTIVE", "COMPLETED", "CANCELLED"] as const
+export const CAMPAIGN_MEMBER_STATUSES = ["SENT", "OPENED", "CLICKED", "RESPONDED", "BOUNCED", "UNSUBSCRIBED"] as const
+export const QUOTE_STATUSES = ["DRAFT", "SENT", "ACCEPTED", "REJECTED", "EXPIRED"] as const
+export const CONTRACT_STATUSES = ["DRAFT", "ACTIVE", "EXPIRED", "CANCELLED", "RENEWED"] as const
+export const CONVERSATION_STATUSES = ["OPEN", "PENDING", "WAITING_CUSTOMER", "RESOLVED", "CLOSED"] as const
+export const CONVERSATION_PRIORITIES = ["LOW", "MEDIUM", "HIGH", "CRITICAL"] as const

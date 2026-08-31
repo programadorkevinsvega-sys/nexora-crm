@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package crm.tags;
+
+option go_package = "github.com/ultra-erp/crm/grpc/tags";
+
+import "common.proto";
+
+message TagResponse { string json = 1; }
+
+message CreateTagRequest {
+  string tenant_id = 1; string name = 2; optional string color = 3;
+}
+
+message UpdateTagRequest {
+  string tenant_id = 1; string id = 2; optional string name = 3; optional string color = 4;
+}
+
+message ListTagsRequest {
+  string tenant_id = 1; optional string search = 2;
+}
+
+service TagService {
+  rpc CreateTag(CreateTagRequest) returns (TagResponse);
+  rpc GetTag(crm.common.IdRequest) returns (TagResponse);
+  rpc UpdateTag(UpdateTagRequest) returns (crm.common.Empty);
+  rpc ListTags(ListTagsRequest) returns (crm.common.PaginatedResponse);
+  rpc DeleteTag(crm.common.IdRequest) returns (crm.common.Empty);
+}

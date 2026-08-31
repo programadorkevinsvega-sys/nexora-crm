@@ -1,0 +1,116 @@
+syntax = "proto3";
+
+package crm.cpq;
+
+import "common.proto";
+
+message ProductResponse {
+  string json = 1;
+}
+
+message ApprovalResponse {
+  string json = 1;
+}
+
+message SignatureResponse {
+  string json = 1;
+}
+
+message CreateProductRequest {
+  string tenant_id = 1;
+  string sku = 2;
+  string name = 3;
+  double unit_price = 4;
+  optional string description = 5;
+  optional string currency = 6;
+  optional string pricing_type = 7;
+  optional double tax_rate = 8;
+}
+
+message RequestApprovalRequest {
+  string tenant_id = 1;
+  string quote_id = 2;
+  double requested_discount_percent = 3;
+  string requested_by_user_id = 4;
+}
+
+message DecideApprovalRequest {
+  string tenant_id = 1;
+  string approval_id = 2;
+  string approver_user_id = 3;
+  string status = 4; // APPROVED, REJECTED
+  optional string rejection_reason = 5;
+}
+
+message InitiateSignatureRequest {
+  string tenant_id = 1;
+  string document_id = 2;
+  string signer_name = 3;
+  string signer_email = 4;
+  optional string document_type = 5;
+  optional string signer_phone = 6;
+  optional int32 expires_in_days = 7;
+}
+
+message VerifyOtpRequest {
+  string token = 1;
+  string otp_code = 2;
+}
+
+message SubmitSignatureRequest {
+  string token = 1;
+  string signature_data_url = 2;
+  optional string signer_ip = 3;
+  optional string signer_user_agent = 4;
+  optional string document_hash_sha256 = 5;
+}
+
+message TokenRequest {
+  string token = 1;
+}
+
+message UpdateProductRequest {
+  string tenant_id = 1;
+  string id = 2;
+  optional string name = 3;
+  optional double unit_price = 4;
+  optional string description = 5;
+  optional string currency = 6;
+  optional string pricing_type = 7;
+  optional double tax_rate = 8;
+  optional bool is_active = 9;
+}
+
+message ProductTemplateResponse {
+  string json = 1;
+}
+
+message CreateProductTemplateRequest {
+  string tenant_id = 1;
+  string name = 2;
+  optional string category = 3;
+  optional string default_sku_prefix = 4;
+  double default_unit_price = 5;
+  optional string default_currency = 6;
+  optional string pricing_type = 7;
+  optional double default_tax_rate = 8;
+  optional string default_description = 9;
+}
+
+service CpqService {
+  rpc CreateProduct(CreateProductRequest) returns (ProductResponse);
+  rpc UpdateProduct(UpdateProductRequest) returns (ProductResponse);
+  rpc DeleteProduct(crm.common.IdRequest) returns (crm.common.Empty);
+  rpc GetProduct(crm.common.IdRequest) returns (ProductResponse);
+  rpc ListProducts(crm.common.TenantRequest) returns (crm.common.PaginatedResponse);
+  rpc CreateProductTemplate(CreateProductTemplateRequest) returns (ProductTemplateResponse);
+  rpc ListProductTemplates(crm.common.TenantRequest) returns (crm.common.PaginatedResponse);
+  rpc DeleteProductTemplate(crm.common.IdRequest) returns (crm.common.Empty);
+  rpc RequestQuoteApproval(RequestApprovalRequest) returns (ApprovalResponse);
+  rpc DecideQuoteApproval(DecideApprovalRequest) returns (ApprovalResponse);
+  rpc ListPendingApprovals(crm.common.TenantRequest) returns (crm.common.PaginatedResponse);
+  rpc InitiateSignature(InitiateSignatureRequest) returns (SignatureResponse);
+  rpc VerifySignatureOtp(VerifyOtpRequest) returns (crm.common.Empty);
+  rpc SubmitSignature(SubmitSignatureRequest) returns (SignatureResponse);
+  rpc GetSignatureByToken(TokenRequest) returns (SignatureResponse);
+}

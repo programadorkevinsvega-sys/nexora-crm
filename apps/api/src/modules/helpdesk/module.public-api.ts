@@ -1,0 +1,5 @@
+export { HelpdeskModule } from './interfaces/http/helpdesk.module'
+export { ConversationRepository } from './domain/repositories/conversation.repository'
+export { MailboxRepository } from './domain/repositories/mailbox.repository'
+export { AgentRepository } from './domain/repositories/agent.repository'
+export { ThreadRepository } from './domain/repositories/thread.repository'

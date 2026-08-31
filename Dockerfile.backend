@@ -1,0 +1,39 @@
+FROM node:20-alpine AS base
+RUN corepack enable && corepack prepare pnpm@9.15.9 --activate
+RUN npm install -g turbo@2.10.3
+
+FROM base AS pruner
+ARG APP_NAME
+WORKDIR /app
+COPY . .
+RUN turbo prune ${APP_NAME} --docker
+
+FROM base AS builder
+ARG APP_NAME
+WORKDIR /app
+COPY .gitignore .gitignore
+COPY --from=pruner /app/out/json/ .
+COPY --from=pruner /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
+RUN pnpm install --frozen-lockfile
+
+COPY --from=pruner /app/out/full/ .
+COPY tsconfig.base.json ./
+RUN pnpm build --filter=${APP_NAME}
+
+FROM node:20-alpine AS runner
+ARG APP_NAME
+WORKDIR /app
+
+ENV NODE_ENV=production
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nestjs
+
+COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nestjs:nodejs /app/packages ./packages
+COPY --from=builder --chown=nestjs:nodejs /app/apps/${APP_NAME}/dist ./dist
+COPY --from=builder --chown=nestjs:nodejs /app/apps/${APP_NAME}/node_modules ./apps/${APP_NAME}/node_modules
+COPY --from=builder --chown=nestjs:nodejs /app/apps/${APP_NAME}/package.json ./package.json
+
+USER nestjs
+
+CMD ["node", "dist/main.js"]

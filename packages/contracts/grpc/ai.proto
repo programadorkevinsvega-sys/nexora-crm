@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package crm.ai;
+
+import "common.proto";
+
+message AiResponse {
+  string json = 1;
+}
+
+message GetDealWinProbabilityRequest {
+  string tenant_id = 1;
+  string deal_id = 2;
+}
+
+message GenerateMessageDraftRequest {
+  string tenant_id = 1;
+  optional string contact_id = 2;
+  optional string deal_id = 3;
+  string channel = 4;
+  string tone = 5;
+  string objective = 6;
+  optional string custom_instructions = 7;
+}
+
+message GetContactExecutiveSummaryRequest {
+  string tenant_id = 1;
+  string contact_id = 2;
+}
+
+message GetChurnRiskPredictionRequest {
+  string tenant_id = 1;
+  string contact_id = 2;
+}
+
+service AiService {
+  rpc GetDealWinProbability(GetDealWinProbabilityRequest) returns (AiResponse);
+  rpc GenerateMessageDraft(GenerateMessageDraftRequest) returns (AiResponse);
+  rpc GetContactExecutiveSummary(GetContactExecutiveSummaryRequest) returns (AiResponse);
+  rpc GetChurnRiskPrediction(GetChurnRiskPredictionRequest) returns (AiResponse);
+}

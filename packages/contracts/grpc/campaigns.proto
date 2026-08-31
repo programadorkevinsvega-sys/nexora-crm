@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package crm.campaigns;
+
+option go_package = "github.com/ultra-erp/crm/grpc/campaigns";
+
+import "common.proto";
+
+message CampaignResponse { string json = 1; }
+message MemberResponse { string json = 1; }
+
+message CreateCampaignRequest {
+  string tenant_id = 1; string name = 2;
+  optional string type = 3; optional string status = 4; optional string start_date = 5;
+  optional string end_date = 6; optional double budgeted_cost = 7;
+  optional double actual_cost = 8; optional double expected_revenue = 9;
+}
+
+message UpdateCampaignRequest {
+  string tenant_id = 1; string id = 2;
+  optional string name = 3; optional string type = 4; optional string start_date = 5;
+  optional string end_date = 6; optional double budgeted_cost = 7;
+  optional double actual_cost = 8; optional double expected_revenue = 9;
+}
+
+message ChangeCampaignStatusRequest {
+  string tenant_id = 1; string id = 2; string status = 3;
+}
+
+message AddMemberRequest {
+  string tenant_id = 1; string campaign_id = 2; string contact_id = 3;
+}
+
+message UpdateMemberStatusRequest {
+  string tenant_id = 1; string id = 2; string status = 3;
+}
+
+message ListCampaignsRequest {
+  string tenant_id = 1; optional string status = 2; optional string type = 3;
+  optional string cursor = 4; optional int32 limit = 5;
+}
+
+message ListMembersRequest {
+  string tenant_id = 1; string campaign_id = 2;
+  optional string cursor = 3; optional int32 limit = 4;
+}
+
+service CampaignService {
+  rpc CreateCampaign(CreateCampaignRequest) returns (CampaignResponse);
+  rpc GetCampaign(crm.common.IdRequest) returns (CampaignResponse);
+  rpc ListCampaigns(ListCampaignsRequest) returns (crm.common.PaginatedResponse);
+  rpc UpdateCampaign(UpdateCampaignRequest) returns (crm.common.Empty);
+  rpc UpdateCampaignStatus(ChangeCampaignStatusRequest) returns (crm.common.Empty);
+  rpc DeleteCampaign(crm.common.IdRequest) returns (crm.common.Empty);
+  rpc ListMembers(ListMembersRequest) returns (crm.common.PaginatedResponse);
+  rpc AddMember(AddMemberRequest) returns (MemberResponse);
+  rpc UpdateMemberStatus(UpdateMemberStatusRequest) returns (crm.common.Empty);
+}

@@ -1,0 +1,208 @@
+syntax = "proto3";
+
+package crm.auth;
+
+option go_package = "github.com/ultra-erp/crm/grpc/auth";
+
+import "common.proto";
+
+message LoginRequest {
+  string tenant_id = 1;
+  string email = 2;
+  string password = 3;
+  optional string ip_address = 4;
+  optional string user_agent = 5;
+  optional string device_id = 6;
+  optional string mfa_code = 7;
+}
+
+message LoginResponse {
+  string json = 1;
+}
+
+message RegisterRequest {
+  string name = 1;
+  string email = 2;
+  string password = 3;
+  string company = 4;
+}
+
+message RegisterResponse {
+  string json = 1;
+}
+
+message VerifyTokenRequest {
+  string token = 1;
+}
+
+message VerifyTokenResponse {
+  string json = 1;
+}
+
+message RefreshTokenRequest {
+  string tenant_id = 1;
+  string refresh_token = 2;
+}
+
+message RefreshTokenResponse {
+  string json = 1;
+}
+
+message LogoutRequest {
+  string tenant_id = 1;
+  string session_id = 2;
+}
+
+message ChangePasswordRequest {
+  string tenant_id = 1;
+  string user_id = 2;
+  string current_password = 3;
+  string new_password = 4;
+}
+
+message SetupMfaRequest {
+  string tenant_id = 1;
+  string user_id = 2;
+  string type = 3;
+  optional string phone = 4;
+  optional string email = 5;
+}
+
+message SetupMfaResponse {
+  string json = 1;
+}
+
+message VerifyMfaRequest {
+  string tenant_id = 1;
+  string user_id = 2;
+  string code = 3;
+  string method_id = 4;
+}
+
+message VerifyMfaResponse {
+  string json = 1;
+}
+
+message GetRecoveryCodesRequest {
+  string tenant_id = 1;
+  string user_id = 2;
+}
+
+message RecoveryCodesResponse {
+  string json = 1;
+}
+
+message RegenerateRecoveryCodesRequest {
+  string tenant_id = 1;
+  string user_id = 2;
+}
+
+message GetPasswordPolicyRequest {
+  string tenant_id = 1;
+}
+
+message PasswordPolicyResponse {
+  string json = 1;
+}
+
+message UpdatePasswordPolicyRequest {
+  string tenant_id = 1;
+  optional int32 min_length = 2;
+  optional bool require_uppercase = 3;
+  optional bool require_numbers = 4;
+  optional bool require_symbols = 5;
+  optional int32 expire_days = 6;
+  optional int32 prevent_reuse_last_n = 7;
+}
+
+message ListSessionsRequest {
+  string tenant_id = 1;
+  string user_id = 2;
+}
+
+message SessionsResponse {
+  repeated string json_items = 1;
+}
+
+message RevokeSessionRequest {
+  string tenant_id = 1;
+  string session_id = 2;
+}
+
+message CreateIpRestrictionRequest {
+  string tenant_id = 1;
+  optional string user_id = 2;
+  string ip_address = 3;
+  string type = 4;
+  optional string description = 5;
+}
+
+message IpRestrictionResponse {
+  string json = 1;
+}
+
+message DeleteIpRestrictionRequest {
+  string tenant_id = 1;
+  string id = 2;
+}
+
+message ListIpRestrictionsRequest {
+  string tenant_id = 1;
+  optional string user_id = 2;
+}
+
+message IpRestrictionsResponse {
+  repeated string json_items = 1;
+}
+
+message CreateOAuthProviderRequest {
+  string tenant_id = 1;
+  string provider_name = 2;
+  string client_id = 3;
+  string client_secret = 4;
+}
+
+message OAuthProviderResponse {
+  string json = 1;
+}
+
+message ListOAuthProvidersRequest {
+  string tenant_id = 1;
+}
+
+message OAuthProvidersResponse {
+  repeated string json_items = 1;
+}
+
+message DeleteOAuthProviderRequest {
+  string tenant_id = 1;
+  string id = 2;
+}
+
+service AuthService {
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc VerifyToken(VerifyTokenRequest) returns (VerifyTokenResponse);
+  rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse);
+  rpc Logout(LogoutRequest) returns (crm.common.Empty);
+  rpc ChangePassword(ChangePasswordRequest) returns (crm.common.Empty);
+
+  rpc SetupMfa(SetupMfaRequest) returns (SetupMfaResponse);
+  rpc VerifyMfa(VerifyMfaRequest) returns (VerifyMfaResponse);
+  rpc GetRecoveryCodes(GetRecoveryCodesRequest) returns (RecoveryCodesResponse);
+  rpc RegenerateRecoveryCodes(RegenerateRecoveryCodesRequest) returns (RecoveryCodesResponse);
+
+  rpc GetPasswordPolicy(GetPasswordPolicyRequest) returns (PasswordPolicyResponse);
+  rpc UpdatePasswordPolicy(UpdatePasswordPolicyRequest) returns (crm.common.Empty);
+
+  rpc ListSessions(ListSessionsRequest) returns (SessionsResponse);
+  rpc RevokeSession(RevokeSessionRequest) returns (crm.common.Empty);
+
+  rpc CreateIpRestriction(CreateIpRestrictionRequest) returns (IpRestrictionResponse);
+  rpc DeleteIpRestriction(DeleteIpRestrictionRequest) returns (crm.common.Empty);
+  rpc ListIpRestrictions(ListIpRestrictionsRequest) returns (IpRestrictionsResponse);
+
+  rpc CreateOAuthProvider(CreateOAuthProviderRequest) returns (OAuthProviderResponse);
+  rpc ListOAuthProviders(ListOAuthProvidersRequest) returns (OAuthProvidersResponse);
+  rpc DeleteOAuthProvider(DeleteOAuthProviderRequest) returns (crm.common.Empty);
+}

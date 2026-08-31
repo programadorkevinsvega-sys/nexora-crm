@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package crm.personal_crm;
+
+option go_package = "github.com/ultra-erp/crm/grpc/personal_crm";
+
+import "common.proto";
+
+message LifeEventResponse { string json = 1; }
+message GiftResponse { string json = 1; }
+message DebtResponse { string json = 1; }
+message ReminderResponse { string json = 1; }
+message PetResponse { string json = 1; }
+
+message CreateLifeEventRequest {
+  string tenant_id = 1; string contact_id = 2; string event_type = 3; string name = 4;
+  optional string description = 5; optional string happened_at = 6; optional bool is_yearly_recurring = 7;
+}
+
+message CreateGiftRequest {
+  string tenant_id = 1; string contact_id = 2; string direction = 3; string name = 4;
+  optional string description = 5; optional string url = 6; optional double estimated_value = 7;
+  optional string status = 8; optional string date_given_or_received = 9;
+}
+
+message CreateDebtRequest {
+  string tenant_id = 1; string contact_id = 2; string direction = 3; double amount = 4; string reason = 5;
+  optional string status = 6; optional string due_date = 7;
+}
+
+message CreateReminderRequest {
+  string tenant_id = 1; string contact_id = 2; string title = 3;
+  optional string description = 4; optional string frequency_type = 5;
+  optional int32 frequency_interval = 6; optional string next_due_date = 7; optional bool is_active = 8;
+}
+
+message AddPetRequest {
+  string tenant_id = 1; string contact_id = 2; string pet_category = 3; string name = 4;
+  optional string breed = 5;
+}
+
+message ListByContactRequest {
+  string tenant_id = 1; string contact_id = 2;
+}
+
+service PersonalCrmService {
+  rpc CreateLifeEvent(CreateLifeEventRequest) returns (LifeEventResponse);
+  rpc ListLifeEvents(ListByContactRequest) returns (crm.common.PaginatedResponse);
+  rpc CreateGift(CreateGiftRequest) returns (GiftResponse);
+  rpc ListGifts(ListByContactRequest) returns (crm.common.PaginatedResponse);
+  rpc CreateDebt(CreateDebtRequest) returns (DebtResponse);
+  rpc ListDebts(ListByContactRequest) returns (crm.common.PaginatedResponse);
+  rpc SettleDebt(crm.common.IdRequest) returns (crm.common.Empty);
+  rpc CreateReminder(CreateReminderRequest) returns (ReminderResponse);
+  rpc ListReminders(ListByContactRequest) returns (crm.common.PaginatedResponse);
+  rpc ToggleReminder(crm.common.IdRequest) returns (crm.common.Empty);
+  rpc AddPet(AddPetRequest) returns (PetResponse);
+  rpc ListPets(ListByContactRequest) returns (crm.common.PaginatedResponse);
+}
