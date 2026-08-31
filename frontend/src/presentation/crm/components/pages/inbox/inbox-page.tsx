@@ -19,7 +19,9 @@ import {
   Building,
   Briefcase,
   ExternalLink,
+  Sparkles,
 } from "lucide-react"
+import Link from "next/link"
 import { Button } from "@/src/presentation/crm/components/ui/Button"
 import { Card } from "@/src/presentation/crm/components/ui/Card"
 import { Badge } from "@/src/presentation/crm/components/ui/Badge"
@@ -139,9 +141,16 @@ export function InboxPage() {
             Mensajería unificada en tiempo real: WhatsApp (Meta API), Correo Electrónico y SMS vinculados al CRM.
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => fetchConversations(true)}>
-          <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Actualizar
-        </Button>
+        <div className="flex items-center gap-2">
+          <Link href="/social-inbox">
+            <Button size="sm" className="gap-1.5 text-xs bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white shadow-sm">
+              <Sparkles className="h-3.5 w-3.5" /> Social Inbox (Comentarios Redes)
+            </Button>
+          </Link>
+          <Button variant="outline" size="sm" onClick={() => fetchConversations(true)}>
+            <RefreshCw className="h-3.5 w-3.5 mr-1.5" /> Actualizar
+          </Button>
+        </div>
       </div>
 
       {/* Main 3-Column Layout */}

@@ -35,6 +35,10 @@ import {
   Sparkles,
   BarChart3,
   BookOpen,
+  MessageSquare,
+  Globe,
+  Camera,
+  Smartphone,
   Heart,
   ShieldCheck,
 } from "lucide-react"
@@ -70,6 +74,7 @@ const navSections: NavSection[] = [
     items: [
       { label: "Dashboard", href: "/", icon: LayoutDashboard },
       { label: "Inbox", href: "/inbox", icon: InboxIcon },
+      { label: "Social Inbox", href: "/social-inbox", icon: MessageSquare },
       { label: "Companies", href: "/companies", icon: Building2 },
       { label: "Contacts", href: "/contacts", icon: Users },
       { label: "Personal CRM", href: "/personal-crm", icon: Heart },
@@ -81,7 +86,7 @@ const navSections: NavSection[] = [
     ],
   },
   {
-    title: "Sales",
+    title: "Sales & Redes",
     items: [
       { label: "Products & CPQ", href: "/products", icon: Package },
       { label: "Approvals", href: "/approvals", icon: CheckCircle2 },
@@ -90,11 +95,11 @@ const navSections: NavSection[] = [
       { label: "Sales Teams", href: "/sales-teams", icon: Briefcase },
       { label: "Campaigns", href: "/campaigns", icon: Megaphone },
       { label: "Formularios Web", href: "/forms", icon: FileText },
-      { label: "Facebook Lead Ads", href: "/integrations/facebook", icon: Megaphone },
+      { label: "Facebook Ads Leads", href: "/integrations/facebook", icon: Megaphone },
+      { label: "Instagram Leads", href: "/integrations/instagram", icon: Camera },
+      { label: "TikTok Ads Leads", href: "/integrations/tiktok", icon: Smartphone },
     ],
   },
-
-
   {
     title: "Support",
     items: [
@@ -114,6 +119,7 @@ const navSections: NavSection[] = [
   {
     title: "Other",
     items: [
+      { label: "Hub Integraciones", href: "/integrations", icon: Globe },
       { label: "Affiliates", href: "/affiliates", icon: Handshake },
       { label: "Loyalty", href: "/loyalty", icon: Star },
       { label: "Auditoría", href: "/audit", icon: ShieldCheck },

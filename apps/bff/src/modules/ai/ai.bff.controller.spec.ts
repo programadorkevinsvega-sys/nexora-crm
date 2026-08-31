@@ -19,7 +19,12 @@ describe('AiBffController', () => {
       getChurnRiskPrediction: jest.fn(),
     } as any
 
-    controller = new AiBffController(mockService)
+    const mockRagService = {
+      searchKnowledgeBase: jest.fn().mockResolvedValue([]),
+      generateGroundedReply: jest.fn().mockResolvedValue({ replyText: 'mock', retrievedChunks: [], sourceCount: 0 }),
+    } as any
+
+    controller = new AiBffController(mockService, mockRagService)
   })
 
   it('should get deal win probability on GET /api/ai/deals/:dealId/win-probability', async () => {

@@ -9,6 +9,8 @@ import type {
   SocialPlatform,
 } from '@crm/contracts'
 
+import { RagService } from '../ai/rag/rag.service'
+
 const DEFAULT_TENANT_ID = '00000000-0000-0000-0000-000000000001'
 
 // In-memory persistent state across requests
@@ -18,6 +20,8 @@ const rulesStore = new Map<string, SocialAutoResponderRule[]>()
 @Injectable()
 export class SocialInboxBffService {
   private readonly logger = new Logger(SocialInboxBffService.name)
+
+  constructor(private readonly ragService: RagService) {}
 
   private get db() { return getDb() }
 
@@ -235,7 +239,13 @@ export class SocialInboxBffService {
 
     if (matchedRule) {
       if (matchedRule.responseMode === 'AI_BOT') {
-        newComment.replyMessage = `¡Hola ${dto.authorName}! ✨ Gracias por consultar en ${dto.platform}. Te dejamos la respuesta detallada y los accesos en tu buzón privado.`
+        const ragRes = await this.ragService.generateGroundedReply(tid, {
+          query: dto.message,
+          authorName: dto.authorName,
+          platform: dto.platform,
+          customPrompt: matchedRule.aiPrompt,
+        })
+        newComment.replyMessage = ragRes.replyText
         newComment.repliedBy = 'AI_BOT'
       } else {
         const pool = matchedRule.staticReplies.length > 0 ? matchedRule.staticReplies : ['¡Hola {name}! Gracias por tu mensaje.']
