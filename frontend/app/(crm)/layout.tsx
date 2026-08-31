@@ -118,6 +118,7 @@ const navSections: NavSection[] = [
     items: [
       { label: "AI Copilot", href: "/ai", icon: Sparkles },
       { label: "Automations", href: "/automations", icon: Zap },
+      { label: "Diseñador Canvas", href: "/automations/new", icon: Kanban },
       { label: "Lead Scoring", href: "/scoring", icon: Flame },
     ],
   },
