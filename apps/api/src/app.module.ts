@@ -39,6 +39,9 @@ import { AnalyticsModule } from './modules/analytics/module.public-api'
 import { KnowledgeBaseModule } from './modules/knowledge-base/module.public-api'
 import { AiModule } from './modules/ai/module.public-api'
 import { DeveloperModule } from './modules/developer/module.public-api'
+import { SocialInboxModule } from './modules/social-inbox/module.public-api'
+import { WebFormsModule } from './modules/web-forms/module.public-api'
+import { MetaLeadsModule } from './modules/meta-leads/module.public-api'
 
 @Module({
   imports: [
@@ -78,6 +81,9 @@ import { DeveloperModule } from './modules/developer/module.public-api'
     KnowledgeBaseModule,
     AiModule,
     DeveloperModule,
+    SocialInboxModule,
+    WebFormsModule,
+    MetaLeadsModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: DomainErrorFilter },

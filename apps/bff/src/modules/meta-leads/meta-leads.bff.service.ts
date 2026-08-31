@@ -1,6 +1,4 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common'
-import { getDb, metaIntegrations, metaLeadAdLogs } from '@crm/database'
-import { eq, desc } from 'drizzle-orm'
 import { ApiCoreGrpcClient } from '../../common/grpc/api-core-grpc.client'
 import type {
   MetaIntegration, MetaLeadAdLog, MetaConfigUpdate, SimulateMetaLead,
@@ -15,36 +13,9 @@ export class MetaLeadsBffService {
 
   constructor(private readonly api: ApiCoreGrpcClient) {}
 
-  private get db() {
-    return getDb()
-  }
-
-  // Keeping direct DB access to metaIntegrations and metaLeadAdLogs 
-  // as they are configuration data owned by this module.
   async getStatus(tenantId?: string): Promise<MetaIntegration> {
     const tid = tenantId || DEFAULT_TENANT_ID
-    let [integration] = await this.db.select().from(metaIntegrations).where(eq(metaIntegrations.tenantId, tid)).limit(1)
-
-    if (!integration) {
-      const now = new Date()
-      const [created] = await this.db
-        .insert(metaIntegrations)
-        .values({
-          id: crypto.randomUUID(),
-          tenantId: tid,
-          status: 'DISCONNECTED',
-          metaAppId: process.env.META_APP_ID || null,
-          webhookSecret: `fb_verify_${crypto.randomUUID().slice(0, 8)}`,
-          leadGenForms: [],
-          autoCreateDeal: true,
-          createdAt: now,
-          updatedAt: now,
-        })
-        .returning()
-      integration = created
-    }
-
-    return integration as MetaIntegration
+    return this.api.getMetaStatus(tid)
   }
 
   getOAuthUrl(tenantId?: string, redirectUri?: string, customAppId?: string): { url: string; state: string } {
@@ -73,22 +44,15 @@ export class MetaLeadsBffService {
 
   async handleOAuthCallback(code: string, tenantId?: string): Promise<MetaIntegration> {
     const tid = tenantId || DEFAULT_TENANT_ID
-    const now = new Date()
     const expiresAt = new Date(Date.now() + 60 * 86400000)
 
-    const [updated] = await this.db
-      .update(metaIntegrations)
-      .set({
-        status: 'CONNECTED',
-        accessToken: `EAAB_${code.slice(0, 16)}`,
-        tokenExpiresAt: expiresAt,
-        lastSyncAt: now,
-        updatedAt: now,
-      })
-      .where(eq(metaIntegrations.tenantId, tid))
-      .returning()
-
-    return updated as MetaIntegration
+    return this.api.updateMetaConfig({
+      tenantId: tid,
+      status: 'CONNECTED',
+      accessToken: `EAAB_${code.slice(0, 16)}`,
+      tokenExpiresAt: expiresAt,
+      lastSyncAt: new Date(),
+    })
   }
 
   async fetchMetaPagesAndAccounts(accessToken: string): Promise<{
@@ -129,7 +93,6 @@ export class MetaLeadsBffService {
 
   async connectPage(dto: ConnectMetaPageInput, tenantId?: string): Promise<MetaIntegration> {
     const tid = tenantId || DEFAULT_TENANT_ID
-    const now = new Date()
     let forms: MetaLeadForm[] = []
 
     if (dto.pageAccessToken && dto.pageId) {
@@ -152,42 +115,27 @@ export class MetaLeadsBffService {
       }
     }
 
-    const [updated] = await this.db
-      .update(metaIntegrations)
-      .set({
-        status: 'CONNECTED',
-        selectedPageId: dto.pageId,
-        selectedPageName: dto.pageName,
-        pageAccessToken: dto.pageAccessToken || null,
-        adAccountId: dto.adAccountId || null,
-        adAccountName: dto.adAccountName || null,
-        accessToken: dto.userAccessToken || null,
-        metaAppId: dto.metaAppId || null,
-        leadGenForms: forms,
-        lastSyncAt: now,
-        updatedAt: now,
-      })
-      .where(eq(metaIntegrations.tenantId, tid))
-      .returning()
-
-    return updated as MetaIntegration
+    return this.api.connectMetaPage({
+      tenantId: tid,
+      pageId: dto.pageId,
+      pageName: dto.pageName,
+      pageAccessToken: dto.pageAccessToken,
+      adAccountId: dto.adAccountId,
+      adAccountName: dto.adAccountName,
+      userAccessToken: dto.userAccessToken,
+      metaAppId: dto.metaAppId,
+      leadGenForms: forms,
+    })
   }
 
   async updateConfig(dto: MetaConfigUpdate, tenantId?: string): Promise<MetaIntegration> {
     const tid = tenantId || DEFAULT_TENANT_ID
-    const now = new Date()
-
-    const [updated] = await this.db
-      .update(metaIntegrations)
-      .set({ ...dto, updatedAt: now })
-      .where(eq(metaIntegrations.tenantId, tid))
-      .returning()
-
-    return updated as MetaIntegration
+    return this.api.updateMetaConfig({ ...dto, tenantId: tid })
   }
 
   async syncForms(tenantId?: string): Promise<MetaLeadForm[]> {
-    const integration = await this.getStatus(tenantId)
+    const tid = tenantId || DEFAULT_TENANT_ID
+    const integration = await this.getStatus(tid)
     let forms: MetaLeadForm[] = (integration.leadGenForms as MetaLeadForm[]) || []
 
     if (integration.selectedPageId && (integration as any).pageAccessToken) {
@@ -205,10 +153,11 @@ export class MetaLeadsBffService {
             defaultLeadStatus: 'NEW',
           }))
 
-          await this.db
-            .update(metaIntegrations)
-            .set({ leadGenForms: forms, lastSyncAt: new Date(), updatedAt: new Date() })
-            .where(eq(metaIntegrations.id, integration.id))
+          await this.api.updateMetaConfig({
+            tenantId: tid,
+            leadGenForms: forms,
+            lastSyncAt: new Date(),
+          })
         }
       } catch (err: any) {
         this.logger.warn(`Failed to sync forms from Graph API: ${err.message}`)
@@ -220,31 +169,17 @@ export class MetaLeadsBffService {
 
   async disconnect(tenantId?: string): Promise<void> {
     const tid = tenantId || DEFAULT_TENANT_ID
-    await this.db
-      .update(metaIntegrations)
-      .set({
-        status: 'DISCONNECTED',
-        accessToken: null,
-        pageAccessToken: null,
-        selectedPageId: null,
-        selectedPageName: null,
-        adAccountId: null,
-        adAccountName: null,
-        leadGenForms: [],
-        updatedAt: new Date(),
-      })
-      .where(eq(metaIntegrations.tenantId, tid))
+    await this.api.disconnectMeta(tid)
   }
 
   async listLogs(tenantId?: string): Promise<MetaLeadAdLog[]> {
     const tid = tenantId || DEFAULT_TENANT_ID
-    return (await this.db.select().from(metaLeadAdLogs).where(eq(metaLeadAdLogs.tenantId, tid)).orderBy(desc(metaLeadAdLogs.receivedAt)).limit(50)) as MetaLeadAdLog[]
+    return this.api.listMetaLogs(tid)
   }
 
   async simulateLead(dto: SimulateMetaLead, tenantId?: string) {
     const tid = tenantId || DEFAULT_TENANT_ID
     const integration = await this.getStatus(tid)
-    const now = new Date()
     const names = dto.fullName.split(' ')
 
     const contact = await this.api.createContact({
@@ -258,7 +193,7 @@ export class MetaLeadsBffService {
       leadStatus: 'QUALIFIED',
       metadata: { campaignName: dto.campaignName, adName: dto.adName, formName: dto.formName },
     })
-    
+
     const contactId = contact.id
     let dealId: string | null = null
 
@@ -268,7 +203,7 @@ export class MetaLeadsBffService {
       if (firstPipeline) {
         const board = await this.api.getPipelineBoard(tid, firstPipeline.id)
         const firstStage = board.stages[0]
-        
+
         const deal = await this.api.createDeal({
           tenantId: tid,
           pipelineId: integration.targetPipelineId || firstPipeline.id,
@@ -282,9 +217,7 @@ export class MetaLeadsBffService {
       }
     }
 
-    const logId = crypto.randomUUID()
-    const [log] = await this.db.insert(metaLeadAdLogs).values({
-      id: logId,
+    const log = await this.api.saveMetaLeadLog({
       tenantId: tid,
       metaIntegrationId: integration.id,
       leadgenId: `leadgen_${Date.now()}`,
@@ -295,8 +228,7 @@ export class MetaLeadsBffService {
       dealId,
       leadData: dto,
       status: 'PROCESSED',
-      receivedAt: now,
-    }).returning()
+    })
 
     return { success: true, contactId, dealId, log }
   }

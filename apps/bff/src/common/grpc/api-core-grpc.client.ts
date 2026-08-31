@@ -303,6 +303,26 @@ interface SocialInboxGrpc {
   autoCreateContact: (data: { tenantId: string; authorName: string; platform: string }) => Observable<Record<string, never>>
 }
 
+interface WebFormsGrpc {
+  listForms: (data: { tenantId: string }) => Observable<{ jsonItems: string[] }>
+  getFormById: (data: { tenantId: string; id: string }) => Observable<{ json: string }>
+  getPublicForm: (data: { idOrSlug: string }) => Observable<{ json: string }>
+  createForm: (data: { jsonInput: string }) => Observable<{ json: string }>
+  updateForm: (data: { jsonInput: string }) => Observable<{ json: string }>
+  deleteForm: (data: { tenantId: string; id: string }) => Observable<{ success: boolean }>
+  submitPublicForm: (data: { idOrSlug: string; formDataJson: string; ipAddress?: string; userAgent?: string }) => Observable<{ json: string }>
+  listSubmissions: (data: { tenantId: string; formId: string }) => Observable<{ jsonItems: string[] }>
+}
+
+interface MetaLeadsGrpc {
+  getStatus: (data: { tenantId: string }) => Observable<{ json: string }>
+  connectPage: (data: { jsonInput: string }) => Observable<{ json: string }>
+  updateConfig: (data: { jsonInput: string }) => Observable<{ json: string }>
+  disconnect: (data: { tenantId: string }) => Observable<{ success: boolean }>
+  listLogs: (data: { tenantId: string; limit?: number }) => Observable<{ jsonItems: string[] }>
+  saveLog: (data: { jsonInput: string }) => Observable<{ json: string }>
+}
+
 interface PaginatedResult<T> {
   data: T[]
   nextCursor: string | null
@@ -335,6 +355,8 @@ export class ApiCoreGrpcClient implements OnModuleInit {
   private developer!: DeveloperGrpc
   private audit!: AuditGrpc
   private socialInbox!: SocialInboxGrpc
+  private webForms!: WebFormsGrpc
+  private metaLeads!: MetaLeadsGrpc
 
   constructor(@Inject('API_CORE_GRPC') private readonly client: ClientGrpc) {}
 
@@ -364,6 +386,8 @@ export class ApiCoreGrpcClient implements OnModuleInit {
     this.developer = this.client.getService<DeveloperGrpc>('DeveloperService')
     this.audit = this.client.getService<AuditGrpc>('AuditService')
     this.socialInbox = this.client.getService<SocialInboxGrpc>('SocialInboxService')
+    this.webForms = this.client.getService<WebFormsGrpc>('WebFormsService')
+    this.metaLeads = this.client.getService<MetaLeadsGrpc>('MetaLeadsService')
   }
 
   // ─── Companies ──────────────────────────────────────────
@@ -2010,6 +2034,83 @@ export class ApiCoreGrpcClient implements OnModuleInit {
 
   async autoCreateContact(tenantId: string, authorName: string, platform: string): Promise<void> {
     await lastValueFrom(this.socialInbox.autoCreateContact({ tenantId, authorName, platform }))
+  }
+
+  // ─── Web Forms ──────────────────────────────────────────
+
+  async listWebForms(tenantId: string): Promise<any[]> {
+    const res = await lastValueFrom(this.webForms.listForms({ tenantId }))
+    return (res.jsonItems ?? []).map((j: string) => JSON.parse(j))
+  }
+
+  async getWebFormById(tenantId: string, id: string): Promise<any> {
+    const res = await lastValueFrom(this.webForms.getFormById({ tenantId, id }))
+    return JSON.parse(res.json)
+  }
+
+  async getPublicWebForm(idOrSlug: string): Promise<any> {
+    const res = await lastValueFrom(this.webForms.getPublicForm({ idOrSlug }))
+    return JSON.parse(res.json)
+  }
+
+  async createWebForm(data: any): Promise<any> {
+    const res = await lastValueFrom(this.webForms.createForm({ jsonInput: JSON.stringify(data) }))
+    return JSON.parse(res.json)
+  }
+
+  async updateWebForm(data: any): Promise<any> {
+    const res = await lastValueFrom(this.webForms.updateForm({ jsonInput: JSON.stringify(data) }))
+    return JSON.parse(res.json)
+  }
+
+  async deleteWebForm(tenantId: string, id: string): Promise<void> {
+    await lastValueFrom(this.webForms.deleteForm({ tenantId, id }))
+  }
+
+  async submitPublicWebForm(data: { idOrSlug: string; formData: Record<string, any>; ipAddress?: string; userAgent?: string }): Promise<any> {
+    const res = await lastValueFrom(this.webForms.submitPublicForm({
+      idOrSlug: data.idOrSlug,
+      formDataJson: JSON.stringify(data.formData),
+      ipAddress: data.ipAddress,
+      userAgent: data.userAgent,
+    }))
+    return JSON.parse(res.json)
+  }
+
+  async listWebFormSubmissions(tenantId: string, formId: string): Promise<any[]> {
+    const res = await lastValueFrom(this.webForms.listSubmissions({ tenantId, formId }))
+    return (res.jsonItems ?? []).map((j: string) => JSON.parse(j))
+  }
+
+  // ─── Meta Leads ─────────────────────────────────────────
+
+  async getMetaStatus(tenantId: string): Promise<any> {
+    const res = await lastValueFrom(this.metaLeads.getStatus({ tenantId }))
+    return JSON.parse(res.json)
+  }
+
+  async connectMetaPage(data: any): Promise<any> {
+    const res = await lastValueFrom(this.metaLeads.connectPage({ jsonInput: JSON.stringify(data) }))
+    return JSON.parse(res.json)
+  }
+
+  async updateMetaConfig(data: any): Promise<any> {
+    const res = await lastValueFrom(this.metaLeads.updateConfig({ jsonInput: JSON.stringify(data) }))
+    return JSON.parse(res.json)
+  }
+
+  async disconnectMeta(tenantId: string): Promise<void> {
+    await lastValueFrom(this.metaLeads.disconnect({ tenantId }))
+  }
+
+  async listMetaLogs(tenantId: string, limit = 50): Promise<any[]> {
+    const res = await lastValueFrom(this.metaLeads.listLogs({ tenantId, limit }))
+    return (res.jsonItems ?? []).map((j: string) => JSON.parse(j))
+  }
+
+  async saveMetaLeadLog(data: any): Promise<any> {
+    const res = await lastValueFrom(this.metaLeads.saveLog({ jsonInput: JSON.stringify(data) }))
+    return JSON.parse(res.json)
   }
 }
 
