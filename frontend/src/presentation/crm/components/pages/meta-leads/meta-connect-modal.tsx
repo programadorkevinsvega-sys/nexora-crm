@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
-import { Key, Building2, Check, Loader2, Sparkles, HelpCircle, ExternalLink } from "lucide-react"
+import { Key, Building2, Check, Loader2, HelpCircle, ExternalLink, ArrowRight } from "lucide-react"
 import { Modal } from "@/src/presentation/crm/components/ui/Modal"
 import { Button } from "@/src/presentation/crm/components/ui/Button"
 import { useFetchMetaPages, useConnectMetaAccount } from "@/src/application/crm/di/hooks"
@@ -34,10 +34,10 @@ export function MetaConnectModal({ onClose, onSuccess }: MetaConnectModalProps) 
 
   const handleOAuth = async () => {
     try {
-      const { url } = await ApiMetaLeadsRepository.getOAuthUrl()
+      const { url } = await ApiMetaLeadsRepository.getOAuthUrl(undefined, metaAppId.trim() || undefined)
       window.location.href = url
-    } catch {
-      window.open("https://www.facebook.com/v20.0/dialog/oauth", "_blank")
+    } catch (err: any) {
+      alert(err?.message || "Ingresa tu Meta App ID registrado en developers.facebook.com o utiliza la pestaña 'Token de Acceso'")
     }
   }
 
@@ -89,12 +89,12 @@ export function MetaConnectModal({ onClose, onSuccess }: MetaConnectModalProps) 
             onClick={() => setActiveTab("token")}
             className={`px-3 py-1.5 rounded-lg font-medium transition flex items-center gap-1.5 ${
               activeTab === "token"
-                ? "bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
                 : "text-zinc-400 hover:text-zinc-200"
             }`}
           >
             <Key className="h-3.5 w-3.5" />
-            <span>Token de Acceso / System User (Recomendado)</span>
+            <span>Token de Acceso / System User (100% Directo)</span>
           </button>
           <button
             type="button"
@@ -106,7 +106,7 @@ export function MetaConnectModal({ onClose, onSuccess }: MetaConnectModalProps) 
             }`}
           >
             <FacebookIcon className="h-3.5 w-3.5" />
-            <span>OAuth 2.0 Directo</span>
+            <span>OAuth 2.0 con Meta App</span>
           </button>
         </div>
 
@@ -114,15 +114,37 @@ export function MetaConnectModal({ onClose, onSuccess }: MetaConnectModalProps) 
           <div className="space-y-4 p-4 rounded-xl border border-zinc-800 bg-zinc-950/60 text-center">
             <FacebookIcon className="h-10 w-10 text-blue-500 mx-auto" />
             <div className="space-y-1">
-              <h4 className="font-semibold text-zinc-100">Iniciar Sesión con tu Cuenta de Facebook</h4>
+              <h4 className="font-semibold text-zinc-100">Login OAuth con tu Aplicación de Meta</h4>
               <p className="text-zinc-400 max-w-sm mx-auto text-[11px]">
-                Te redirigiremos a Meta para que autorices los permisos de lectura de tus Páginas y Formularios de Lead Ads.
+                Requiere un <strong>App ID</strong> registrado en <a href="https://developers.facebook.com/apps/" target="_blank" rel="noreferrer" className="text-blue-400 underline">developers.facebook.com</a>.
               </p>
             </div>
-            <Button onClick={handleOAuth} className="bg-blue-600 hover:bg-blue-500 text-white gap-2 mx-auto">
-              <FacebookIcon className="h-4 w-4" />
-              Abrir Login de Meta Facebook
-            </Button>
+
+            <div className="max-w-xs mx-auto text-left space-y-1">
+              <label className="text-[11px] font-medium text-zinc-300">Meta App ID (Client ID):</label>
+              <input
+                type="text"
+                placeholder="e.g. 159283746192834"
+                value={metaAppId}
+                onChange={(e) => setMetaAppId(e.target.value)}
+                className="w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-1.5 text-zinc-100 font-mono text-xs focus:outline-none focus:border-blue-500"
+              />
+            </div>
+
+            <div className="pt-2 flex flex-col items-center gap-2">
+              <Button onClick={handleOAuth} className="bg-blue-600 hover:bg-blue-500 text-white gap-2">
+                <FacebookIcon className="h-4 w-4" />
+                Iniciar Sesión con Meta Facebook
+              </Button>
+
+              <button
+                type="button"
+                onClick={() => setActiveTab("token")}
+                className="text-[11px] text-cyan-400 hover:underline flex items-center gap-1 pt-1"
+              >
+                ¿No tienes App de Meta? Usa la Conexión Rápida por Token <ArrowRight className="h-3 w-3" />
+              </button>
+            </div>
           </div>
         ) : (
           <div className="space-y-4">
@@ -135,7 +157,7 @@ export function MetaConnectModal({ onClose, onSuccess }: MetaConnectModalProps) 
                   rel="noreferrer"
                   className="text-[11px] text-cyan-400 hover:underline flex items-center gap-1"
                 >
-                  <ExternalLink className="h-3 w-3" /> Graph Explorer
+                  <ExternalLink className="h-3 w-3" /> Obtener Token en Graph Explorer
                 </a>
               </div>
               <textarea

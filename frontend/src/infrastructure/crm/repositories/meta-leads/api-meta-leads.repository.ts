@@ -6,8 +6,11 @@ export const ApiMetaLeadsRepository = {
     return api.get<MetaIntegration>("/api/integrations/facebook/status")
   },
 
-  async getOAuthUrl(redirectUri?: string): Promise<{ url: string; state: string }> {
-    const qs = redirectUri ? `?redirectUri=${encodeURIComponent(redirectUri)}` : ""
+  async getOAuthUrl(redirectUri?: string, appId?: string): Promise<{ url: string; state: string }> {
+    const params = new URLSearchParams()
+    if (redirectUri) params.set("redirectUri", redirectUri)
+    if (appId) params.set("appId", appId)
+    const qs = params.toString() ? `?${params.toString()}` : ""
     return api.get<{ url: string; state: string }>(`/api/integrations/facebook/oauth-url${qs}`)
   },
 

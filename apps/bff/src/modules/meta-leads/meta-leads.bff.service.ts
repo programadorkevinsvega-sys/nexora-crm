@@ -42,9 +42,14 @@ export class MetaLeadsBffService {
     return integration as MetaIntegration
   }
 
-  getOAuthUrl(tenantId?: string, redirectUri?: string): { url: string; state: string } {
+  getOAuthUrl(tenantId?: string, redirectUri?: string, customAppId?: string): { url: string; state: string } {
     const tid = tenantId || DEFAULT_TENANT_ID
-    const appId = process.env.META_APP_ID || '104857291029384'
+    const appId = customAppId || process.env.META_APP_ID || ''
+    if (!appId) {
+      throw new NotFoundException(
+        'No se ha proporcionado un Meta App ID (Client ID). Ingresa tu Meta App ID o utiliza la conexión directa mediante Token de Acceso.',
+      )
+    }
     const redirect = redirectUri || 'http://localhost:3000/integrations/facebook/callback'
     const state = `tenant_${tid}_${Date.now()}`
     const scopes = [

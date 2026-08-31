@@ -16,9 +16,10 @@ export class MetaLeadsBffController {
   @Get('oauth-url')
   getOAuthUrl(
     @Query('redirectUri') redirectUri?: string,
+    @Query('appId') appId?: string,
     @Headers('X-Tenant-Id') tenantId?: string,
   ) {
-    return this.service.getOAuthUrl(tenantId, redirectUri)
+    return this.service.getOAuthUrl(tenantId, redirectUri, appId)
   }
 
   @Post('oauth-callback')
