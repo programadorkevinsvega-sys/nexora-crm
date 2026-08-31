@@ -43,5 +43,6 @@ export * from './developer/developer'
 export * from './integrations/integrations'
 export * from './web-forms/web-forms'
 export * from './meta-leads/meta-leads'
+export * from './social-inbox/social-inbox'
 
 
