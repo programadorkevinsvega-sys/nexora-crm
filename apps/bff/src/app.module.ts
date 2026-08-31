@@ -31,6 +31,8 @@ import { McpBffModule } from './modules/mcp/mcp.bff.module'
 import { IntegrationsBffModule } from './modules/integrations/integrations.bff.module'
 import { AuditBffModule } from './modules/audit/audit.bff.module'
 import { WebFormsBffModule } from './modules/web-forms/web-forms.bff.module'
+import { MetaLeadsBffModule } from './modules/meta-leads/meta-leads.bff.module'
+
 
 
 import { APP_INTERCEPTOR } from '@nestjs/core'
@@ -68,7 +70,9 @@ import { IdempotencyInterceptor } from './common/idempotency/idempotency.interce
     IntegrationsBffModule,
     AuditBffModule,
     WebFormsBffModule,
+    MetaLeadsBffModule,
   ],
+
 
   providers: [
     CacheService,

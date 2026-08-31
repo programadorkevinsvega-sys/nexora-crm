@@ -9,14 +9,14 @@ export class WebFormsBffController {
   constructor(private readonly service: WebFormsBffService) {}
 
   @Get()
-  async list(@Headers('X-Tenant-Id') tenantId: string): Promise<WebForm[]> {
+  async list(@Headers('X-Tenant-Id') tenantId?: string): Promise<WebForm[]> {
     return this.service.list(tenantId)
   }
 
   @Post()
   async create(
     @Body() dto: CreateWebForm,
-    @Headers('X-Tenant-Id') tenantId: string,
+    @Headers('X-Tenant-Id') tenantId?: string,
   ): Promise<WebForm> {
     return this.service.create(dto, tenantId)
   }
@@ -24,7 +24,7 @@ export class WebFormsBffController {
   @Get(':id')
   async getById(
     @Param('id', ParseUUIDPipe) id: string,
-    @Headers('X-Tenant-Id') tenantId: string,
+    @Headers('X-Tenant-Id') tenantId?: string,
   ): Promise<WebForm> {
     return this.service.getById(id, tenantId)
   }
@@ -33,7 +33,7 @@ export class WebFormsBffController {
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateWebForm,
-    @Headers('X-Tenant-Id') tenantId: string,
+    @Headers('X-Tenant-Id') tenantId?: string,
   ): Promise<WebForm> {
     return this.service.update(id, dto, tenantId)
   }
@@ -41,7 +41,7 @@ export class WebFormsBffController {
   @Delete(':id')
   async delete(
     @Param('id', ParseUUIDPipe) id: string,
-    @Headers('X-Tenant-Id') tenantId: string,
+    @Headers('X-Tenant-Id') tenantId?: string,
   ): Promise<{ success: boolean }> {
     await this.service.delete(id, tenantId)
     return { success: true }
@@ -50,8 +50,9 @@ export class WebFormsBffController {
   @Get(':id/submissions')
   async getSubmissions(
     @Param('id', ParseUUIDPipe) id: string,
-    @Headers('X-Tenant-Id') tenantId: string,
+    @Headers('X-Tenant-Id') tenantId?: string,
   ) {
     return this.service.listSubmissions(id, tenantId)
   }
+
 }

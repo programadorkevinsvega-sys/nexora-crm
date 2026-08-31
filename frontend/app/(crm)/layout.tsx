@@ -88,8 +88,10 @@ const navSections: NavSection[] = [
       { label: "Sales Teams", href: "/sales-teams", icon: Briefcase },
       { label: "Campaigns", href: "/campaigns", icon: Megaphone },
       { label: "Formularios Web", href: "/forms", icon: FileText },
+      { label: "Facebook Lead Ads", href: "/integrations/facebook", icon: Megaphone },
     ],
   },
+
 
   {
     title: "Support",

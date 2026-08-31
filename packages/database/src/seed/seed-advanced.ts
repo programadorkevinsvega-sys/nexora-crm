@@ -7,8 +7,9 @@ import {
   leadScoringRules, leadScores,
   aiDealPredictions, aiGeneratedDrafts,
   apiKeys, webhookEndpoints, webhookDeliveryLogs,
-  auditLogs, webForms,
+  auditLogs, webForms, metaIntegrations, metaLeadAdLogs,
 } from '@crm/database'
+
 
 
 export async function seedAdvancedData(
@@ -268,5 +269,58 @@ export async function seedAdvancedData(
     createdAt: now,
     updatedAt: now,
   }).onConflictDoNothing()
+
+  // 10. Meta Facebook Lead Ads Integration & Real-time Logs
+  const metaIntegrationId = crypto.randomUUID()
+  await db.insert(metaIntegrations).values({
+    id: metaIntegrationId,
+    tenantId,
+    status: 'CONNECTED',
+    metaAppId: '104857291029384',
+    metaUserId: 'meta_usr_99887711',
+    metaUserName: 'Nexora Marketing Director',
+    accessToken: 'EAAB_demo_token_nexora_enterprise_long_lived',
+    tokenExpiresAt: new Date(Date.now() + 60 * 86400000),
+    selectedPageId: 'page_33445566',
+    selectedPageName: 'Nexora Enterprise Software & AI',
+    pageAccessToken: 'EAAP_page_token_nexora_leads_retrieval',
+    adAccountId: 'act_90881122',
+    adAccountName: 'Cuenta Publicitaria Nexora Growth LATAM',
+    webhookSecret: 'fb_verify_nexora_secret_token_2026',
+    leadGenForms: [
+      { formId: 'meta_form_101', formName: 'Formulario Clientes Potenciales - Facebook Ads', status: 'ACTIVE', leadsCount: 48, defaultLeadStatus: 'NEW' },
+      { formId: 'meta_form_102', formName: 'Registro Demo Software LATAM 2026', status: 'ACTIVE', leadsCount: 26, defaultLeadStatus: 'QUALIFIED' },
+      { formId: 'meta_form_103', formName: 'Descarga Ebook Arquitectura CRM Enterprise', status: 'ACTIVE', leadsCount: 54, defaultLeadStatus: 'NEW' },
+    ],
+    autoCreateDeal: true,
+    lastSyncAt: now,
+    createdAt: now,
+    updatedAt: now,
+  }).onConflictDoNothing()
+
+  // Demo Meta Lead Ad Logs
+  const metaDemoLogs = [
+    { name: 'Carolina Herrera', em: 'carolina.herrera@techlogistics.com', cmp: 'Campaña Conversión LATAM Q3', ad: 'Anuncio Video Demo Interactivo 30s', st: 'PROCESSED' },
+    { name: 'Andrés Felipe Castro', em: 'af.castro@finovate.io', cmp: 'Campaña Retargeting High LTV', ad: 'Carrusel Beneficios Enterprise Core', st: 'PROCESSED' },
+    { name: 'Mariana Gómez', em: 'mgomez@cloudretail.co', cmp: 'Campaña AI Copilot Suite Launch', ad: 'Reels IA Predictiva para Ventas', st: 'PROCESSED' },
+  ]
+  for (let i = 0; i < metaDemoLogs.length; i++) {
+    const l = metaDemoLogs[i]
+    await db.insert(metaLeadAdLogs).values({
+      id: crypto.randomUUID(),
+      tenantId,
+      metaIntegrationId,
+      leadgenId: `leadgen_${100200300 + i}`,
+      formName: 'Formulario Clientes Potenciales - Facebook Ads',
+      campaignName: l.cmp,
+      adName: l.ad,
+      contactId: contactIds[i % contactIds.length],
+      dealId: dealIds[i % dealIds.length],
+      leadData: { fullName: l.name, email: l.em, phone: '+57 310 999 8877' },
+      status: l.st,
+      receivedAt: new Date(Date.now() - (i * 1800000 + 300000)),
+    }).onConflictDoNothing()
+  }
 }
+
 

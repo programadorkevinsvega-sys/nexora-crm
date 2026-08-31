@@ -17,6 +17,11 @@ export {
   webForms, webFormSubmissions,
 } from './schema/002-advanced/web-forms'
 
+export {
+  metaIntegrations, metaLeadAdLogs,
+} from './schema/002-advanced/meta-integrations'
+
+
 
 export {
   salesTeams, salesTeamMembers, salesQuotas, lostReasons,
