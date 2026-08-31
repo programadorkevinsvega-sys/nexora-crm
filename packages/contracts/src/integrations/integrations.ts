@@ -16,6 +16,8 @@ export const INTEGRATION_PROVIDERS = [
   'SHOPIFY_STORE',
   'HUBSPOT_SYNC',
   'ZAPIER_MAKE',
+  'DISCORD',
+  'ACCOUNTING',
 ] as const
 
 export type IntegrationProvider = typeof INTEGRATION_PROVIDERS[number]

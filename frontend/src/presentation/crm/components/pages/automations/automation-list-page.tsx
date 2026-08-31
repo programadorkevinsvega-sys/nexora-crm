@@ -113,10 +113,10 @@ export function AutomationListPage() {
                         <Badge
                           variant={
                             wf.status === "ACTIVE"
-                              ? "default"
+                              ? "success"
                               : wf.status === "PAUSED"
-                              ? "secondary"
-                              : "outline"
+                              ? "warning"
+                              : "default"
                           }
                         >
                           {wf.status}
@@ -207,12 +207,12 @@ export function AutomationListPage() {
                             <Badge
                               variant={
                                 exec.status === "COMPLETED"
-                                  ? "default"
+                                  ? "success"
                                   : exec.status === "RUNNING"
-                                  ? "secondary"
+                                  ? "info"
                                   : exec.status === "WAITING_DELAY"
-                                  ? "outline"
-                                  : "destructive"
+                                  ? "warning"
+                                  : "danger"
                               }
                             >
                               {exec.status}

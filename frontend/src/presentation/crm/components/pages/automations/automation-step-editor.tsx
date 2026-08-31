@@ -12,6 +12,7 @@ import {
   Bell,
   Clock,
   ShieldCheck,
+  Zap,
   Trash2,
   ChevronUp,
   ChevronDown,
@@ -25,6 +26,9 @@ export const ACTION_TYPES = [
   { value: "SEND_WHATSAPP", label: "💬 WhatsApp", icon: MessageSquare, color: "text-emerald-500" },
   { value: "SEND_EMAIL", label: "✉️ Email", icon: Mail, color: "text-blue-500" },
   { value: "SEND_SMS", label: "📱 SMS (Texto)", icon: Smartphone, color: "text-indigo-500" },
+  { value: "SEND_SLACK", label: "⚡ Slack (Nativo)", icon: Zap, color: "text-amber-500" },
+  { value: "SEND_DISCORD", label: "🟣 Discord (Nativo)", icon: Send, color: "text-purple-500" },
+  { value: "SYNC_ACCOUNTING", label: "📑 Factura Contable (ERP)", icon: TrendingUp, color: "text-emerald-600" },
   { value: "SEND_TELEGRAM", label: "✈️ Telegram", icon: Send, color: "text-sky-500" },
   { value: "SEND_MESSENGER", label: "💬 Messenger", icon: MessageSquare, color: "text-purple-500" },
   { value: "CREATE_TASK", label: "📋 Crear Tarea", icon: CheckSquare, color: "text-amber-500" },
@@ -85,7 +89,7 @@ export function WorkflowStepEditorCard({
           <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
             PASO {index + 1}: {step.type}
           </span>
-          <Badge variant={step.type === "ACTION" ? "default" : step.type === "DELAY" ? "secondary" : "outline"}>
+          <Badge variant={step.type === "ACTION" ? "default" : step.type === "DELAY" ? "warning" : "info"}>
             {step.type === "ACTION" ? currentAction.label : step.type === "DELAY" ? `⏱️ Espera ${step.duration || "1h"}` : "⚖️ Regla Condicional"}
           </Badge>
         </div>

@@ -9,6 +9,8 @@ import { ShopifyDispatcher } from './dispatchers/shopify.dispatcher'
 import { HubSpotDispatcher } from './dispatchers/hubspot.dispatcher'
 import { ZapierMakeDispatcher } from './dispatchers/zapier-make.dispatcher'
 import { GoogleWorkspaceDispatcher } from './dispatchers/google-workspace.dispatcher'
+import { DiscordDispatcher } from './dispatchers/discord.dispatcher'
+import { AccountingDispatcher } from './dispatchers/accounting.dispatcher'
 
 @Injectable()
 export class IntegrationsDispatcher {
@@ -24,6 +26,8 @@ export class IntegrationsDispatcher {
     private readonly hubspotDispatcher: HubSpotDispatcher,
     private readonly zapierDispatcher: ZapierMakeDispatcher,
     private readonly googleDispatcher: GoogleWorkspaceDispatcher,
+    private readonly discordDispatcher: DiscordDispatcher,
+    private readonly accountingDispatcher: AccountingDispatcher,
   ) {}
 
   async dispatchTest(
@@ -72,6 +76,14 @@ export class IntegrationsDispatcher {
       case 'OPENAI_LLM':
         return this.aiDispatcher.test(credentials, testMessage)
 
+      case 'DISCORD':
+      case 'DISCORD_APP' as any:
+        return this.discordDispatcher.test(credentials, recipient, testMessage)
+
+      case 'ACCOUNTING':
+      case 'ACCOUNTING_ERP' as any:
+        return this.accountingDispatcher.test(credentials, recipient, testMessage)
+
       case 'MICROSOFT_365':
         return {
           success: true,
@@ -89,7 +101,7 @@ export class IntegrationsDispatcher {
     }
   }
 
-  // ─── Channel dispatchers kept inline (already use real APIs) ──────────────
+  // ─── Channel dispatchers kept inline ──────────────────────────────────────
 
   private async testWhatsApp(creds: Record<string, any>, recipient: string, text: string) {
     const { phoneNumberId, accessToken } = creds

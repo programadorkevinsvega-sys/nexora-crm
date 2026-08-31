@@ -8,6 +8,7 @@ import { Card } from "@/src/presentation/crm/components/ui/Card"
 import { PageHeader } from "@/src/presentation/crm/components/common/PageHeader"
 import { ApiAutomationRepository } from "@/src/infrastructure/crm/repositories/automation/api-automation.repository"
 import { WorkflowStepEditorCard, ACTION_TYPES } from "./automation-step-editor"
+import { WorkflowCanvas } from "./workflow-canvas"
 import type { WorkflowStep, StepType } from "@/src/domain/crm/automation/workflow.entity"
 
 const TRIGGER_OPTIONS = [
@@ -25,6 +26,7 @@ export function AutomationCreatePage() {
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
   const [triggerEvent, setTriggerEvent] = useState(TRIGGER_OPTIONS[0].value)
+  const [viewMode, setViewMode] = useState<"canvas" | "list">("canvas")
   const [steps, setSteps] = useState<WorkflowStep[]>([
     {
       id: "step_1",
@@ -214,22 +216,47 @@ export function AutomationCreatePage() {
         <div className="flex items-center justify-between">
           <h3 className="text-base font-semibold flex items-center gap-2">
             <Zap className="h-4 w-4 text-primary" />
-            Secuencia de Pasos Ejecutables ({steps.length})
+            Construcción de Flujo ({steps.length} {steps.length === 1 ? "nodo" : "nodos"})
           </h3>
-          <span className="text-xs text-muted-foreground">Personaliza cada acción, retardo o condición</span>
+          <div className="flex items-center gap-1.5 bg-muted/60 p-1 rounded-lg border">
+            <Button
+              size="sm"
+              variant={viewMode === "canvas" ? "default" : "ghost"}
+              className="text-xs h-7 px-3"
+              onClick={() => setViewMode("canvas")}
+            >
+              🎨 Diseñador Canvas (Drag & Drop)
+            </Button>
+            <Button
+              size="sm"
+              variant={viewMode === "list" ? "default" : "ghost"}
+              className="text-xs h-7 px-3"
+              onClick={() => setViewMode("list")}
+            >
+              📋 Lista Estructurada
+            </Button>
+          </div>
         </div>
 
-        {/* Trigger Header Block */}
-        <div className="p-4 rounded-lg bg-primary/10 border border-primary/30 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Zap className="h-5 w-5 text-primary" />
-            <div>
-              <div className="text-xs uppercase font-bold text-primary">DISPARADOR INICIAL (TRIGGER)</div>
-              <div className="text-sm font-semibold">{TRIGGER_OPTIONS.find((t) => t.value === triggerEvent)?.label || triggerEvent}</div>
+        {viewMode === "canvas" ? (
+          <WorkflowCanvas
+            workflow={{ name: name || "Nuevo Flujo", triggerEvent }}
+            steps={steps}
+            onChangeSteps={(newSteps) => setSteps(newSteps)}
+          />
+        ) : (
+          <>
+            {/* Trigger Header Block */}
+            <div className="p-4 rounded-lg bg-primary/10 border border-primary/30 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Zap className="h-5 w-5 text-primary" />
+                <div>
+                  <div className="text-xs uppercase font-bold text-primary">DISPARADOR INICIAL (TRIGGER)</div>
+                  <div className="text-sm font-semibold">{TRIGGER_OPTIONS.find((t) => t.value === triggerEvent)?.label || triggerEvent}</div>
+                </div>
+              </div>
+              <span className="text-xs text-muted-foreground">Inicia automáticamente al emitirse el evento</span>
             </div>
-          </div>
-          <span className="text-xs text-muted-foreground">Inicia automáticamente al emitirse el evento</span>
-        </div>
 
         {/* Steps Flow */}
         <div className="space-y-3">
@@ -283,7 +310,9 @@ export function AutomationCreatePage() {
             </Button>
           </div>
         </div>
-      </div>
-    </div>
+      </>
+    )}
+  </div>
+</div>
   )
 }

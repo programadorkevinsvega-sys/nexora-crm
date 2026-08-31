@@ -89,7 +89,7 @@ export function FormBuilderPalette({ onAddField }: FormBuilderPaletteProps) {
       id: `custom_${Date.now()}`,
       label: customLabel.trim(),
       type: customType,
-      placeholder: customPlaceholder.trim() || undefined,
+      placeholder: customPlaceholder.trim() || "",
       required: customRequired,
       mappedContactField: "custom",
       options: parsedOptions,
