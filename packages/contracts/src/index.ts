@@ -41,3 +41,5 @@ export * from './ai/ai'
 export * from './common/pagination'
 export * from './developer/developer'
 export * from './integrations/integrations'
+export * from './web-forms/web-forms'
+

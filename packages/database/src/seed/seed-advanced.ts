@@ -7,8 +7,9 @@ import {
   leadScoringRules, leadScores,
   aiDealPredictions, aiGeneratedDrafts,
   apiKeys, webhookEndpoints, webhookDeliveryLogs,
-  auditLogs,
+  auditLogs, webForms,
 } from '@crm/database'
+
 
 export async function seedAdvancedData(
   db: ReturnType<typeof getDb>,
@@ -236,4 +237,36 @@ export async function seedAdvancedData(
       createdAt: new Date(Date.now() - (i * 3600000)),
     }).onConflictDoNothing()
   }
+
+  // 9. Demo Web Form (Solicitar Demo)
+  await db.insert(webForms).values({
+    id: crypto.randomUUID(),
+    tenantId,
+    name: 'Formulario de Contacto & Demo Web',
+    slug: 'solicitar-demo',
+    title: 'Solicita una Demostración Personalizada',
+    description: 'Completa tus datos y un especialista de Nexora CRM se contactará en menos de 15 minutos.',
+    fields: [
+      { id: 'f1', label: 'Nombre Completo', type: 'text', placeholder: 'Ej. Laura Martínez', required: true, mappedContactField: 'firstName', options: [] },
+      { id: 'f2', label: 'Correo Electrónico Corporativo', type: 'email', placeholder: 'laura@empresa.com', required: true, mappedContactField: 'email', options: [] },
+      { id: 'f3', label: 'Teléfono / WhatsApp', type: 'phone', placeholder: '+57 300 987 6543', required: true, mappedContactField: 'phone', options: [] },
+      { id: 'f4', label: 'Empresa', type: 'text', placeholder: 'Ej. Global Logistics S.A.', required: false, mappedContactField: 'companyName', options: [] },
+      { id: 'f5', label: 'Cargo', type: 'text', placeholder: 'Ej. Directora de Ventas', required: false, mappedContactField: 'jobTitle', options: [] },
+      { id: 'f6', label: '¿Qué solución necesitas?', type: 'select', placeholder: 'Selecciona una opción', required: false, mappedContactField: 'custom', options: ['Plan Enterprise (50+ usuarios)', 'AI Copilot & Lead Scoring', 'Migración desde Salesforce/HubSpot', 'Servidor Dedicado'] },
+      { id: 'f7', label: 'Cuéntanos sobre tu operación actual', type: 'textarea', placeholder: 'Escribe tu consulta o requerimiento...', required: false, mappedContactField: 'notes', options: [] },
+    ],
+    buttonText: 'Solicitar Demo Inmediata',
+    successMessage: '¡Excelente! Hemos recibido tu solicitud. Uno de nuestros arquitectos de soluciones se contactará contigo.',
+    leadSource: 'Formulario Web',
+    defaultLeadStatus: 'NEW',
+    primaryColor: '#06b6d4',
+    backgroundColor: '#09090b',
+    textColor: '#f4f4f5',
+    borderRadius: '16px',
+    submissionsCount: 14,
+    isActive: true,
+    createdAt: now,
+    updatedAt: now,
+  }).onConflictDoNothing()
 }
+

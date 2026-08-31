@@ -30,6 +30,8 @@ import { DeveloperBffModule } from './modules/developer/developer.bff.module'
 import { McpBffModule } from './modules/mcp/mcp.bff.module'
 import { IntegrationsBffModule } from './modules/integrations/integrations.bff.module'
 import { AuditBffModule } from './modules/audit/audit.bff.module'
+import { WebFormsBffModule } from './modules/web-forms/web-forms.bff.module'
+
 
 import { APP_INTERCEPTOR } from '@nestjs/core'
 import { IdempotencyInterceptor } from './common/idempotency/idempotency.interceptor'
@@ -65,7 +67,9 @@ import { IdempotencyInterceptor } from './common/idempotency/idempotency.interce
     McpBffModule,
     IntegrationsBffModule,
     AuditBffModule,
+    WebFormsBffModule,
   ],
+
   providers: [
     CacheService,
     {

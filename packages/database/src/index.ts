@@ -14,6 +14,11 @@ export {
 } from './schema/002-advanced/advanced'
 
 export {
+  webForms, webFormSubmissions,
+} from './schema/002-advanced/web-forms'
+
+
+export {
   salesTeams, salesTeamMembers, salesQuotas, lostReasons,
   competitors, dealCompetitors, contracts, slas, partners,
 } from './schema/003-enterprise/enterprise'
