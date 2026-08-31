@@ -5,9 +5,17 @@ export const INTEGRATION_PROVIDERS = [
   'TWILIO_SMS',
   'SMTP_EMAIL',
   'SENDGRID',
+  'AWS_SES',
   'TELEGRAM_BOT',
   'STRIPE',
   'OPENAI_LLM',
+  'META_FACEBOOK_LEADS',
+  'GOOGLE_WORKSPACE',
+  'MICROSOFT_365',
+  'SLACK_APP',
+  'SHOPIFY_STORE',
+  'HUBSPOT_SYNC',
+  'ZAPIER_MAKE',
 ] as const
 
 export type IntegrationProvider = typeof INTEGRATION_PROVIDERS[number]
@@ -47,11 +55,69 @@ export const SmtpEmailConfigSchema = z.object({
 })
 export type SmtpEmailConfig = z.infer<typeof SmtpEmailConfigSchema>
 
+export const AwsSesConfigSchema = z.object({
+  accessKeyId: z.string().min(1, 'AWS Access Key ID is required'),
+  secretAccessKey: z.string().min(1, 'AWS Secret Access Key is required'),
+  region: z.string().default('us-east-1'),
+  fromEmail: z.string().email('Valid verified from email is required'),
+  fromName: z.string().default('Nexora CRM'),
+})
+export type AwsSesConfig = z.infer<typeof AwsSesConfigSchema>
+
 export const TelegramBotConfigSchema = z.object({
   botToken: z.string().min(1, 'Telegram Bot Token is required'),
   botUsername: z.string().optional(),
 })
 export type TelegramBotConfig = z.infer<typeof TelegramBotConfigSchema>
+
+export const StripeConfigSchema = z.object({
+  publishableKey: z.string().min(1, 'Publishable Key is required'),
+  secretKey: z.string().min(1, 'Secret Key is required'),
+  webhookSecret: z.string().optional(),
+  currency: z.string().default('USD'),
+})
+export type StripeConfig = z.infer<typeof StripeConfigSchema>
+
+export const GoogleWorkspaceConfigSchema = z.object({
+  clientId: z.string().min(1, 'Google Client ID is required'),
+  clientSecret: z.string().min(1, 'Google Client Secret is required'),
+  redirectUri: z.string().default('http://localhost:3000/api/auth/callback/google'),
+  syncCalendar: z.boolean().default(true),
+  syncGmail: z.boolean().default(true),
+})
+export type GoogleWorkspaceConfig = z.infer<typeof GoogleWorkspaceConfigSchema>
+
+export const SlackConfigSchema = z.object({
+  botToken: z.string().min(1, 'Slack Bot Token (xoxb-...) is required'),
+  webhookUrl: z.string().url().optional(),
+  defaultChannel: z.string().default('#general'),
+  notifyWonDeals: z.boolean().default(true),
+  notifyNewLeads: z.boolean().default(true),
+})
+export type SlackConfig = z.infer<typeof SlackConfigSchema>
+
+export const ShopifyConfigSchema = z.object({
+  shopUrl: z.string().min(1, 'Shop URL (*.myshopify.com) is required'),
+  accessToken: z.string().min(1, 'Admin API Access Token is required'),
+  syncCustomers: z.boolean().default(true),
+  syncOrdersAsDeals: z.boolean().default(true),
+})
+export type ShopifyConfig = z.infer<typeof ShopifyConfigSchema>
+
+export const HubSpotConfigSchema = z.object({
+  accessToken: z.string().min(1, 'HubSpot Private App Access Token is required'),
+  syncContacts: z.boolean().default(true),
+  syncCompanies: z.boolean().default(true),
+  syncDeals: z.boolean().default(true),
+})
+export type HubSpotConfig = z.infer<typeof HubSpotConfigSchema>
+
+export const ZapierMakeConfigSchema = z.object({
+  webhookUrl: z.string().url('Valid Webhook URL is required'),
+  apiKey: z.string().optional(),
+  enabledEvents: z.array(z.string()).default(['contact.created', 'deal.won']),
+})
+export type ZapierMakeConfig = z.infer<typeof ZapierMakeConfigSchema>
 
 export const SaveIntegrationSchema = z.object({
   provider: z.enum(INTEGRATION_PROVIDERS),
