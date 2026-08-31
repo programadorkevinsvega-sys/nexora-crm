@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { getDb, knowledgeBaseArticles, products } from '@crm/database'
-import { eq, and } from 'drizzle-orm'
+import { ApiCoreGrpcClient } from '../../../common/grpc/api-core-grpc.client'
 
 export interface KnowledgeChunk {
   id: string
@@ -20,9 +19,7 @@ export interface GroundedReplyResult {
 export class RagService {
   private readonly logger = new Logger(RagService.name)
 
-  private get db() {
-    return getDb()
-  }
+  constructor(private readonly api: ApiCoreGrpcClient) {}
 
   // Tokenize and compute cosine / BM25 term overlap score
   private computeSimilarity(query: string, text: string): number {
@@ -43,35 +40,27 @@ export class RagService {
     const chunks: KnowledgeChunk[] = []
 
     try {
-      // 1. Fetch published knowledge base articles
-      const articles = await this.db
-        .select()
-        .from(knowledgeBaseArticles)
-        .where(and(eq(knowledgeBaseArticles.tenantId, tenantId), eq(knowledgeBaseArticles.isPublished, true)))
-        .limit(30)
+      // 1. Fetch published knowledge base articles via gRPC
+      const articles = await this.api.listKbArticles(tenantId, { publicOnly: true })
 
-      for (const art of articles) {
-        const textToMatch = `${art.title} ${art.summary || ''} ${art.contentMarkdown.slice(0, 1000)}`
+      for (const art of articles || []) {
+        const textToMatch = `${art.title} ${art.summary || ''} ${(art.contentMarkdown || '').slice(0, 1000)}`
         const score = this.computeSimilarity(query, textToMatch)
         if (score > 0.05) {
           chunks.push({
             id: art.id,
             sourceType: 'ARTICLE',
             title: art.title,
-            content: art.summary || art.contentMarkdown.slice(0, 350),
+            content: art.summary || (art.contentMarkdown || '').slice(0, 350),
             score: Math.min(Number((score * 1.5).toFixed(2)), 0.99),
           })
         }
       }
 
-      // 2. Fetch products & pricing
-      const productRows = await this.db
-        .select()
-        .from(products)
-        .where(eq(products.tenantId, tenantId))
-        .limit(20)
+      // 2. Fetch products & pricing via gRPC
+      const productRows = await this.api.listProducts(tenantId)
 
-      for (const prod of productRows) {
+      for (const prod of productRows || []) {
         const textToMatch = `${prod.name} ${prod.description || ''} ${prod.sku || ''}`
         const score = this.computeSimilarity(query, textToMatch)
         if (score > 0.05) {
@@ -85,7 +74,7 @@ export class RagService {
         }
       }
     } catch (err: any) {
-      this.logger.warn(`Could not query database for RAG context: ${err.message}`)
+      this.logger.warn(`Could not query gRPC services for RAG context: ${err.message}`)
     }
 
     // Sort descending by relevance score

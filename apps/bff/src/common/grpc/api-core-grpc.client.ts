@@ -291,6 +291,18 @@ interface AuditGrpc {
   createAuditLog: (data: unknown) => Observable<{ json: string }>
 }
 
+interface SocialInboxGrpc {
+  listComments: (data: { tenantId: string; platform?: string; status?: string }) => Observable<{ jsonItems: string[] }>
+  replyComment: (data: { tenantId: string; commentId: string; replyMessage: string; repliedBy: string }) => Observable<{ json: string }>
+  insertComment: (data: { jsonInput: string }) => Observable<{ json: string }>
+  updateCommentBot: (data: { tenantId: string; commentId: string; replyMessage: string; repliedBy: string; repliedAt: string }) => Observable<{ json: string }>
+  listRules: (data: { tenantId: string }) => Observable<{ jsonItems: string[] }>
+  saveRule: (data: { jsonInput: string }) => Observable<{ json: string }>
+  deleteRule: (data: { tenantId: string; id: string }) => Observable<Record<string, never>>
+  getEnabledRulesForPlatform: (data: { tenantId: string; platform: string }) => Observable<{ jsonItems: string[] }>
+  autoCreateContact: (data: { tenantId: string; authorName: string; platform: string }) => Observable<Record<string, never>>
+}
+
 interface PaginatedResult<T> {
   data: T[]
   nextCursor: string | null
@@ -322,6 +334,7 @@ export class ApiCoreGrpcClient implements OnModuleInit {
   private ai!: AiGrpc
   private developer!: DeveloperGrpc
   private audit!: AuditGrpc
+  private socialInbox!: SocialInboxGrpc
 
   constructor(@Inject('API_CORE_GRPC') private readonly client: ClientGrpc) {}
 
@@ -350,6 +363,7 @@ export class ApiCoreGrpcClient implements OnModuleInit {
     this.ai = this.client.getService<AiGrpc>('AiService')
     this.developer = this.client.getService<DeveloperGrpc>('DeveloperService')
     this.audit = this.client.getService<AuditGrpc>('AuditService')
+    this.socialInbox = this.client.getService<SocialInboxGrpc>('SocialInboxService')
   }
 
   // ─── Companies ──────────────────────────────────────────
@@ -1951,6 +1965,51 @@ export class ApiCoreGrpcClient implements OnModuleInit {
   async getAuditStats(tenantId: string): Promise<any> {
     const res = await lastValueFrom(this.audit.getAuditStats({ tenantId }))
     return JSON.parse(res.json)
+  }
+
+  // ─── Social Inbox ──────────────────────────────────────────
+
+  async listComments(data: { tenantId: string; platform?: string; status?: string }): Promise<any[]> {
+    const res = await lastValueFrom(this.socialInbox.listComments(data))
+    return (res.jsonItems ?? []).map((j: string) => JSON.parse(j))
+  }
+
+  async replyComment(data: { tenantId: string; commentId: string; replyMessage: string; repliedBy: string }): Promise<any> {
+    const res = await lastValueFrom(this.socialInbox.replyComment(data))
+    return JSON.parse(res.json)
+  }
+
+  async insertComment(data: any): Promise<any> {
+    const res = await lastValueFrom(this.socialInbox.insertComment({ jsonInput: JSON.stringify(data) }))
+    return JSON.parse(res.json)
+  }
+
+  async updateCommentBot(data: { tenantId: string; commentId: string; replyMessage: string; repliedBy: string; repliedAt: string }): Promise<any> {
+    const res = await lastValueFrom(this.socialInbox.updateCommentBot(data))
+    return JSON.parse(res.json)
+  }
+
+  async listRules(tenantId: string): Promise<any[]> {
+    const res = await lastValueFrom(this.socialInbox.listRules({ tenantId }))
+    return (res.jsonItems ?? []).map((j: string) => JSON.parse(j))
+  }
+
+  async saveRule(data: any): Promise<any> {
+    const res = await lastValueFrom(this.socialInbox.saveRule({ jsonInput: JSON.stringify(data) }))
+    return JSON.parse(res.json)
+  }
+
+  async deleteRule(tenantId: string, id: string): Promise<void> {
+    await lastValueFrom(this.socialInbox.deleteRule({ tenantId, id }))
+  }
+
+  async getEnabledRulesForPlatform(tenantId: string, platform: string): Promise<any[]> {
+    const res = await lastValueFrom(this.socialInbox.getEnabledRulesForPlatform({ tenantId, platform }))
+    return (res.jsonItems ?? []).map((j: string) => JSON.parse(j))
+  }
+
+  async autoCreateContact(tenantId: string, authorName: string, platform: string): Promise<void> {
+    await lastValueFrom(this.socialInbox.autoCreateContact({ tenantId, authorName, platform }))
   }
 }
 

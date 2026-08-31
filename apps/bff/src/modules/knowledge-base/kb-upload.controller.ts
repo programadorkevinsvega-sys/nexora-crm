@@ -4,7 +4,7 @@ import {
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { memoryStorage } from 'multer'
-import { getDb, knowledgeBaseArticles } from '@crm/database'
+import { ApiCoreGrpcClient } from '../../common/grpc/api-core-grpc.client'
 import { KbUploadService } from './kb-upload.service'
 
 const DEFAULT_TENANT_ID = '00000000-0000-0000-0000-000000000001'
@@ -21,9 +21,11 @@ const ALLOWED_MIMES = [
 @Controller('api/kb')
 export class KbUploadController {
   private readonly logger = new Logger(KbUploadController.name)
-  private get db() { return getDb() }
 
-  constructor(private readonly uploadService: KbUploadService) {}
+  constructor(
+    private readonly uploadService: KbUploadService,
+    private readonly api: ApiCoreGrpcClient,
+  ) {}
 
   @Post('upload')
   @UseInterceptors(FileInterceptor('file', {
@@ -49,7 +51,7 @@ export class KbUploadController {
     const articleTitle = title?.trim() || result.filename.replace(/\.[^.]+$/, '').replace(/_/g, ' ')
     const slug = `${articleTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now()}`
 
-    const [article] = await this.db.insert(knowledgeBaseArticles).values({
+    const article = await this.api.createKbArticle({
       tenantId: tid,
       categoryId: categoryId || null,
       title: articleTitle,
@@ -57,9 +59,7 @@ export class KbUploadController {
       summary: `Documento importado: ${result.filename}`,
       contentMarkdown: result.extractedText,
       isPublished: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }).returning()
+    })
 
     this.logger.log(`KB article created from upload: ${article.id} (${articleTitle})`)
     return { id: article.id, title: article.title, fileUrl: result.fileUrl }

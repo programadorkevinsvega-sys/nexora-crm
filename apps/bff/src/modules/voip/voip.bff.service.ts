@@ -1,8 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common'
 import * as twilioLib from 'twilio'
-import { getDb, calls, contacts } from '@crm/database'
-import { eq, ilike } from 'drizzle-orm'
 import { IntegrationsBffService } from '../integrations/integrations.bff.service'
+import { ApiCoreGrpcClient } from '../../common/grpc/api-core-grpc.client'
 
 const twilioAny: any = (twilioLib as any).default || twilioLib
 const AccessToken = twilioAny.jwt ? twilioAny.jwt.AccessToken : twilioLib.jwt.AccessToken
@@ -16,11 +15,10 @@ const DEFAULT_USER_ID = '00000000-0000-0000-0000-000000000002'
 export class VoipBffService {
   private readonly logger = new Logger(VoipBffService.name)
 
-  constructor(private readonly integrationsService: IntegrationsBffService) {}
-
-  private get db() {
-    return getDb()
-  }
+  constructor(
+    private readonly integrationsService: IntegrationsBffService,
+    private readonly api: ApiCoreGrpcClient,
+  ) {}
 
   async getTwilioConfig(tenantId: string = DEFAULT_TENANT) {
     const creds = await this.integrationsService.getDecryptedConfig(tenantId, 'TWILIO_SMS')
@@ -90,28 +88,28 @@ export class VoipBffService {
 
     let contactId: string | null = null
     if (phoneTail) {
-      const [c] = await this.db
-        .select({ id: contacts.id })
-        .from(contacts)
-        .where(ilike(contacts.phone, `%${phoneTail}%`))
-        .limit(1)
-      if (c) contactId = c.id
+      const contactsRes = await this.api.listContacts({
+        tenantId: tid,
+        search: phoneTail,
+        limit: 1,
+      })
+      if (contactsRes.data.length > 0) {
+        contactId = contactsRes.data[0].id
+      }
     }
 
     const summary = params.recordingUrl
       ? `Llamada VoIP saliente (${duration}s). 🎙️ Grabación: ${params.recordingUrl}`
       : `Llamada VoIP saliente (${duration}s) vía WebRTC Navegador.`
 
-    await this.db.insert(calls).values({
-      id: crypto.randomUUID(),
+    await this.api.createCall({
       tenantId: tid,
-      contactId,
+      contactId: contactId || undefined,
       callType: 'OUTBOUND',
       durationSeconds: duration,
       summary,
-      happenedAt: new Date(),
+      happenedAt: new Date().toISOString(),
       authorUserId: DEFAULT_USER_ID,
-      createdAt: new Date(),
     })
 
     this.logger.log(`VoIP Call logged: SID=${params.callSid} Contact=${contactId || 'unknown'} Duration=${duration}s`)

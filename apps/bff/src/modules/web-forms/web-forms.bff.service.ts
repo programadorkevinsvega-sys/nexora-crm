@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common'
-import { getDb, webForms, webFormSubmissions, contacts, tags, contactTags } from '@crm/database'
+import { getDb, webForms, webFormSubmissions } from '@crm/database'
 import { eq, and, desc, sql } from 'drizzle-orm'
+import { ApiCoreGrpcClient } from '../../common/grpc/api-core-grpc.client'
 import type { CreateWebForm, UpdateWebForm, WebForm, FormField } from '@crm/contracts'
 
 const DEFAULT_TENANT_ID = '00000000-0000-0000-0000-000000000001'
@@ -9,6 +10,10 @@ const DEFAULT_TENANT_ID = '00000000-0000-0000-0000-000000000001'
 export class WebFormsBffService {
   private readonly logger = new Logger(WebFormsBffService.name)
 
+  constructor(private readonly api: ApiCoreGrpcClient) {}
+
+  // Keeping direct DB access to webForms and webFormSubmissions 
+  // as they are configuration data owned by this module.
   private get db() {
     return getDb()
   }
@@ -153,10 +158,8 @@ export class WebFormsBffService {
       contactPayload.firstName = contactPayload.email ? contactPayload.email.split('@')[0] : 'Lead Inbound'
     }
 
-    // 2. Insert Contact into DB
-    const contactId = crypto.randomUUID()
-    await this.db.insert(contacts).values({
-      id: contactId,
+    // 2. Insert Contact via gRPC
+    const contact = await this.api.createContact({
       tenantId: form.tenantId,
       firstName: contactPayload.firstName,
       lastName: contactPayload.lastName || null,
@@ -167,9 +170,8 @@ export class WebFormsBffService {
       leadSource: contactPayload.leadSource,
       leadStatus: contactPayload.leadStatus,
       metadata: contactPayload.metadata,
-      createdAt: now,
-      updatedAt: now,
-    }).onConflictDoNothing()
+    })
+    const contactId = contact.id
 
     // 3. Record Submission
     const submissionId = crypto.randomUUID()

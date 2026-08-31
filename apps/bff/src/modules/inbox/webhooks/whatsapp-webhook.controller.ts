@@ -1,18 +1,16 @@
 import { Controller, Get, Post, Body, Query, Res, Logger } from '@nestjs/common'
 import { Response } from 'express'
-import { getDb, whatsappMessages, contacts } from '@crm/database'
-import { eq, ilike } from 'drizzle-orm'
+import { ApiCoreGrpcClient } from '../../../common/grpc/api-core-grpc.client'
 import { CacheService } from '../../../common/cache/cache.service'
 
 @Controller('api/webhooks/whatsapp')
 export class WhatsappWebhookController {
   private readonly logger = new Logger(WhatsappWebhookController.name)
 
-  constructor(private readonly cache: CacheService) {}
-
-  private get db() {
-    return getDb()
-  }
+  constructor(
+    private readonly cache: CacheService,
+    private readonly api: ApiCoreGrpcClient,
+  ) {}
 
   @Get()
   verify(
@@ -46,31 +44,31 @@ export class WhatsappWebhookController {
 
         this.logger.log(`WhatsApp INBOUND message received from +${from}: "${text}"`)
 
-        // Match contact by phone suffix
-        let contactId: string | null = null
+        // Match contact by phone suffix via gRPC
+        let contactId: string | undefined = undefined
         const cleanPhone = from.replace(/\D/g, '')
         const phoneTail = cleanPhone.slice(-8)
 
-        const [foundContact] = await this.db
-          .select({ id: contacts.id })
-          .from(contacts)
-          .where(ilike(contacts.phone, `%${phoneTail}%`))
-          .limit(1)
-
-        if (foundContact) {
-          contactId = foundContact.id
+        try {
+          const contactResult = await this.api.listContacts({
+            tenantId,
+            search: phoneTail,
+            limit: 1,
+          })
+          if (contactResult.data && contactResult.data.length > 0) {
+            contactId = contactResult.data[0].id
+          }
+        } catch {
+          // Non-blocking contact lookup
         }
 
-        // Store inbound message directly in database
-        await this.db.insert(whatsappMessages).values({
-          id: crypto.randomUUID(),
+        // Store inbound message via Omnichannel Inbox gRPC Service
+        await this.api.sendInboxMessage({
           tenantId,
+          channel: 'WHATSAPP',
+          recipientIdentifier: from,
+          bodyText: text,
           contactId,
-          direction: 'INBOUND',
-          phoneNumber: from,
-          messageBody: text,
-          status: 'DELIVERED',
-          sentAt: new Date(),
         })
 
         // Invalidate inbox cache so real-time polling reflects new message

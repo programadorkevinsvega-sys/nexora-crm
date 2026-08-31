@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common'
-import { getDb, metaIntegrations, metaLeadAdLogs, contacts, deals, pipelines, pipelineStages } from '@crm/database'
-import { eq, and, desc, sql } from 'drizzle-orm'
+import { getDb, metaIntegrations, metaLeadAdLogs } from '@crm/database'
+import { eq, desc } from 'drizzle-orm'
+import { ApiCoreGrpcClient } from '../../common/grpc/api-core-grpc.client'
 import type {
   MetaIntegration, MetaLeadAdLog, MetaConfigUpdate, SimulateMetaLead,
   MetaLeadForm, ConnectMetaPageInput
@@ -12,10 +13,14 @@ const DEFAULT_TENANT_ID = '00000000-0000-0000-0000-000000000001'
 export class MetaLeadsBffService {
   private readonly logger = new Logger(MetaLeadsBffService.name)
 
+  constructor(private readonly api: ApiCoreGrpcClient) {}
+
   private get db() {
     return getDb()
   }
 
+  // Keeping direct DB access to metaIntegrations and metaLeadAdLogs 
+  // as they are configuration data owned by this module.
   async getStatus(tenantId?: string): Promise<MetaIntegration> {
     const tid = tenantId || DEFAULT_TENANT_ID
     let [integration] = await this.db.select().from(metaIntegrations).where(eq(metaIntegrations.tenantId, tid)).limit(1)
@@ -240,11 +245,9 @@ export class MetaLeadsBffService {
     const tid = tenantId || DEFAULT_TENANT_ID
     const integration = await this.getStatus(tid)
     const now = new Date()
-    const contactId = crypto.randomUUID()
     const names = dto.fullName.split(' ')
 
-    await this.db.insert(contacts).values({
-      id: contactId,
+    const contact = await this.api.createContact({
       tenantId: tid,
       firstName: names[0] || 'Lead',
       lastName: names.slice(1).join(' ') || null,
@@ -254,29 +257,28 @@ export class MetaLeadsBffService {
       leadSource: 'Facebook Lead Ads',
       leadStatus: 'QUALIFIED',
       metadata: { campaignName: dto.campaignName, adName: dto.adName, formName: dto.formName },
-      createdAt: now,
-      updatedAt: now,
-    }).onConflictDoNothing()
-
+    })
+    
+    const contactId = contact.id
     let dealId: string | null = null
+
     if (integration.autoCreateDeal) {
-      const [firstPipeline] = await this.db.select().from(pipelines).where(eq(pipelines.tenantId, tid)).limit(1)
+      const pipelines = await this.api.listPipelines(tid)
+      const firstPipeline = pipelines[0]
       if (firstPipeline) {
-        const [firstStage] = await this.db.select().from(pipelineStages).where(eq(pipelineStages.pipelineId, firstPipeline.id)).orderBy(pipelineStages.displayOrder).limit(1)
-        dealId = crypto.randomUUID()
-        await this.db.insert(deals).values({
-          id: dealId,
+        const board = await this.api.getPipelineBoard(tid, firstPipeline.id)
+        const firstStage = board.stages[0]
+        
+        const deal = await this.api.createDeal({
           tenantId: tid,
           pipelineId: integration.targetPipelineId || firstPipeline.id,
           stageId: integration.targetStageId || (firstStage?.id || crypto.randomUUID()),
           contactId,
           name: `Meta Lead: ${dto.fullName} — ${dto.companyName || 'B2B Enterprise'}`,
-          amount: '45000',
-          status: 'OPEN',
+          amount: 45000,
           expectedCloseDate: new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0],
-          createdAt: now,
-          updatedAt: now,
-        }).onConflictDoNothing()
+        })
+        dealId = deal.id
       }
     }
 
