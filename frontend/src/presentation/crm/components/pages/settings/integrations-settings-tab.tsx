@@ -18,9 +18,10 @@ import { HubSpotConfigModal } from "./modals/hubspot-config-modal"
 import { ZapierConfigModal } from "./modals/zapier-config-modal"
 import { AwsSesConfigModal } from "./modals/aws-ses-config-modal"
 import { TiktokConfigModal } from "./modals/tiktok-config-modal"
+import { StorageConfigModal } from "./modals/storage-config-modal"
 import {
   MessageSquare, Mail, Smartphone, Send, CreditCard,
-  RefreshCw, Sparkles, Calendar, ShoppingBag, Database, Zap, Cloud, Megaphone, FileText, Camera
+  RefreshCw, Sparkles, Calendar, ShoppingBag, Database, Zap, Cloud, Megaphone, FileText, Camera, HardDrive,
 } from "lucide-react"
 
 export function IntegrationsSettingsTab() {
@@ -261,6 +262,35 @@ export function IntegrationsSettingsTab() {
         </div>
       </div>
 
+      {/* Sección 6: Almacenamiento en la Nube */}
+      <div className="space-y-3">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400 font-mono">
+          6. Almacenamiento en la Nube (Base de Conocimiento, PDFs, Imágenes)
+        </h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <IntegrationCard
+            title="Cloudflare R2"
+            subtitle="Object Storage S3-Compatible"
+            description="Almacena archivos de la Base de Conocimiento (PDFs, DOCX, imágenes) con ancho de banda gratuito y CDN global."
+            icon={<HardDrive size={20} />}
+            iconColorClass="text-cyan-400 bg-cyan-500/10 border-cyan-500/20"
+            isConfigured={isConfigured("CLOUDFLARE_R2")}
+            onConfigure={() => setActiveModal("CLOUDFLARE_R2")}
+            configureLabel={isConfigured("CLOUDFLARE_R2") ? "Editar R2" : "Conectar Cloudflare R2"}
+          />
+          <IntegrationCard
+            title="Amazon S3"
+            subtitle="AWS Object Storage"
+            description="Almacenamiento empresarial en S3 con control granular de acceso, versionado y replicación entre regiones."
+            icon={<Cloud size={20} />}
+            iconColorClass="text-orange-400 bg-orange-500/10 border-orange-500/20"
+            isConfigured={isConfigured("AWS_S3")}
+            onConfigure={() => setActiveModal("AWS_S3")}
+            configureLabel={isConfigured("AWS_S3") ? "Editar Amazon S3" : "Conectar Amazon S3"}
+          />
+        </div>
+      </div>
+
       {/* Modals */}
       <WhatsAppConfigModal open={activeModal === "WHATSAPP_CLOUD"} onClose={() => setActiveModal(null)} onSuccess={loadStatuses} />
       <TwilioConfigModal open={activeModal === "TWILIO_SMS"} onClose={() => setActiveModal(null)} onSuccess={loadStatuses} />
@@ -275,6 +305,11 @@ export function IntegrationsSettingsTab() {
       <ZapierConfigModal open={activeModal === "ZAPIER_MAKE"} onClose={() => setActiveModal(null)} onSuccess={loadStatuses} />
       <AiConfigModal open={activeModal === "OPENAI_LLM"} onClose={() => setActiveModal(null)} onSuccess={loadStatuses} />
       <TiktokConfigModal open={activeModal === "TIKTOK_LEADS"} onClose={() => setActiveModal(null)} onSuccess={loadStatuses} />
+      <StorageConfigModal
+        open={activeModal === "CLOUDFLARE_R2" || activeModal === "AWS_S3"}
+        onClose={() => setActiveModal(null)}
+        onSuccess={loadStatuses}
+      />
     </div>
   )
 }

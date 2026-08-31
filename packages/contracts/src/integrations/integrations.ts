@@ -20,6 +20,8 @@ export const INTEGRATION_PROVIDERS = [
   'ZAPIER_MAKE',
   'DISCORD',
   'ACCOUNTING',
+  'CLOUDFLARE_R2',
+  'AWS_S3',
 ] as const
 
 export type IntegrationProvider = typeof INTEGRATION_PROVIDERS[number]
