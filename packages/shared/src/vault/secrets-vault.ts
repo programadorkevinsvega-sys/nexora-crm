@@ -16,9 +16,9 @@ export class SecretsVault {
    * Derives a tenant-isolated 256-bit encryption key using HKDF-SHA256
    */
   private static deriveKey(tenantId = 'global-vault'): Buffer {
-    const masterKey = process.env.VAULT_MASTER_KEY || process.env.JWT_SECRET || 'nexus_enterprise_master_vault_key_2026_secure_32b'
+    const masterKey = process.env.VAULT_MASTER_KEY || process.env.JWT_SECRET || 'nexora_enterprise_master_vault_key_2026_secure_32b'
     const masterBuffer = Buffer.from(masterKey, 'utf-8')
-    const salt = Buffer.from(`nexus:vault:tenant:${tenantId}`, 'utf-8')
+    const salt = Buffer.from(`nexora:vault:tenant:${tenantId}`, 'utf-8')
     const info = Buffer.from('tenant-isolated-aes-gcm-key', 'utf-8')
 
     return Buffer.from(hkdfSync('sha256', masterBuffer, salt, info, 32))

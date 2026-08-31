@@ -90,7 +90,7 @@ export function InboxPage() {
         contactId: selectedConvo.contactId || undefined,
         channel: composeChannel,
         recipientIdentifier: recipient,
-        subject: composeChannel === "EMAIL" ? composeSubject.trim() || "Respuesta Nexus CRM" : undefined,
+        subject: composeChannel === "EMAIL" ? composeSubject.trim() || "Respuesta Nexora CRM" : undefined,
         bodyText: composeBody.trim(),
       })
 

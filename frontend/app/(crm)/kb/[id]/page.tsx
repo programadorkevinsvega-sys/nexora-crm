@@ -1,7 +1,7 @@
 import { KbArticleReaderPage } from "@/src/presentation/crm/components/pages/kb/kb-article-reader-page"
 
 export const metadata = {
-  title: "Artículo de Conocimiento — Nexus CRM",
+  title: "Artículo de Conocimiento — Nexora CRM",
   description: "Centro de ayuda y base de conocimientos corporativa.",
 }
 

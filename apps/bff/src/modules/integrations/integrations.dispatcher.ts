@@ -12,7 +12,7 @@ export class IntegrationsDispatcher {
     provider: IntegrationProvider,
     credentials: Record<string, any>,
     recipient: string,
-    testMessage = 'Prueba de conexión exitosa desde Nexus CRM 🚀'
+    testMessage = 'Prueba de conexión exitosa desde Nexora CRM 🚀'
   ): Promise<{ success: boolean; message: string; details?: any }> {
     switch (provider) {
       case 'WHATSAPP_CLOUD':
@@ -167,9 +167,9 @@ export class IntegrationsDispatcher {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: `${fromName || 'Nexus CRM'} <${fromEmail}>`,
+            from: `${fromName || 'Nexora CRM'} <${fromEmail}>`,
             to: [recipient],
-            subject: 'Prueba de Conexión — Nexus CRM',
+            subject: 'Prueba de Conexión — Nexora CRM',
             text,
           }),
         })

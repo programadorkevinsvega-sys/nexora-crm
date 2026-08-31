@@ -134,9 +134,9 @@ export class DispatchWebhookEventHandler {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'User-Agent': 'Nexus-Webhook/1.0',
-          'X-Nexus-Event': event,
-          'X-Nexus-Signature': signature,
+          'User-Agent': 'Nexora-Webhook/1.0',
+          'X-Nexora-Event': event,
+          'X-Nexora-Signature': signature,
         },
         body: payloadStr,
         signal: AbortSignal.timeout(10000),

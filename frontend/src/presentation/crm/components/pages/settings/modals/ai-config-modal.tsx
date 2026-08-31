@@ -21,7 +21,7 @@ export function AiConfigModal({ open, onClose, onSuccess }: Props) {
   const [apiKey, setApiKey] = useState('')
   const [model, setModel] = useState('gpt-4o-mini')
   const [temperature, setTemperature] = useState('0.7')
-  const [testPrompt, setTestPrompt] = useState('Di "Conexión exitosa a Nexus CRM" en menos de 10 palabras')
+  const [testPrompt, setTestPrompt] = useState('Di "Conexión exitosa a Nexora CRM" en menos de 10 palabras')
   const [loading, setLoading] = useState(false)
   const [testing, setTesting] = useState(false)
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null)

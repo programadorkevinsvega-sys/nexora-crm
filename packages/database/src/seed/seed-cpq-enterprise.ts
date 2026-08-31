@@ -17,8 +17,8 @@ export async function seedCpqEnterpriseData(
 
   // 1. CPQ Products Catalog
   const productList = [
-    { sku: 'NEX-ENT-CORE', name: 'Nexus CRM Enterprise Suite (Core)', desc: 'Plataforma completa modular con soporte para 50 usuarios concurrentes.', price: '1200.00', type: 'MONTHLY_SUBSCRIPTION' },
-    { sku: 'NEX-AI-RADAR', name: 'Nexus AI Copilot & Radar Predictivo', desc: 'Módulo de Machine Learning para Deal Win Probability y generación de copys.', price: '450.00', type: 'MONTHLY_SUBSCRIPTION' },
+    { sku: 'NEX-ENT-CORE', name: 'Nexora CRM Enterprise Suite (Core)', desc: 'Plataforma completa modular con soporte para 50 usuarios concurrentes.', price: '1200.00', type: 'MONTHLY_SUBSCRIPTION' },
+    { sku: 'NEX-AI-RADAR', name: 'Nexora AI Copilot & Radar Predictivo', desc: 'Módulo de Machine Learning para Deal Win Probability y generación de copys.', price: '450.00', type: 'MONTHLY_SUBSCRIPTION' },
     { sku: 'NEX-CPQ-ENGINE', name: 'Motor de Cotizaciones Avanzadas (CPQ)', desc: 'Generador de cotizaciones con reglas de descuento y firma electrónica.', price: '350.00', type: 'MONTHLY_SUBSCRIPTION' },
     { sku: 'NEX-OMNI-INBOX', name: 'Inbox Omnicanal (WhatsApp, Email, Chat)', desc: 'Conectores en tiempo real con SLA y enrutamiento inteligente.', price: '300.00', type: 'MONTHLY_SUBSCRIPTION' },
     { sku: 'NEX-DEDICATED-NODE', name: 'Nodo de Infraestructura Dedicado', desc: 'Despliegue en clúster PostgreSQL aislado con RLS y 99.99% SLA.', price: '2500.00', type: 'MONTHLY_SUBSCRIPTION' },

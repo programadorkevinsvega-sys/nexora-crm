@@ -60,7 +60,7 @@ export function LoginPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 009 11c0-2.08-.402-4.071-1.128-5.892M12 11c0-3.517 1.009-6.799 2.753-9.571m3.44 2.04l-.054.09A13.916 13.916 0 0015 11c0 2.08.402 4.071 1.128 5.892M12 11a4 4 0 102.133-9.106A4 4 0 0012 11zm-.88-2.343a4 4 0 11-.88 2.343 4 4 0 01.88-2.343z" />
             </svg>
           </div>
-          <span className="text-lg font-bold tracking-widest text-paper">NEXUS</span>
+          <span className="text-lg font-bold tracking-widest text-paper">NEXORA</span>
         </div>
 
         {/* Hero content */}
@@ -102,7 +102,7 @@ export function LoginPage() {
 
         {/* Footer info */}
         <div className="relative z-10 text-caption text-ash">
-          &copy; {new Date().getFullYear()} Nexus CRM. Todos los derechos reservados.
+          &copy; {new Date().getFullYear()} Nexora CRM. Todos los derechos reservados.
         </div>
       </div>
 
@@ -119,7 +119,7 @@ export function LoginPage() {
             </div>
             <h2 className="text-heading font-medium tracking-tight text-paper">Iniciar sesión</h2>
             <p className="mt-2 text-sm text-ash">
-              Ingresa tus credenciales para acceder a la plataforma Nexus.
+              Ingresa tus credenciales para acceder a la plataforma Nexora.
             </p>
           </div>
 

@@ -80,7 +80,7 @@ export function Customer360Page() {
           contactId,
           channel: "EMAIL",
           recipientIdentifier: profile?.email || "cliente@example.com",
-          subject: subjectText.trim() || "Contacto Nexus CRM",
+          subject: subjectText.trim() || "Contacto Nexora CRM",
           bodyText: messageText.trim(),
         })
       }

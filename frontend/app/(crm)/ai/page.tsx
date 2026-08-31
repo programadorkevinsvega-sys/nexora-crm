@@ -1,7 +1,7 @@
 import { AiCopilotPage } from "@/src/presentation/crm/components/pages/ai/ai-copilot-page"
 
 export const metadata = {
-  title: "AI Copilot & Predictive Intelligence | Nexus CRM",
+  title: "AI Copilot & Predictive Intelligence | Nexora CRM",
   description: "Probabilidad predictiva de cierre, análisis de salud de deals y asistente inteligente de redacción.",
 }
 

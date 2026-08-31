@@ -25,7 +25,7 @@ export const WhatsAppConfigSchema = z.object({
   phoneNumberId: z.string().min(1, 'Phone Number ID is required'),
   wabaId: z.string().min(1, 'WhatsApp Business Account ID is required'),
   accessToken: z.string().min(1, 'Access Token is required'),
-  verifyToken: z.string().default('nexus_wh_verify_token'),
+  verifyToken: z.string().default('nexora_wh_verify_token'),
 })
 export type WhatsAppConfig = z.infer<typeof WhatsAppConfigSchema>
 
@@ -43,7 +43,7 @@ export const SmtpEmailConfigSchema = z.object({
   username: z.string().min(1, 'Username is required'),
   password: z.string().min(1, 'Password or App Key is required'),
   fromEmail: z.string().email('Valid from email is required'),
-  fromName: z.string().default('Nexus CRM'),
+  fromName: z.string().default('Nexora CRM'),
 })
 export type SmtpEmailConfig = z.infer<typeof SmtpEmailConfigSchema>
 

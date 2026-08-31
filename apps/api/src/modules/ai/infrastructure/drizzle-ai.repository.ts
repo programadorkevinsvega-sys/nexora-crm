@@ -177,7 +177,7 @@ export class DrizzleAiRepository extends AiRepository {
     let body = ''
 
     if (params.objective === 'FOLLOW_UP') {
-      subject = `Seguimiento sobre ${dealName} - Nexus CRM`
+      subject = `Seguimiento sobre ${dealName} - Nexora CRM`
       body = `Hola ${contactName},\n\nEspero que te encuentres muy bien. Te escribo para dar seguimiento a nuestra conversación sobre ${dealName} para ${companyName}.\n\n¿Tienes alguna duda sobre la propuesta o te gustaría que coordinemos una breve llamada de 10 minutos esta semana?\n\nQuedo atento a tus comentarios.\n\nSaludos cordiales,\nEquipo Comercial`
     } else if (params.objective === 'PROPOSAL_INTRODUCTION') {
       subject = `Propuesta Comercial Personalizada: ${dealName}`
@@ -256,7 +256,7 @@ export class DrizzleAiRepository extends AiRepository {
     const summaryText = `El contacto ${fullName} mantiene una relación activa con ${contactDeals.length} oportunidades comerciales y ${tickets.length} interacciones de soporte registradas. El balance global de satisfacción es ${sentiment.toLowerCase()}.`
     const recStrategy = openTickets > 0
       ? 'Priorizar la resolución técnica de sus tickets abiertos antes de realizar nuevas ofertas comerciales.'
-      : 'Presentar propuestas de expansión (Upsell) enfocadas en automatizaciones avanzadas de Nexus CRM.'
+      : 'Presentar propuestas de expansión (Upsell) enfocadas en automatizaciones avanzadas de Nexora CRM.'
 
     return new ContactExecutiveSummary(contactId, fullName, summaryText, sentiment, painPoints, recStrategy, new Date())
   }

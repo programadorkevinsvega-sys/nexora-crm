@@ -1,15 +1,15 @@
-export interface NexusClientConfig {
+export interface NexoraClientConfig {
   baseUrl?: string
   apiKey?: string
 }
 
-export class NexusClient {
+export class NexoraClient {
   private readonly baseUrl: string
   private readonly apiKey: string
 
-  constructor(config: NexusClientConfig = {}) {
-    this.baseUrl = (config.baseUrl || process.env.NEXUS_API_URL || 'http://localhost:3006').replace(/\/$/, '')
-    this.apiKey = config.apiKey || process.env.NEXUS_API_KEY || ''
+  constructor(config: NexoraClientConfig = {}) {
+    this.baseUrl = (config.baseUrl || process.env.NEXORA_API_URL || 'http://localhost:3006').replace(/\/$/, '')
+    this.apiKey = config.apiKey || process.env.NEXORA_API_KEY || ''
   }
 
   async request<T>(path: string, options: RequestInit = {}): Promise<T> {
@@ -29,7 +29,7 @@ export class NexusClient {
 
     if (!res.ok) {
       const errorText = await res.text()
-      throw new Error(`Nexus CRM API Error [${res.status} ${res.statusText}]: ${errorText}`)
+      throw new Error(`Nexora CRM API Error [${res.status} ${res.statusText}]: ${errorText}`)
     }
 
     const contentType = res.headers.get('content-type') || ''

@@ -25,11 +25,11 @@ async function runSeed() {
 
   // 2. Demo Users
   const usersToCreate = [
-    { email: 'demo@nexuscrm.com', firstName: 'Kevin', lastName: 'Demo (CEO)', role: 'admin', phone: '+57-300-123-4567' },
-    { email: 'admin@nexuscrm.com', firstName: 'Admin', lastName: 'Sistema', role: 'admin', phone: '+57-300-987-6543' },
-    { email: 'sarah.connor@nexuscrm.com', firstName: 'Sarah', lastName: 'Connor', role: 'manager', phone: '+1-415-555-0101' },
-    { email: 'alex.mercer@nexuscrm.com', firstName: 'Alex', lastName: 'Mercer', role: 'agent', phone: '+1-415-555-0102' },
-    { email: 'elena.rostova@nexuscrm.com', firstName: 'Elena', lastName: 'Rostova', role: 'agent', phone: '+1-415-555-0103' },
+    { email: 'demo@nexoracrm.com', firstName: 'Kevin', lastName: 'Demo (CEO)', role: 'admin', phone: '+57-300-123-4567' },
+    { email: 'admin@nexoracrm.com', firstName: 'Admin', lastName: 'Sistema', role: 'admin', phone: '+57-300-987-6543' },
+    { email: 'sarah.connor@nexoracrm.com', firstName: 'Sarah', lastName: 'Connor', role: 'manager', phone: '+1-415-555-0101' },
+    { email: 'alex.mercer@nexoracrm.com', firstName: 'Alex', lastName: 'Mercer', role: 'agent', phone: '+1-415-555-0102' },
+    { email: 'elena.rostova@nexoracrm.com', firstName: 'Elena', lastName: 'Rostova', role: 'agent', phone: '+1-415-555-0103' },
   ]
 
   const userIds: string[] = []
@@ -113,7 +113,7 @@ async function runSeed() {
   console.log('🎉 DEMO ENVIRONMENT READY FOR USE!')
   console.log('======================================================')
   console.log('🔑 Credenciales de Acceso Demo:')
-  console.log('   - Email Demo:     demo@nexuscrm.com (o admin@nexuscrm.com)')
+  console.log('   - Email Demo:     demo@nexoracrm.com (o admin@nexoracrm.com)')
   console.log('   - Contraseña:     Password123!')
   console.log('   - Tenant ID:      00000000-0000-0000-0000-000000000001')
   console.log('======================================================\n')

@@ -2,7 +2,7 @@ import { Injectable, BadRequestException } from '@nestjs/common'
 
 @Injectable()
 export class AiIntegrationDispatcher {
-  async test(creds: Record<string, any>, promptText = 'Di "Conexión exitosa a Nexus CRM" en menos de 10 palabras') {
+  async test(creds: Record<string, any>, promptText = 'Di "Conexión exitosa a Nexora CRM" en menos de 10 palabras') {
     const baseUrl = (creds.baseUrl || 'https://api.openai.com/v1').replace(/\/+$/, '')
     const apiKey = creds.apiKey || ''
     const model = creds.model || 'gpt-4o-mini'
@@ -23,7 +23,7 @@ export class AiIntegrationDispatcher {
           messages: [
             {
               role: 'system',
-              content: 'Eres el motor de Inteligencia Artificial de Nexus CRM. Responde de forma muy concisa.',
+              content: 'Eres el motor de Inteligencia Artificial de Nexora CRM. Responde de forma muy concisa.',
             },
             {
               role: 'user',

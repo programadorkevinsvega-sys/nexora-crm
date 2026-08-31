@@ -34,7 +34,7 @@ export function BillingSettingsTab() {
               <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-signal-blue/20 text-signal-blue border border-signal-blue/30 uppercase tracking-wider">
                 Plan Activo
               </span>
-              <h3 className="text-xl font-bold text-paper">Nexus Enterprise Cloud</h3>
+              <h3 className="text-xl font-bold text-paper">Nexora Enterprise Cloud</h3>
             </div>
             <p className="text-xs text-ash">
               Tenant: <code className="text-paper bg-obsidian px-1 py-0.5 rounded font-mono">{session?.companyName || session?.tenantId || 'CRM'}</code> • Licencia ilimitada de producción

@@ -22,7 +22,7 @@ export function SmtpConfigModal({ open, onClose, onSuccess }: Props) {
   const [username, setUsername] = useState('resend')
   const [password, setPassword] = useState('')
   const [fromEmail, setFromEmail] = useState('')
-  const [fromName, setFromName] = useState('Nexus CRM')
+  const [fromName, setFromName] = useState('Nexora CRM')
   const [testEmail, setTestEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [testing, setTesting] = useState(false)
@@ -148,7 +148,7 @@ export function SmtpConfigModal({ open, onClose, onSuccess }: Props) {
           </div>
           <div>
             <label className="text-ash mb-1 block">Nombre Remitente (From Name)</label>
-            <Input value={fromName} onChange={(e) => setFromName(e.target.value)} placeholder="Nexus CRM" required />
+            <Input value={fromName} onChange={(e) => setFromName(e.target.value)} placeholder="Nexora CRM" required />
           </div>
         </div>
 

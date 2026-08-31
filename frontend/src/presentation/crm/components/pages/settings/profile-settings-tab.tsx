@@ -27,7 +27,7 @@ export function ProfileSettingsTab() {
           setEmail(parsed.email || session.userEmail || '')
           setJobTitle(parsed.jobTitle || 'Administrador')
           setPhone(parsed.phone || '')
-          setSignature(parsed.signature || `--\n**${session.userName || 'Usuario'}**\n${session.companyName || 'Nexus CRM'}`)
+          setSignature(parsed.signature || `--\n**${session.userName || 'Usuario'}**\n${session.companyName || 'Nexora CRM'}`)
           return
         } catch (_) {}
       }
@@ -35,7 +35,7 @@ export function ProfileSettingsTab() {
       setFullName(session.userName || '')
       setEmail(session.userEmail || '')
       setJobTitle('Administrador')
-      setSignature(`--\n**${session.userName || 'Usuario'}**\n${session.companyName || 'Nexus CRM'}`)
+      setSignature(`--\n**${session.userName || 'Usuario'}**\n${session.companyName || 'Nexora CRM'}`)
     }
   }, [session])
 

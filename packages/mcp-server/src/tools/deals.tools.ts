@@ -1,10 +1,10 @@
 import { z } from 'zod'
-import { NexusClient } from '../client/nexus-client'
+import { NexoraClient } from '../client/nexora-client'
 
-export function registerDealsTools(client: NexusClient) {
+export function registerDealsTools(client: NexoraClient) {
   return [
     {
-      name: 'nexus_list_deals',
+      name: 'nexora_list_deals',
       description: 'List commercial deals from the CRM pipeline with optional status or pipeline filters.',
       inputSchema: z.object({
         pipelineId: z.string().uuid().optional().describe('Filter deals by pipeline UUID'),
@@ -21,7 +21,7 @@ export function registerDealsTools(client: NexusClient) {
       },
     },
     {
-      name: 'nexus_get_deal',
+      name: 'nexora_get_deal',
       description: 'Get details of a specific deal by its UUID.',
       inputSchema: z.object({
         id: z.string().uuid().describe('Deal UUID'),
@@ -32,7 +32,7 @@ export function registerDealsTools(client: NexusClient) {
       },
     },
     {
-      name: 'nexus_create_deal',
+      name: 'nexora_create_deal',
       description: 'Create a new deal opportunity in a sales pipeline.',
       inputSchema: z.object({
         name: z.string().min(1).describe('Deal name (e.g. Acme Corp Enterprise License)'),
@@ -49,7 +49,7 @@ export function registerDealsTools(client: NexusClient) {
       },
     },
     {
-      name: 'nexus_move_deal_stage',
+      name: 'nexora_move_deal_stage',
       description: 'Move a deal to a different stage in the pipeline board.',
       inputSchema: z.object({
         id: z.string().uuid().describe('Deal UUID'),
@@ -61,7 +61,7 @@ export function registerDealsTools(client: NexusClient) {
       },
     },
     {
-      name: 'nexus_win_deal',
+      name: 'nexora_win_deal',
       description: 'Mark a deal opportunity as WON (closed won).',
       inputSchema: z.object({
         id: z.string().uuid().describe('Deal UUID'),
@@ -73,7 +73,7 @@ export function registerDealsTools(client: NexusClient) {
       },
     },
     {
-      name: 'nexus_lose_deal',
+      name: 'nexora_lose_deal',
       description: 'Mark a deal opportunity as LOST with a reason and notes.',
       inputSchema: z.object({
         id: z.string().uuid().describe('Deal UUID'),

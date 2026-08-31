@@ -48,7 +48,7 @@ describe('KnowledgeBaseController (e2e - NestJS TestingModule)', () => {
     'Cómo conectar tu cuenta de email', 'como-conectar-email',
     'Guía paso a paso para integrar email',
     '## Introducción\nConecta tu cuenta de Gmail o Outlook en 3 pasos...',
-    true, 234, 47, 3, ['email', 'configuración'], 'Equipo Nexus CRM',
+    true, 234, 47, 3, ['email', 'configuración'], 'Equipo Nexora CRM',
     new Date(), new Date(),
   )
 
@@ -197,7 +197,7 @@ describe('KnowledgeBaseController (e2e - NestJS TestingModule)', () => {
         ART_ID, TENANT, CAT_ID, 'Primeros Pasos',
         'Cómo conectar tu cuenta de email', 'como-conectar-email',
         'Guía paso a paso', '## Introducción\nConecta tu cuenta...',
-        true, 235, 48, 3, ['email'], 'Equipo Nexus CRM', new Date(), new Date(),
+        true, 235, 48, 3, ['email'], 'Equipo Nexora CRM', new Date(), new Date(),
       )
       mockVoteArtHandler.execute.mockResolvedValue(updatedArticle)
 
@@ -212,7 +212,7 @@ describe('KnowledgeBaseController (e2e - NestJS TestingModule)', () => {
         ART_ID, TENANT, CAT_ID, 'Primeros Pasos',
         'Cómo conectar tu cuenta de email', 'como-conectar-email',
         'Guía paso a paso', '## Introducción\nConecta tu cuenta...',
-        true, 235, 47, 4, ['email'], 'Equipo Nexus CRM', new Date(), new Date(),
+        true, 235, 47, 4, ['email'], 'Equipo Nexora CRM', new Date(), new Date(),
       )
       mockVoteArtHandler.execute.mockResolvedValue(updatedArticle)
 

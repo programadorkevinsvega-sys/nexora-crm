@@ -1,11 +1,11 @@
 {
   "name": "@crm/mcp-server",
   "version": "1.0.0",
-  "description": "Nexus CRM Model Context Protocol (MCP) Server for AI Agents and LLMs",
+  "description": "Nexora CRM Model Context Protocol (MCP) Server for AI Agents and LLMs",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "nexus-mcp": "./dist/index.js"
+    "nexora-mcp": "./dist/index.js"
   },
   "scripts": {
     "build": "tsc",

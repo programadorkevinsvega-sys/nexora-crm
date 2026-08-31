@@ -1,7 +1,7 @@
 import { AuditLogsPage } from "@/src/presentation/crm/components/pages/audit/audit-logs-page"
 
 export const metadata = {
-  title: "Auditoría & Seguridad — Nexus CRM",
+  title: "Auditoría & Seguridad — Nexora CRM",
   description: "Registro y trazabilidad de eventos y cambios de seguridad corporativos.",
 }
 

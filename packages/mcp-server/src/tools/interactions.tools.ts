@@ -1,10 +1,10 @@
 import { z } from 'zod'
-import { NexusClient } from '../client/nexus-client'
+import { NexoraClient } from '../client/nexora-client'
 
-export function registerInteractionsTools(client: NexusClient) {
+export function registerInteractionsTools(client: NexoraClient) {
   return [
     {
-      name: 'nexus_create_note',
+      name: 'nexora_create_note',
       description: 'Create and attach an internal note to a contact, deal, or company.',
       inputSchema: z.object({
         content: z.string().min(1).describe('Note markdown or plain text content'),
@@ -18,7 +18,7 @@ export function registerInteractionsTools(client: NexusClient) {
       },
     },
     {
-      name: 'nexus_create_task',
+      name: 'nexora_create_task',
       description: 'Create a commercial task or follow-up reminder.',
       inputSchema: z.object({
         title: z.string().min(1).describe('Task title'),
@@ -34,7 +34,7 @@ export function registerInteractionsTools(client: NexusClient) {
       },
     },
     {
-      name: 'nexus_log_call',
+      name: 'nexora_log_call',
       description: 'Log an outbound or inbound phone call interaction with duration and outcome.',
       inputSchema: z.object({
         contactId: z.string().uuid().describe('Contact UUID'),

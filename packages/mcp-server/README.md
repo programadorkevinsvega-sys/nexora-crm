@@ -1,28 +1,28 @@
-# Nexus CRM — Model Context Protocol (MCP) Server 🤖
+# Nexora CRM — Model Context Protocol (MCP) Server 🤖
 
-El servidor **Nexus CRM MCP** permite a agentes de Inteligencia Artificial y Modelos de Lenguaje (como **Claude Desktop**, **Cursor**, **Antigravity** o agentes autónomos) interactuar de forma nativa con toda la plataforma Nexus CRM a través de lenguaje natural.
+El servidor **Nexora CRM MCP** permite a agentes de Inteligencia Artificial y Modelos de Lenguaje (como **Claude Desktop**, **Cursor**, **Antigravity** o agentes autónomos) interactuar de forma nativa con toda la plataforma Nexora CRM a través de lenguaje natural.
 
 ---
 
 ## ⚡ Capacidades del Servidor MCP
 
 ### 🛠️ Herramientas (Tools)
-* **Contactos & 360:** `nexus_list_contacts`, `nexus_get_contact`, `nexus_create_contact`, `nexus_get_customer_360`
-* **Deals & Ventas:** `nexus_list_deals`, `nexus_get_deal`, `nexus_create_deal`, `nexus_move_deal_stage`, `nexus_win_deal`, `nexus_lose_deal`
-* **Interacciones:** `nexus_create_note`, `nexus_create_task`, `nexus_log_call`
-* **Helpdesk & Soporte:** `nexus_list_tickets`, `nexus_get_ticket`, `nexus_create_ticket`, `nexus_reply_ticket`
-* **CPQ & Cotizaciones:** `nexus_list_products`, `nexus_get_quote`, `nexus_create_quote`, `nexus_accept_quote`
-* **IA Predictiva & Radar:** `nexus_predict_deal_win`, `nexus_generate_message_draft`, `nexus_get_contact_summary`, `nexus_predict_churn_risk`
-* **Base de Conocimiento:** `nexus_search_knowledge_base`, `nexus_get_kb_article`
+* **Contactos & 360:** `nexora_list_contacts`, `nexora_get_contact`, `nexora_create_contact`, `nexora_get_customer_360`
+* **Deals & Ventas:** `nexora_list_deals`, `nexora_get_deal`, `nexora_create_deal`, `nexora_move_deal_stage`, `nexora_win_deal`, `nexora_lose_deal`
+* **Interacciones:** `nexora_create_note`, `nexora_create_task`, `nexora_log_call`
+* **Helpdesk & Soporte:** `nexora_list_tickets`, `nexora_get_ticket`, `nexora_create_ticket`, `nexora_reply_ticket`
+* **CPQ & Cotizaciones:** `nexora_list_products`, `nexora_get_quote`, `nexora_create_quote`, `nexora_accept_quote`
+* **IA Predictiva & Radar:** `nexora_predict_deal_win`, `nexora_generate_message_draft`, `nexora_get_contact_summary`, `nexora_predict_churn_risk`
+* **Base de Conocimiento:** `nexora_search_knowledge_base`, `nexora_get_kb_article`
 
 ### 📦 Recursos (Resources)
-* `nexus://contacts/recent` — Lista en tiempo real de contactos recientes
-* `nexus://deals/pipeline` — Oportunidades activas en el pipeline de ventas
-* `nexus://kb/articles` — Índice de artículos de ayuda publicados
+* `nexora://contacts/recent` — Lista en tiempo real de contactos recientes
+* `nexora://deals/pipeline` — Oportunidades activas en el pipeline de ventas
+* `nexora://kb/articles` — Índice de artículos de ayuda publicados
 
 ### 💬 Flujos Predefinidos (Prompts)
-* `nexus_deal_review` — Auditoría comercial de oportunidad con probabilidad de victoria
-* `nexus_customer_health_check` — Análisis de salud del cliente, sentimiento y riesgo de churn
+* `nexora_deal_review` — Auditoría comercial de oportunidad con probabilidad de victoria
+* `nexora_customer_health_check` — Análisis de salud del cliente, sentimiento y riesgo de churn
 
 ---
 
@@ -31,8 +31,8 @@ El servidor **Nexus CRM MCP** permite a agentes de Inteligencia Artificial y Mod
 ### Variables de Entorno
 Crea un archivo `.env` o pásalas en la configuración de tu cliente:
 ```env
-NEXUS_API_URL=http://localhost:3006
-NEXUS_API_KEY=nex_live_tu_clave_de_api_aqui
+NEXORA_API_URL=http://localhost:3006
+NEXORA_API_KEY=nex_live_tu_clave_de_api_aqui
 ```
 
 ---
@@ -47,14 +47,14 @@ Agrega lo siguiente en tu archivo de configuración de Claude Desktop:
 ```json
 {
   "mcpServers": {
-    "nexus-crm": {
+    "nexora-crm": {
       "command": "node",
       "args": [
         "/ruta/a/crm-service/packages/mcp-server/dist/index.js"
       ],
       "env": {
-        "NEXUS_API_URL": "http://localhost:3006",
-        "NEXUS_API_KEY": "nex_live_xxxxxxxxxxxxxxxxxxxxxxxx"
+        "NEXORA_API_URL": "http://localhost:3006",
+        "NEXORA_API_KEY": "nex_live_xxxxxxxxxxxxxxxxxxxxxxxx"
       }
     }
   }
@@ -70,12 +70,12 @@ En el archivo `.cursor/mcp.json` de tu workspace:
 ```json
 {
   "mcpServers": {
-    "nexus-crm": {
+    "nexora-crm": {
       "command": "node",
       "args": ["packages/mcp-server/dist/index.js"],
       "env": {
-        "NEXUS_API_URL": "http://localhost:3006",
-        "NEXUS_API_KEY": "nex_live_xxxxxxxxxxxxxxxxxxxxxxxx"
+        "NEXORA_API_URL": "http://localhost:3006",
+        "NEXORA_API_KEY": "nex_live_xxxxxxxxxxxxxxxxxxxxxxxx"
       }
     }
   }

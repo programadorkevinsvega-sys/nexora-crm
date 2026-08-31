@@ -108,7 +108,7 @@ export function DeveloperDocsTab() {
             <Shield size={16} /> Firma HMAC-SHA256
           </div>
           <p className="text-xs text-ash">
-            Webhooks salientes con cabecera <code className="text-paper bg-obsidian px-1 py-0.5 rounded">X-Nexus-Signature: sha256=...</code>
+            Webhooks salientes con cabecera <code className="text-paper bg-obsidian px-1 py-0.5 rounded">X-Nexora-Signature: sha256=...</code>
           </p>
         </div>
       </div>

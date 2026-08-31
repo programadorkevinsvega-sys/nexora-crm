@@ -1,10 +1,10 @@
 import { z } from 'zod'
-import { NexusClient } from '../client/nexus-client'
+import { NexoraClient } from '../client/nexora-client'
 
-export function registerCpqTools(client: NexusClient) {
+export function registerCpqTools(client: NexoraClient) {
   return [
     {
-      name: 'nexus_list_products',
+      name: 'nexora_list_products',
       description: 'Query product catalog, price lists, SKU codes, and descriptions in the CRM.',
       inputSchema: z.object({}),
       handler: async () => {
@@ -13,7 +13,7 @@ export function registerCpqTools(client: NexusClient) {
       },
     },
     {
-      name: 'nexus_get_quote',
+      name: 'nexora_get_quote',
       description: 'Get quote details including line items, discounts, taxes, and grand total.',
       inputSchema: z.object({
         id: z.string().uuid().describe('Quote UUID'),
@@ -24,7 +24,7 @@ export function registerCpqTools(client: NexusClient) {
       },
     },
     {
-      name: 'nexus_create_quote',
+      name: 'nexora_create_quote',
       description: 'Generate a new CPQ quote with valid period and terms.',
       inputSchema: z.object({
         quoteNumber: z.string().min(1).describe('Unique quote code/number (e.g. Q-2026-001)'),
@@ -41,7 +41,7 @@ export function registerCpqTools(client: NexusClient) {
       },
     },
     {
-      name: 'nexus_accept_quote',
+      name: 'nexora_accept_quote',
       description: 'Accept a formal CPQ quote to advance deal or initiate contracting.',
       inputSchema: z.object({
         id: z.string().uuid().describe('Quote UUID'),

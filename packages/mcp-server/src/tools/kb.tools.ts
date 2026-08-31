@@ -1,10 +1,10 @@
 import { z } from 'zod'
-import { NexusClient } from '../client/nexus-client'
+import { NexoraClient } from '../client/nexora-client'
 
-export function registerKbTools(client: NexusClient) {
+export function registerKbTools(client: NexoraClient) {
   return [
     {
-      name: 'nexus_search_knowledge_base',
+      name: 'nexora_search_knowledge_base',
       description: 'Search public knowledge base articles for help, troubleshooting, or product FAQs.',
       inputSchema: z.object({
         search: z.string().optional().describe('Search keyword or topic query'),
@@ -19,7 +19,7 @@ export function registerKbTools(client: NexusClient) {
       },
     },
     {
-      name: 'nexus_get_kb_article',
+      name: 'nexora_get_kb_article',
       description: 'Retrieve full article content in Markdown format by article UUID or slug.',
       inputSchema: z.object({
         idOrSlug: z.string().min(1).describe('Article UUID or slug'),

@@ -188,7 +188,7 @@ export function SecuritySettingsTab() {
               <span className="text-paper font-medium">Usuario:</span> {session?.userName || 'Usuario'} ({session?.userEmail || '—'})
             </div>
             <div>
-              <span className="text-paper font-medium">Empresa:</span> {session?.companyName || 'Nexus CRM'}
+              <span className="text-paper font-medium">Empresa:</span> {session?.companyName || 'Nexora CRM'}
             </div>
           </div>
         </div>

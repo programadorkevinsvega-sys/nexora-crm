@@ -231,7 +231,7 @@ function Header() {
             <div className="absolute right-0 mt-2 w-52 rounded-lg border border-steel bg-iron p-1 shadow-lg z-50 animate-in fade-in slide-in-from-top-1 duration-100">
               <div className="px-3 py-2 text-caption text-ash border-b border-steel/50">
                 <p className="font-semibold text-paper truncate">{session?.userName || session?.userEmail || "Usuario"}</p>
-                <p className="text-[11px] text-signal-blue truncate">{session?.companyName || "Nexus CRM"}</p>
+                <p className="text-[11px] text-signal-blue truncate">{session?.companyName || "Nexora CRM"}</p>
                 {session?.userEmail && <p className="text-[10px] text-ash truncate">{session.userEmail}</p>}
               </div>
               <button

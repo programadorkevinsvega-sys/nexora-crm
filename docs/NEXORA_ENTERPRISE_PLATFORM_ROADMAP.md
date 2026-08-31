@@ -1,13 +1,13 @@
-# 🌐 Nexus CRM — Master Roadmap: Customer Engagement, CPQ & Revenue Automation Platform
+# 🌐 Nexora CRM — Master Roadmap: Customer Engagement, CPQ & Revenue Automation Platform
 
-Este documento define la arquitectura integral, modelo de datos y plan de ejecución por fases para consolidar Nexus CRM como una **Plataforma Integral de Automatización de Ingresos, CPQ, E-Signature, API Pública y Analítica Avanzada (Revenue & Customer Engagement Platform)**.
+Este documento define la arquitectura integral, modelo de datos y plan de ejecución por fases para consolidar Nexora CRM como una **Plataforma Integral de Automatización de Ingresos, CPQ, E-Signature, API Pública y Analítica Avanzada (Revenue & Customer Engagement Platform)**.
 
 ---
 
 ## 🏛️ 1. Arquitectura General del Ecosistema
 
 ```text
-                                         NEXUS ENTERPRISE PLATFORM
+                                         NEXORA ENTERPRISE PLATFORM
                                                      │
  ┌───────────────────┬───────────────────┬───────────┴───────────┬───────────────────┬───────────────────┐
  │                   │                   │                       │                   │                   │
@@ -26,7 +26,7 @@ CRM CORE        AUTOMATION          CPQ & DOCUMENTS         INTELLIGENCE        
 
 ```mermaid
 gantt
-    title Plan Maestro Nexus Enterprise Platform
+    title Plan Maestro Nexora Enterprise Platform
     dateFormat  YYYY-MM-DD
     section Fase 1: Workflow Engine
     Tablas, FSM & Delays BullMQ (24h)         :done, f1, 2026-09-01, 5d
@@ -106,7 +106,7 @@ Lead ➔ Opportunity ➔ Quote (CPQ) ➔ Discount Rule (>20%?) ➔ Manager Appro
 ---
 
 ### 🔹 FASE 4: API Pública Versionada (`/api/v1/*`) & Webhooks Salientes con HMAC
-**Objetivo:** Permitir a desarrolladores y plataformas externas integrar Nexus CRM de forma estándar, segura y escalable.
+**Objetivo:** Permitir a desarrolladores y plataformas externas integrar Nexora CRM de forma estándar, segura y escalable.
 
 - [ ] **4.1 API REST Pública Versionada:**
   - `POST /api/v1/contacts` / `GET /api/v1/contacts/:id`
@@ -115,7 +115,7 @@ Lead ➔ Opportunity ➔ Quote (CPQ) ➔ Discount Rule (>20%?) ➔ Manager Appro
   - Autenticación mediante API Keys (`Bearer nex_live_...`) con permisos granulares (read/write por módulo) y Rate Limiting en Redis (ej. 100 req/min).
 - [ ] **4.2 Motor de Webhooks Salientes (Outbound Webhooks):**
   - Eventos despachables: `contact.created`, `deal.stage_changed`, `deal.won`, `quote.accepted`, `contract.signed`, `ticket.created`, `payment.received`.
-  - Firma criptográfica en encabezado: `X-Nexus-Signature: sha256=...` (calculada con HMAC del payload y secret del cliente).
+  - Firma criptográfica en encabezado: `X-Nexora-Signature: sha256=...` (calculada con HMAC del payload y secret del cliente).
   - Cola de reintentos con backoff exponencial y panel de auditoría de entregas (`200 OK`, `500 Server Error`, tiempos de respuesta).
 
 ---

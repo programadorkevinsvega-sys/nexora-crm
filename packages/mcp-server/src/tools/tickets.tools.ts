@@ -1,10 +1,10 @@
 import { z } from 'zod'
-import { NexusClient } from '../client/nexus-client'
+import { NexoraClient } from '../client/nexora-client'
 
-export function registerTicketsTools(client: NexusClient) {
+export function registerTicketsTools(client: NexoraClient) {
   return [
     {
-      name: 'nexus_list_tickets',
+      name: 'nexora_list_tickets',
       description: 'List customer support tickets with optional status or priority filters.',
       inputSchema: z.object({
         status: z.enum(['OPEN', 'PENDING', 'RESOLVED', 'CLOSED']).optional().describe('Ticket status'),
@@ -21,7 +21,7 @@ export function registerTicketsTools(client: NexusClient) {
       },
     },
     {
-      name: 'nexus_get_ticket',
+      name: 'nexora_get_ticket',
       description: 'Get details of a support ticket including priority, SLA and messages.',
       inputSchema: z.object({
         id: z.string().uuid().describe('Ticket UUID'),
@@ -32,7 +32,7 @@ export function registerTicketsTools(client: NexusClient) {
       },
     },
     {
-      name: 'nexus_create_ticket',
+      name: 'nexora_create_ticket',
       description: 'Create a new support ticket on behalf of a customer.',
       inputSchema: z.object({
         subject: z.string().min(1).describe('Ticket subject or issue summary'),
@@ -46,7 +46,7 @@ export function registerTicketsTools(client: NexusClient) {
       },
     },
     {
-      name: 'nexus_reply_ticket',
+      name: 'nexora_reply_ticket',
       description: 'Add a reply message to an existing support ticket.',
       inputSchema: z.object({
         ticketId: z.string().uuid().describe('Ticket UUID'),

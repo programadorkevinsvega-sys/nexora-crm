@@ -1,5 +1,5 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common'
-import { createNexusMcpServer, SSEServerTransport } from '@crm/mcp-server'
+import { createNexoraMcpServer, SSEServerTransport } from '@crm/mcp-server'
 import type { Request, Response } from 'express'
 
 @Injectable()
@@ -18,7 +18,7 @@ export class McpBffService {
 
     this.logger.log(`New MCP SSE client connected. SessionId: ${sessionId}`)
 
-    const { server } = createNexusMcpServer({
+    const { server } = createNexoraMcpServer({
       apiKey: rawKey,
       baseUrl: 'http://localhost:3006',
     })

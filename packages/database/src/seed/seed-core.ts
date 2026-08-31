@@ -12,8 +12,8 @@ export async function seedCoreData(db: ReturnType<typeof getDb>, tenantId: strin
   // 1. Tenant & Organization Structure
   await db.insert(tenants).values({
     id: tenantId,
-    name: 'Nexus Enterprise Demo Corp',
-    legalName: 'Nexus Enterprise Global Solutions S.A.S.',
+    name: 'Nexora Enterprise Demo Corp',
+    legalName: 'Nexora Enterprise Global Solutions S.A.S.',
     taxId: 'NIT901.888.777-1',
     industryType: 'Enterprise Software & Cloud',
     status: 'ACTIVE',
@@ -190,7 +190,7 @@ export async function seedCoreData(db: ReturnType<typeof getDb>, tenantId: strin
 
   // 6. Real Deals
   const dealData = [
-    { name: 'Stripe LATAM — Nexus Enterprise Core + AI Radar', amt: '85000', stg: 4, stat: 'WON' },
+    { name: 'Stripe LATAM — Nexora Enterprise Core + AI Radar', amt: '85000', stg: 4, stat: 'WON' },
     { name: 'MercadoLibre — Migración Cloud & Helpdesk Omnicanal', amt: '145000', stg: 3, stat: 'OPEN' },
     { name: 'Nubank — Licencia Anual 250 Asientos + CPQ Dedicated', amt: '120000', stg: 4, stat: 'WON' },
     { name: 'Rappi — Automatización Comercial & Lead Scoring Engine', amt: '48000', stg: 2, stat: 'OPEN' },

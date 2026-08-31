@@ -58,10 +58,22 @@ export async function seedAdvancedData(
   await db.insert(customerMetrics).values({ id: crypto.randomUUID(), tenantId, contactId: contactIds[1], churnRiskScore: '0.12', rfmScore: '445', npsScore: 9, customerSatisfactionScore: '4.5', calculatedAt: now }).onConflictDoNothing()
 
   // 3. Affiliates
-  const progId = crypto.randomUUID()
-  await db.insert(affiliatePrograms).values({ id: progId, tenantId, name: 'Programa de Partners & Referidos Enterprise', commissionType: 'PERCENTAGE', commissionValue: '20', cookieDurationDays: 60, isMultiLevel: false, isActive: true, createdAt: now, updatedAt: now }).onConflictDoNothing()
-  const affId = crypto.randomUUID()
-  await db.insert(affiliates).values({ id: affId, tenantId, programId: progId, customerId: contactIds[0], referralCode: 'NEXUS-VIP', referralLink: 'https://nexuscrm.com/ref/NEXUS-VIP', status: 'ACTIVE', totalEarnings: '4500.00', createdAt: now, updatedAt: now }).onConflictDoNothing()
+  const existingProg = await db.query.affiliatePrograms?.findFirst?.({
+    where: (table: any, { and, eq }: any) => and(eq(table.tenantId, tenantId), eq(table.name, 'Programa de Partners & Referidos Enterprise')),
+  }).catch(() => null)
+  const progId = existingProg?.id || crypto.randomUUID()
+  if (!existingProg) {
+    await db.insert(affiliatePrograms).values({ id: progId, tenantId, name: 'Programa de Partners & Referidos Enterprise', commissionType: 'PERCENTAGE', commissionValue: '20', cookieDurationDays: 60, isMultiLevel: false, isActive: true, createdAt: now, updatedAt: now }).onConflictDoNothing()
+  }
+
+  const existingAff = await db.query.affiliates?.findFirst?.({
+    where: (table: any, { and, eq }: any) => and(eq(table.tenantId, tenantId), eq(table.referralCode, 'NEXORA-VIP')),
+  }).catch(() => null)
+  const affId = existingAff?.id || crypto.randomUUID()
+  if (!existingAff) {
+    await db.insert(affiliates).values({ id: affId, tenantId, programId: progId, customerId: contactIds[0], referralCode: 'NEXORA-VIP', referralLink: 'https://nexoracrm.com/ref/NEXORA-VIP', status: 'ACTIVE', totalEarnings: '4500.00', createdAt: now, updatedAt: now }).onConflictDoNothing()
+  }
+
   await db.insert(affiliateCommissions).values({ id: crypto.randomUUID(), tenantId, affiliateId: affId, sourceOrderId: crypto.randomUUID(), commissionAmount: '900.00', mlmLevelEarned: 0, status: 'APPROVED', approvedAt: now, createdAt: now }).onConflictDoNothing()
   await db.insert(affiliatePayouts).values({ id: crypto.randomUUID(), tenantId, affiliateId: affId, amount: '1800.00', paymentMethod: 'BANK_TRANSFER', status: 'COMPLETED', paidAt: now, createdAt: now }).onConflictDoNothing()
 
@@ -83,20 +95,25 @@ export async function seedAdvancedData(
   }
 
   // 5. Automations / Workflows
-  const wfId = crypto.randomUUID()
-  await db.insert(workflowDefinitions).values({
-    id: wfId,
-    tenantId,
-    name: 'Asignación Automática de Leads Enterprise',
-    description: 'Enruta leads con scoring alto directamente al VP Comercial.',
-    version: 1,
-    status: 'ACTIVE',
-    triggerEvent: 'crm.contact.created',
-    triggerFilter: { leadScoreGte: 50 },
-    stepsGraph: { nodes: [{ id: '1', type: 'ACTION', action: 'ASSIGN_USER' }] },
-    createdAt: now,
-    updatedAt: now,
-  }).onConflictDoNothing()
+  const existingWf = await db.query.workflowDefinitions?.findFirst?.({
+    where: (table: any, { and, eq }: any) => and(eq(table.tenantId, tenantId), eq(table.name, 'Asignación Automática de Leads Enterprise')),
+  }).catch(() => null)
+  const wfId = existingWf?.id || crypto.randomUUID()
+  if (!existingWf) {
+    await db.insert(workflowDefinitions).values({
+      id: wfId,
+      tenantId,
+      name: 'Asignación Automática de Leads Enterprise',
+      description: 'Enruta leads con scoring alto directamente al VP Comercial.',
+      version: 1,
+      status: 'ACTIVE',
+      triggerEvent: 'crm.contact.created',
+      triggerFilter: { leadScoreGte: 50 },
+      stepsGraph: { nodes: [{ id: '1', type: 'ACTION', action: 'ASSIGN_USER' }] },
+      createdAt: now,
+      updatedAt: now,
+    }).onConflictDoNothing()
+  }
 
   const execId = crypto.randomUUID()
   await db.insert(workflowExecutions).values({
@@ -148,13 +165,12 @@ export async function seedAdvancedData(
     channel: 'EMAIL',
     tone: 'PERSUASIVE',
     objective: 'Cierre de propuesta enterprise',
-    subject: 'Nexus CRM — Confirmación de Términos y Próximos Pasos para Despliegue',
-    generatedBody: 'Estimado Carlos,\n\nFue un placer conversar hoy. Como acordamos, adjuntamos la propuesta formal con el SLA 24/7 y el nodo PostgreSQL dedicado.\n\nQuedamos a tu entera disposición para dar inicio al onboarding.\n\nSaludos cordiales,\nEquipo Nexus Enterprise',
+    subject: 'Nexora CRM — Confirmación de Términos y Próximos Pasos para Despliegue',
+    generatedBody: 'Estimado Carlos,\n\nFue un placer conversar hoy. Como acordamos, adjuntamos la propuesta formal con el SLA 24/7 y el nodo PostgreSQL dedicado.\n\nQuedamos a tu entera disposición para dar inicio al onboarding.\n\nSaludos cordiales,\nEquipo Nexora Enterprise',
     createdAt: now,
   }).onConflictDoNothing()
 
   // 7. Developer Portal (API Keys & Webhooks)
-  const rawKey1 = 'nex_live_b4774af88299104c992018239012481928391823912093810293810293810293'
   await db.insert(apiKeys).values({
     id: crypto.randomUUID(),
     tenantId,
@@ -169,18 +185,23 @@ export async function seedAdvancedData(
     updatedAt: now,
   }).onConflictDoNothing()
 
-  const whId = crypto.randomUUID()
-  await db.insert(webhookEndpoints).values({
-    id: whId,
-    tenantId,
-    name: 'Webhook Servidor Corporativo',
-    url: 'https://api.empresa.com/webhooks/nexus-events',
-    secret: 'whsec_99a8b7c6d5e4f3a2b1c099887766554433221100aabbccddeeff001122334455',
-    events: ['contact.created', 'deal.stage_changed', 'deal.won', 'quote.accepted', 'contract.signed'],
-    isActive: true,
-    createdAt: now,
-    updatedAt: now,
-  }).onConflictDoNothing()
+  const existingWh = await db.query.webhookEndpoints?.findFirst?.({
+    where: (table: any, { and, eq }: any) => and(eq(table.tenantId, tenantId), eq(table.name, 'Webhook Servidor Corporativo')),
+  }).catch(() => null)
+  const whId = existingWh?.id || crypto.randomUUID()
+  if (!existingWh) {
+    await db.insert(webhookEndpoints).values({
+      id: whId,
+      tenantId,
+      name: 'Webhook Servidor Corporativo',
+      url: 'https://api.empresa.com/webhooks/nexora-events',
+      secret: 'whsec_99a8b7c6d5e4f3a2b1c099887766554433221100aabbccddeeff001122334455',
+      events: ['contact.created', 'deal.stage_changed', 'deal.won', 'quote.accepted', 'contract.signed'],
+      isActive: true,
+      createdAt: now,
+      updatedAt: now,
+    }).onConflictDoNothing()
+  }
 
   await db.insert(webhookDeliveryLogs).values({
     id: crypto.randomUUID(),

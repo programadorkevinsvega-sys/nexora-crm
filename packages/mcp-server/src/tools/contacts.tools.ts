@@ -1,11 +1,11 @@
 import { z } from 'zod'
-import { NexusClient } from '../client/nexus-client'
+import { NexoraClient } from '../client/nexora-client'
 
-export function registerContactsTools(client: NexusClient) {
+export function registerContactsTools(client: NexoraClient) {
   return [
     {
-      name: 'nexus_list_contacts',
-      description: 'List or search contacts in Nexus CRM with optional filters (search term, lead status, limit).',
+      name: 'nexora_list_contacts',
+      description: 'List or search contacts in Nexora CRM with optional filters (search term, lead status, limit).',
       inputSchema: z.object({
         search: z.string().optional().describe('Search query matching first name, last name or email'),
         leadStatus: z.string().optional().describe('Filter by status: NEW, CONTACTED, QUALIFIED, UNQUALIFIED, CONVERTED'),
@@ -21,7 +21,7 @@ export function registerContactsTools(client: NexusClient) {
       },
     },
     {
-      name: 'nexus_get_contact',
+      name: 'nexora_get_contact',
       description: 'Get detailed information for a single contact by their UUID.',
       inputSchema: z.object({
         id: z.string().uuid().describe('Contact UUID'),
@@ -32,8 +32,8 @@ export function registerContactsTools(client: NexusClient) {
       },
     },
     {
-      name: 'nexus_create_contact',
-      description: 'Create a new commercial contact in Nexus CRM.',
+      name: 'nexora_create_contact',
+      description: 'Create a new commercial contact in Nexora CRM.',
       inputSchema: z.object({
         firstName: z.string().min(1).describe('First name of the contact'),
         lastName: z.string().optional().describe('Last name of the contact'),
@@ -49,7 +49,7 @@ export function registerContactsTools(client: NexusClient) {
       },
     },
     {
-      name: 'nexus_get_customer_360',
+      name: 'nexora_get_customer_360',
       description: 'Retrieve the complete Customer 360° profile including active deals, CPQ quotes, support tickets, and recent omnichannel interactions.',
       inputSchema: z.object({
         contactId: z.string().uuid().describe('Contact UUID to aggregate 360 profile for'),

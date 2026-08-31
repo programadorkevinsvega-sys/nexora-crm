@@ -28,7 +28,7 @@ export function McpServerTab({ apiKeys }: Props) {
   const remoteSseConfig = JSON.stringify(
     {
       mcpServers: {
-        'nexus-crm-remote': {
+        'nexora-crm-remote': {
           url: 'http://localhost:3006/api/mcp/sse',
           headers: {
             Authorization: `Bearer ${keyDisplay}`,
@@ -45,13 +45,13 @@ export function McpServerTab({ apiKeys }: Props) {
   const localNpxConfig = JSON.stringify(
     {
       mcpServers: {
-        'nexus-crm-local': {
+        'nexora-crm-local': {
           command: 'node',
           args: ['/home/servidor-nitro/ARCHIVOS-KEVINS/NUEVO/DESARROLLO/crm/crm-service/packages/mcp-server/dist/index.js'],
           env: {
-            NEXUS_API_URL: 'http://localhost:3006',
-            NEXUS_API_KEY: keyDisplay,
-            ...(readOnlyMode ? { NEXUS_MCP_READONLY: 'true' } : {}),
+            NEXORA_API_URL: 'http://localhost:3006',
+            NEXORA_API_KEY: keyDisplay,
+            ...(readOnlyMode ? { NEXORA_MCP_READONLY: 'true' } : {}),
           },
         },
       },
@@ -111,7 +111,7 @@ export function McpServerTab({ apiKeys }: Props) {
               onChange={(e) => setReadOnlyMode(e.target.checked)}
               className="accent-signal-blue"
             />
-            <span className="font-medium text-emerald-400">Modo Solo Lectura Seguro (NEXUS_MCP_READONLY)</span>
+            <span className="font-medium text-emerald-400">Modo Solo Lectura Seguro (NEXORA_MCP_READONLY)</span>
           </label>
         </div>
 
@@ -186,18 +186,18 @@ export function McpServerTab({ apiKeys }: Props) {
         </h4>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 pt-1 text-xs">
           {[
-            { name: 'nexus_get_customer_360', desc: 'Perfil unificado 360° del cliente' },
-            { name: 'nexus_predict_deal_win', desc: 'Probabilidad de victoria de deal (%)' },
-            { name: 'nexus_predict_churn_risk', desc: 'Riesgo de churn y retención' },
-            { name: 'nexus_get_contact_summary', desc: 'Resumen ejecutivo con IA' },
-            { name: 'nexus_generate_message_draft', desc: 'Redactor contextual de emails' },
-            { name: 'nexus_list_contacts', desc: 'Búsqueda inteligente de contactos' },
-            { name: 'nexus_list_deals', desc: 'Listar oportunidades en pipeline' },
-            { name: 'nexus_list_tickets', desc: 'Tickets de soporte y SLA' },
-            { name: 'nexus_list_products', desc: 'Catálogo de productos y precios' },
-            { name: 'nexus_get_quote', desc: 'Desglose de cotización CPQ' },
-            { name: 'nexus_search_knowledge_base', desc: 'Búsqueda en Base de Conocimiento' },
-            { name: 'nexus_deal_review (Prompt)', desc: 'Workflow de auditoría de venta' },
+            { name: 'nexora_get_customer_360', desc: 'Perfil unificado 360° del cliente' },
+            { name: 'nexora_predict_deal_win', desc: 'Probabilidad de victoria de deal (%)' },
+            { name: 'nexora_predict_churn_risk', desc: 'Riesgo de churn y retención' },
+            { name: 'nexora_get_contact_summary', desc: 'Resumen ejecutivo con IA' },
+            { name: 'nexora_generate_message_draft', desc: 'Redactor contextual de emails' },
+            { name: 'nexora_list_contacts', desc: 'Búsqueda inteligente de contactos' },
+            { name: 'nexora_list_deals', desc: 'Listar oportunidades en pipeline' },
+            { name: 'nexora_list_tickets', desc: 'Tickets de soporte y SLA' },
+            { name: 'nexora_list_products', desc: 'Catálogo de productos y precios' },
+            { name: 'nexora_get_quote', desc: 'Desglose de cotización CPQ' },
+            { name: 'nexora_search_knowledge_base', desc: 'Búsqueda en Base de Conocimiento' },
+            { name: 'nexora_deal_review (Prompt)', desc: 'Workflow de auditoría de venta' },
           ].map((t) => (
             <div key={t.name} className="p-2.5 rounded-lg bg-obsidian border border-steel/60">
               <div className="font-mono text-signal-blue text-[11px] font-semibold">{t.name}</div>

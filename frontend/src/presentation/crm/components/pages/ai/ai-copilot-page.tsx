@@ -110,7 +110,7 @@ export function AiCopilotPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-amber-500 animate-pulse" /> Nexus AI Copilot & Predictive Intelligence
+            <Sparkles className="h-5 w-5 text-amber-500 animate-pulse" /> Nexora AI Copilot & Predictive Intelligence
           </h1>
           <p className="text-xs text-muted-foreground">
             Modelos predictivos de probabilidad de cierre, redacción asistida con contexto real y resúmenes ejecutivos.

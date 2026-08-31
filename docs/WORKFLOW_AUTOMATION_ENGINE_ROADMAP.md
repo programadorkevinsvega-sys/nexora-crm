@@ -1,13 +1,13 @@
-# 🚀 Nexus CRM — Roadmap de Implementación: Workflow Automation Engine
+# 🚀 Nexora CRM — Roadmap de Implementación: Workflow Automation Engine
 
-Este documento define la arquitectura, diseño técnico y plan por fases para implementar el **Motor de Automatizaciones y Workflows Distribuidos** de Nexus CRM, elevando la plataforma al nivel de soluciones líderes (HubSpot Workflows, ActiveCampaign) bajo arquitectura limpia (DDD, Hexagonal, SOLID y Modular Monolith).
+Este documento define la arquitectura, diseño técnico y plan por fases para implementar el **Motor de Automatizaciones y Workflows Distribuidos** de Nexora CRM, elevando la plataforma al nivel de soluciones líderes (HubSpot Workflows, ActiveCampaign) bajo arquitectura limpia (DDD, Hexagonal, SOLID y Modular Monolith).
 
 ---
 
 ## 🏛️ 1. Arquitectura de Referencia
 
 ```text
-                  NEXUS CRM BUSINESS CORE
+                  NEXORA CRM BUSINESS CORE
          (Contacts, Deals, Tickets, Quotes, Campaigns)
                              │
                              ▼ (Domain Events)

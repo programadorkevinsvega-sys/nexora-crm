@@ -9,7 +9,7 @@ import {
   ErrorCode,
   McpError,
 } from '@modelcontextprotocol/sdk/types.js'
-import { NexusClient, NexusClientConfig } from './client/nexus-client'
+import { NexoraClient, NexoraClientConfig } from './client/nexora-client'
 import { registerContactsTools } from './tools/contacts.tools'
 import { registerDealsTools } from './tools/deals.tools'
 import { registerInteractionsTools } from './tools/interactions.tools'
@@ -17,34 +17,34 @@ import { registerTicketsTools } from './tools/tickets.tools'
 import { registerCpqTools } from './tools/cpq.tools'
 import { registerAiTools } from './tools/ai.tools'
 import { registerKbTools } from './tools/kb.tools'
-import { registerNexusResources } from './resources/nexus-resources'
-import { registerNexusPrompts } from './prompts/nexus-prompts'
+import { registerNexoraResources } from './resources/nexora-resources'
+import { registerNexoraPrompts } from './prompts/nexora-prompts'
 import { zodToJsonSchema } from './utils/schema-converter'
 
-export interface NexusMcpConfig extends NexusClientConfig {
+export interface NexoraMcpConfig extends NexoraClientConfig {
   readOnly?: boolean
 }
 
 const MUTATION_TOOLS = new Set([
-  'nexus_create_contact',
-  'nexus_create_deal',
-  'nexus_move_deal_stage',
-  'nexus_win_deal',
-  'nexus_lose_deal',
-  'nexus_create_note',
-  'nexus_create_task',
-  'nexus_log_call',
-  'nexus_create_ticket',
-  'nexus_reply_ticket',
-  'nexus_create_quote',
-  'nexus_accept_quote',
+  'nexora_create_contact',
+  'nexora_create_deal',
+  'nexora_move_deal_stage',
+  'nexora_win_deal',
+  'nexora_lose_deal',
+  'nexora_create_note',
+  'nexora_create_task',
+  'nexora_log_call',
+  'nexora_create_ticket',
+  'nexora_reply_ticket',
+  'nexora_create_quote',
+  'nexora_accept_quote',
 ])
 
-export function createNexusMcpServer(config: NexusMcpConfig = {}) {
-  const isReadOnly = config.readOnly ?? (process.env.NEXUS_MCP_READONLY === 'true')
-  const client = new NexusClient(config)
+export function createNexoraMcpServer(config: NexoraMcpConfig = {}) {
+  const isReadOnly = config.readOnly ?? (process.env.NEXORA_MCP_READONLY === 'true')
+  const client = new NexoraClient(config)
   const server = new Server(
-    { name: 'nexus-crm-mcp-server', version: '1.0.0' },
+    { name: 'nexora-crm-mcp-server', version: '1.0.0' },
     { capabilities: { tools: {}, resources: {}, prompts: {} } },
   )
 
@@ -60,8 +60,8 @@ export function createNexusMcpServer(config: NexusMcpConfig = {}) {
 
   // Filter tools if in read-only mode
   const activeTools = isReadOnly ? allTools.filter((t) => !MUTATION_TOOLS.has(t.name)) : allTools
-  const resources = registerNexusResources(client)
-  const prompts = registerNexusPrompts()
+  const resources = registerNexoraResources(client)
+  const prompts = registerNexoraPrompts()
 
   // ── Tools Handlers ────────────────────────────────────
   server.setRequestHandler(ListToolsRequestSchema, async () => {
@@ -78,7 +78,7 @@ export function createNexusMcpServer(config: NexusMcpConfig = {}) {
     if (isReadOnly && MUTATION_TOOLS.has(request.params.name)) {
       throw new McpError(
         ErrorCode.InvalidRequest,
-        `Security Guardrail: "${request.params.name}" is blocked because Nexus CRM MCP is running in READ-ONLY mode.`,
+        `Security Guardrail: "${request.params.name}" is blocked because Nexora CRM MCP is running in READ-ONLY mode.`,
       )
     }
 

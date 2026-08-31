@@ -1,7 +1,7 @@
 import { Customer360Page } from "@/src/presentation/crm/components/pages/contacts/customer-360-page"
 
 export const metadata = {
-  title: "Customer 360 Hub | Nexus CRM",
+  title: "Customer 360 Hub | Nexora CRM",
   description: "Vista consolidada 360 con timeline universal de interacciones y métricas financieras.",
 }
 

@@ -32,7 +32,7 @@ const DEFAULT_PRESETS: Partial<ProductTemplate>[] = [
     defaultUnitPrice: 299,
     pricingType: "MONTHLY_SUBSCRIPTION",
     defaultTaxRate: 19,
-    defaultDescription: "Acceso completo a Nexus CRM con automatizaciones ilimitadas.",
+    defaultDescription: "Acceso completo a Nexora CRM con automatizaciones ilimitadas.",
   },
   {
     name: "Plan Enterprise Anual (ARR)",
