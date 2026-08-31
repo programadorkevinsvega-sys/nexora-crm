@@ -8,12 +8,23 @@ export class ListContactsUseCase implements IListContactsUseCase {
   constructor(private readonly contactRepository: IContactRepository) {}
 
   async execute(input: ListContactsInputDto): Promise<PaginatedContactsOutputDto> {
+    let effectiveAssignedUserId = input.assignedUserId
+    const role = (input.requestingUserRole || '').toLowerCase()
+
+    // Strict Role-Based Territorial Hierarchy (Application Domain Rule)
+    if (role === 'agent' && input.requestingUserId) {
+      // Agents strictly only see their own assigned contacts
+      effectiveAssignedUserId = input.requestingUserId
+    } else if (role === 'manager' && input.scope === 'mine' && input.requestingUserId) {
+      effectiveAssignedUserId = input.requestingUserId
+    }
+
     const result = await this.contactRepository.list(input.tenantId, {
       search: input.search,
       leadStatus: input.leadStatus,
       companyId: input.companyId,
       isStarred: input.isStarred,
-      assignedUserId: input.assignedUserId,
+      assignedUserId: effectiveAssignedUserId,
       visibleUserIds: input.visibleUserIds,
       cursor: input.cursor,
       limit: Math.min(input.limit || 20, 100),

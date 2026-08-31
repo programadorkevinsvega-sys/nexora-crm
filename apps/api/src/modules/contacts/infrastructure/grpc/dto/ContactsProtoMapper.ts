@@ -87,6 +87,9 @@ export class ContactsProtoMapper {
       isStarred: data.isStarred ?? data.is_starred,
       assignedUserId: data.assignedUserId || data.assigned_user_id,
       visibleUserIds: data.visibleUserIds || data.visible_user_ids,
+      requestingUserId: data.requestingUserId || data.requesting_user_id || data.userId || data.user_id,
+      requestingUserRole: data.requestingUserRole || data.requesting_user_role || data.userRole || data.user_role,
+      scope: data.scope,
     }
   }
 }

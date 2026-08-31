@@ -178,6 +178,14 @@ export class PipelinesGrpcController {
     contactId?: string
     companyId?: string
     assignedUserId?: string
+    requestingUserId?: string
+    requesting_user_id?: string
+    userId?: string
+    user_id?: string
+    requestingUserRole?: string
+    requesting_user_role?: string
+    userRole?: string
+    user_role?: string
     search?: string
   }) {
     const deals = await this.listDealsHandler.execute(
@@ -188,6 +196,8 @@ export class PipelinesGrpcController {
         contactId: data.contactId,
         companyId: data.companyId,
         assignedUserId: data.assignedUserId,
+        requestingUserId: data.requestingUserId || data.requesting_user_id || data.userId || data.user_id,
+        requestingUserRole: data.requestingUserRole || data.requesting_user_role || data.userRole || data.user_role,
         search: data.search,
       }),
     )

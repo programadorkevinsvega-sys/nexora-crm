@@ -7,6 +7,8 @@ export interface DealFilter {
   contactId?: string
   companyId?: string
   assignedUserId?: string
+  requestingUserId?: string
+  requestingUserRole?: string
   search?: string
 }
 

@@ -12,6 +12,9 @@ export interface ContactFilters {
   isStarred?: boolean
   assignedUserId?: string
   visibleUserIds?: string[]
+  requestingUserId?: string
+  requestingUserRole?: string
+  scope?: string
 }
 
 export interface PaginatedResult<T> {

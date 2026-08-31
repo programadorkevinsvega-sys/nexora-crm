@@ -63,7 +63,16 @@ export class ListDealsHandler {
   constructor(private readonly dealRepo: DealRepository) {}
 
   async execute(query: ListDealsQuery) {
-    return this.dealRepo.list(query.tenantId, query.filter)
+    const filter = { ...query.filter }
+    const role = (filter.requestingUserRole || '').toLowerCase()
+
+    // Strict Role-Based Territorial Hierarchy for Deals (Application Layer)
+    if (role === 'agent' && filter.requestingUserId) {
+      // Agents can strictly only view deals assigned to them
+      filter.assignedUserId = filter.requestingUserId
+    }
+
+    return this.dealRepo.list(query.tenantId, filter)
   }
 }
 

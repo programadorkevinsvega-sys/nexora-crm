@@ -6,6 +6,9 @@ export interface ListContactsInputDto {
   isStarred?: boolean
   assignedUserId?: string
   visibleUserIds?: string[]
+  requestingUserId?: string
+  requestingUserRole?: string
+  scope?: string
   cursor?: string
   limit?: number
 }

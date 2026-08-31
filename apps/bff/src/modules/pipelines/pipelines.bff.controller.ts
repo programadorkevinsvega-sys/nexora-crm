@@ -40,11 +40,9 @@ export class PipelinesBffController {
     @Headers('X-User-Id') userId?: string,
     @Headers('X-User-Role') userRole?: string,
   ): Promise<PaginatedResult<Deal>> {
-    const filters: DealFilter = DealFilterSchema.parse(raw)
-    const role = (userRole || '').toLowerCase()
-    if (role === 'agent' && userId) {
-      filters.assignedUserId = userId
-    }
+    const filters: any = DealFilterSchema.parse(raw)
+    filters.requestingUserId = userId
+    filters.requestingUserRole = userRole
     return this.service.listDeals(filters, tenantId!)
   }
 

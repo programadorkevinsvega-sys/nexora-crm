@@ -489,6 +489,9 @@ export class ApiCoreGrpcClient implements OnModuleInit {
     isStarred?: boolean
     assignedUserId?: string
     visibleUserIds?: string[]
+    requestingUserId?: string
+    requestingUserRole?: string
+    scope?: string
   }): Promise<PaginatedResult<Contact>> {
     const res = await lastValueFrom(this.contacts.listContacts(data))
     return {
@@ -585,6 +588,8 @@ export class ApiCoreGrpcClient implements OnModuleInit {
     contactId?: string
     companyId?: string
     assignedUserId?: string
+    requestingUserId?: string
+    requestingUserRole?: string
     search?: string
     cursor?: string
     limit?: number
