@@ -34,8 +34,9 @@ export function WorkflowCanvas({ workflow, steps, onChangeSteps }: WorkflowCanva
 
   // Initialize or update canvas 2D coordinates for steps
   useEffect(() => {
+    const safeSteps = Array.isArray(steps) ? steps : []
     setNodes((prev) =>
-      steps.map((step, idx) => {
+      safeSteps.map((step, idx) => {
         const existing = prev.find((p) => p.id === step.id)
         return {
           ...step,
@@ -44,7 +45,7 @@ export function WorkflowCanvas({ workflow, steps, onChangeSteps }: WorkflowCanva
         }
       })
     )
-  }, [steps.length])
+  }, [Array.isArray(steps) ? steps.length : 0])
 
   // Mouse handlers for 2D Node Movement
   const handleCanvasMouseMove = (e: React.MouseEvent) => {
@@ -94,7 +95,8 @@ export function WorkflowCanvas({ workflow, steps, onChangeSteps }: WorkflowCanva
 
   const handleConnectToNode = (targetNodeId: string) => {
     if (!drawingWire || drawingWire.fromNodeId === targetNodeId) return
-    const updated = steps.map((s) => {
+    const safeSteps = Array.isArray(steps) ? steps : []
+    const updated = safeSteps.map((s) => {
       if (s.id === drawingWire.fromNodeId) {
         if (drawingWire.fromPort === "true") return { ...s, onTrueStepId: targetNodeId }
         if (drawingWire.fromPort === "false") return { ...s, onFalseStepId: targetNodeId }
@@ -107,7 +109,8 @@ export function WorkflowCanvas({ workflow, steps, onChangeSteps }: WorkflowCanva
   }
 
   const handleDisconnect = (fromId: string, port: "output" | "true" | "false") => {
-    const updated = steps.map((s) => {
+    const safeSteps = Array.isArray(steps) ? steps : []
+    const updated = safeSteps.map((s) => {
       if (s.id === fromId) {
         if (port === "true") return { ...s, onTrueStepId: undefined }
         if (port === "false") return { ...s, onFalseStepId: undefined }
@@ -259,8 +262,15 @@ export function WorkflowCanvas({ workflow, steps, onChangeSteps }: WorkflowCanva
           <WorkflowNodeInspector
             step={nodes[selectedIdx]}
             index={selectedIdx}
-            onUpdate={(u) => onChangeSteps(steps.map((s, i) => (i === selectedIdx ? u : s)))}
-            onDelete={() => { onChangeSteps(steps.filter((_, i) => i !== selectedIdx)); setSelectedIdx(null) }}
+            onUpdate={(u) => {
+              const safe = Array.isArray(steps) ? steps : []
+              onChangeSteps(safe.map((s, i) => (i === selectedIdx ? u : s)))
+            }}
+            onDelete={() => {
+              const safe = Array.isArray(steps) ? steps : []
+              onChangeSteps(safe.filter((_, i) => i !== selectedIdx))
+              setSelectedIdx(null)
+            }}
             onClose={() => setSelectedIdx(null)}
           />
         )}

@@ -5,6 +5,15 @@ import { WorkflowStatus, WorkflowExecutionStatus, WorkflowStepStatus, WorkflowSt
 
 export class WorkflowMapper {
   static definitionToDomain(row: any): WorkflowDefinition {
+    const rawSteps = row.stepsGraph
+    const stepsGraph: WorkflowStep[] = Array.isArray(rawSteps)
+      ? rawSteps
+      : Array.isArray(rawSteps?.nodes)
+        ? rawSteps.nodes
+        : Array.isArray(rawSteps?.steps)
+          ? rawSteps.steps
+          : []
+
     return new WorkflowDefinition(
       row.id,
       row.tenantId,
@@ -14,7 +23,7 @@ export class WorkflowMapper {
       row.status as WorkflowStatus,
       row.triggerEvent,
       row.triggerFilter ?? null,
-      (row.stepsGraph as WorkflowStep[]) ?? [],
+      stepsGraph,
       new Date(row.createdAt),
       new Date(row.updatedAt),
     )

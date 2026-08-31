@@ -26,7 +26,7 @@ export function AutomationDetailPage({ id }: { id: string }) {
       const wf = await ApiAutomationRepository.getWorkflow(id)
       if (wf) {
         setWorkflow(wf)
-        setSteps(wf.stepsGraph || [])
+        setSteps(Array.isArray(wf.stepsGraph) ? wf.stepsGraph : [])
       }
     } catch (err: any) {
       setError(err?.message || "Failed to load workflow details")
@@ -128,14 +128,14 @@ export function AutomationDetailPage({ id }: { id: string }) {
         </Card>
         <Card className="p-4">
           <div className="text-xs text-muted-foreground">Total Nodos</div>
-          <div className="mt-1 font-semibold text-lg">{steps.length} nodos</div>
+          <div className="mt-1 font-semibold text-lg">{Array.isArray(steps) ? steps.length : 0} nodos</div>
         </Card>
       </div>
 
       {viewMode === "canvas" ? (
         <WorkflowCanvas
           workflow={workflow}
-          steps={steps}
+          steps={Array.isArray(steps) ? steps : []}
           onChangeSteps={(newSteps) => setSteps(newSteps)}
         />
       ) : (
@@ -145,7 +145,7 @@ export function AutomationDetailPage({ id }: { id: string }) {
             Lista Secuencial de Pasos
           </h3>
           <div className="space-y-3">
-            {steps.map((step, idx) => (
+            {(Array.isArray(steps) ? steps : []).map((step, idx) => (
               <div key={step.id} className="p-3.5 bg-muted/40 rounded-lg border flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
                   {step.type === "ACTION" ? (

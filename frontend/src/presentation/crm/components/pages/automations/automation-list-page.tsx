@@ -134,7 +134,7 @@ export function AutomationListPage() {
                         <code className="text-primary font-mono text-[11px]">{wf.triggerEvent}</code>
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        Steps: <span className="font-semibold text-foreground">{wf.stepsGraph?.length ?? 0}</span> nodes
+                        Steps: <span className="font-semibold text-foreground">{Array.isArray(wf.stepsGraph) ? wf.stepsGraph.length : 0}</span> nodes
                       </div>
                     </div>
 

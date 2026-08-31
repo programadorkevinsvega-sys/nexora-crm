@@ -5,15 +5,37 @@ import type {
   WorkflowStepExecution,
 } from "@/src/domain/crm/automation/workflow.entity"
 
+function normalizeWf(wf: any): WorkflowDefinition | null {
+  if (!wf) return null
+  let steps = wf.stepsGraph
+  if (typeof steps === "string") {
+    try {
+      steps = JSON.parse(steps)
+    } catch {
+      steps = []
+    }
+  }
+  if (!Array.isArray(steps)) {
+    if (steps && typeof steps === "object") {
+      steps = Array.isArray(steps.nodes) ? steps.nodes : Array.isArray(steps.steps) ? steps.steps : []
+    } else {
+      steps = []
+    }
+  }
+  return { ...wf, stepsGraph: steps }
+}
+
 export const ApiAutomationRepository = {
   async listWorkflows(status?: string): Promise<WorkflowDefinition[]> {
     const params = status ? { status } : {}
     const res = await api.get<any>(`/api/automation/workflows${qs(params)}`)
-    return Array.isArray(res) ? res : []
+    const list = Array.isArray(res) ? res : []
+    return list.map(normalizeWf).filter(Boolean) as WorkflowDefinition[]
   },
 
   async getWorkflow(id: string): Promise<WorkflowDefinition | null> {
-    return api.get<WorkflowDefinition | null>(`/api/automation/workflows/${id}`)
+    const wf = await api.get<any>(`/api/automation/workflows/${id}`)
+    return normalizeWf(wf)
   },
 
   async createWorkflow(data: {

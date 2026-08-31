@@ -113,7 +113,7 @@ export async function seedAdvancedData(
       status: 'ACTIVE',
       triggerEvent: 'crm.contact.created',
       triggerFilter: { leadScoreGte: 50 },
-      stepsGraph: { nodes: [{ id: '1', type: 'ACTION', action: 'ASSIGN_USER' }] },
+      stepsGraph: [{ id: '1', type: 'ACTION', action: 'ASSIGN_USER' }],
       createdAt: now,
       updatedAt: now,
     }).onConflictDoNothing()
