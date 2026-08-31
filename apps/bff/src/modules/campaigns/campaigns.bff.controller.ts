@@ -10,7 +10,9 @@ import {
   Body,
   Headers,
   ParseUUIDPipe,
+  Res,
 } from '@nestjs/common'
+import { Response } from 'express'
 import { z } from 'zod'
 import {
   CreateCampaignSchema,
@@ -18,6 +20,7 @@ import {
 } from '@crm/contracts'
 import { createZodPipe } from '../../common/pipes/zod-validation.pipe'
 import { CampaignsBffService, CampaignFilters, PaginatedResult } from './campaigns.bff.service'
+import { MassEmailService } from './mass-email.service'
 import type { CreateCampaign, Campaign, AddCampaignMember, CampaignMember } from '@crm/contracts'
 
 const UpdateCampaignStatusSchema = z.object({
@@ -30,7 +33,10 @@ const UpdateMemberStatusSchema = z.object({
 
 @Controller('api')
 export class CampaignsBffController {
-  constructor(private readonly service: CampaignsBffService) {}
+  constructor(
+    private readonly service: CampaignsBffService,
+    private readonly massEmailService: MassEmailService,
+  ) {}
 
   @Get('campaigns')
   async list(
@@ -117,5 +123,56 @@ export class CampaignsBffController {
     @Headers('X-Tenant-Id') tenantId?: string,
   ): Promise<{ id: string }> {
     return this.service.updateMemberStatus(memberId, dto.status, tenantId!)
+  }
+
+  @Post('campaigns/:id/send-bulk')
+  async sendBulk(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: { creds: any; recipients: string[]; subject: string; htmlTemplate: string },
+    @Headers('X-Tenant-Id') tenantId?: string,
+  ) {
+    return this.massEmailService.sendBulk(dto.creds, dto.recipients, dto.subject, dto.htmlTemplate)
+  }
+
+  @Post('campaigns/send-test')
+  async sendTest(
+    @Body() dto: { creds: any; recipient: string; subject: string; html: string },
+    @Headers('X-Tenant-Id') tenantId?: string,
+  ) {
+    return this.massEmailService.sendTest(dto.creds, dto.recipient, dto.subject, dto.html)
+  }
+
+  @Get('campaigns/track/open')
+  trackOpen(
+    @Query('campaignId') campaignId: string,
+    @Query('memberId') memberId: string,
+    @Res() res: Response,
+  ) {
+    // In a real app we might mark as opened here
+    // this.service.updateMemberStatus(memberId, 'OPENED', tenantId)
+    const buffer = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64')
+    res.setHeader('Content-Type', 'image/gif')
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private')
+    res.send(buffer)
+  }
+
+  @Get('campaigns/unsubscribe')
+  async unsubscribe(
+    @Query('campaignId') campaignId: string,
+    @Query('memberId') memberId: string,
+    @Query('tenantId') tenantId: string,
+  ) {
+    if (memberId && tenantId) {
+      await this.service.updateMemberStatus(memberId, 'UNSUBSCRIBED', tenantId)
+    }
+    return { success: true, message: 'Unsubscribed successfully' }
+  }
+
+  @Get('campaigns/:id/stats')
+  async getStats(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Headers('X-Tenant-Id') tenantId?: string,
+  ) {
+    return this.service.getCampaignStats(id, tenantId!)
   }
 }

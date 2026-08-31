@@ -68,10 +68,15 @@ export function CampaignListPage() {
         title="Campaigns"
         description="Manage your marketing campaigns"
         actions={
-          <Button onClick={() => router.push("/crm/campaigns/new")}>
-            <Plus className="h-4 w-4" />
-            Add Campaign
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => router.push("/campaigns/email-editor")}>
+              🎨 Diseñador de Email
+            </Button>
+            <Button onClick={() => router.push("/campaigns/new")}>
+              <Plus className="h-4 w-4" />
+              Add Campaign
+            </Button>
+          </div>
         }
       />
       <SearchInput value={search} onChange={handleSearchChange} placeholder="Search campaigns..." />

@@ -91,4 +91,32 @@ export class CampaignsBffService {
     this.cache.invalidate(CACHE_KEY_PREFIX)
     return { id: memberId }
   }
+
+  async getCampaignStats(campaignId: string, tenantId: string): Promise<any> {
+    const cacheKey = `${CACHE_KEY_PREFIX}stats:${campaignId}:${tenantId}`
+    return this.cache.getOrSet<any>(
+      cacheKey,
+      async () => {
+        // Fetch all members for this campaign to calculate stats.
+        // In a real application, this might be handled by an aggregation query in the core service.
+        const result = await this.api.listCampaignMembers({ tenantId, campaignId, limit: 10000 })
+        const members = result.data || []
+        
+        const total = members.length
+        let sent = 0, opened = 0, clicked = 0, responded = 0, bounced = 0, unsubscribed = 0
+        
+        members.forEach((m: any) => {
+          if (m.status === 'SENT') sent++
+          if (m.status === 'OPENED') opened++
+          if (m.status === 'CLICKED') clicked++
+          if (m.status === 'RESPONDED') responded++
+          if (m.status === 'BOUNCED') bounced++
+          if (m.status === 'UNSUBSCRIBED') unsubscribed++
+        })
+        
+        return { total, sent, opened, clicked, responded, bounced, unsubscribed }
+      },
+      CACHE_TTL_MS,
+    )
+  }
 }

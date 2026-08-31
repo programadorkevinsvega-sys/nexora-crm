@@ -88,4 +88,47 @@ export class SmtpEmailDispatcher {
 
     return { success: true, messageId: info.messageId }
   }
+
+  async sendBulkMail(
+    creds: Record<string, any>,
+    recipients: string[],
+    subject: string,
+    htmlTemplate: string,
+  ): Promise<{ sent: number; failed: number }> {
+    const { host, port, secure, username, password, fromEmail, fromName } = creds
+
+    const transporter = nodemailer.createTransport({
+      host: host?.trim(),
+      port: Number(port),
+      secure: secure === true || Number(port) === 465,
+      auth: { user: username?.trim(), pass: password },
+      tls: { rejectUnauthorized: false },
+      pool: true,
+      maxConnections: 5,
+      maxMessages: 100,
+    })
+
+    let sent = 0
+    let failed = 0
+
+    for (const to of recipients) {
+      try {
+        const html = htmlTemplate.replace(/\{\{email\}\}/g, to)
+        await transporter.sendMail({
+          from: `"${fromName || 'Nexora CRM'}" <${fromEmail}>`,
+          to,
+          subject,
+          html,
+          text: html.replace(/<[^>]+>/g, ''),
+        })
+        sent++
+      } catch (err: any) {
+        this.logger.error(`Failed to send email to ${to}: ${err.message}`)
+        failed++
+      }
+    }
+
+    transporter.close()
+    return { sent, failed }
+  }
 }

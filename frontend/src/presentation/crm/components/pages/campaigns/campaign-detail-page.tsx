@@ -42,12 +42,15 @@ export function CampaignDetailPage() {
         ]}
         actions={
           <div className="flex gap-2">
-            <Button variant="ghost" onClick={() => router.push(`/crm/campaigns/${id}/edit`)}>
-              <Pencil className="h-4 w-4" />
+            <Button variant="outline" onClick={() => router.push(`/campaigns/${id}/send`)}>
+              ✉️ Enviar Mailing Masivo
+            </Button>
+            <Button variant="ghost" onClick={() => router.push(`/campaigns/${id}/edit`)}>
+              <Pencil className="h-4 w-4 mr-1" />
               Edit
             </Button>
             <Button variant="danger" onClick={() => setShowDelete(true)}>
-              <Trash2 className="h-4 w-4" />
+              <Trash2 className="h-4 w-4 mr-1" />
               Delete
             </Button>
           </div>
