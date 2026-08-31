@@ -3,7 +3,7 @@
 import React from "react"
 import { X, Settings, Trash2, Check, Clock, ShieldCheck, Zap } from "lucide-react"
 import { Button } from "@/src/presentation/crm/components/ui/Button"
-import { Badge } from "@/src/presentation/crm/components/ui/Badge"
+import { WorkflowActionInspector } from "./workflow-action-inspector"
 import type { WorkflowStep } from "@/src/domain/crm/automation/workflow.entity"
 
 interface WorkflowNodeInspectorProps {
@@ -163,26 +163,7 @@ export function WorkflowNodeInspector({
 
         {/* Action Configuration */}
         {isAction && (
-          <div className="space-y-3 p-3 bg-primary/5 border border-primary/20 rounded-xl">
-            <div className="flex items-center gap-1.5 text-primary font-semibold text-xs">
-              <Zap className="h-3.5 w-3.5" /> Mensaje / Plantilla
-            </div>
-            <div>
-              <label className="block text-[10px] text-muted-foreground mb-1">Contenido o Mensaje</label>
-              <textarea
-                rows={4}
-                value={String(step.config?.payload || step.config?.title || "")}
-                onChange={(e) =>
-                  onUpdate({
-                    ...step,
-                    config: { ...step.config, payload: e.target.value, title: e.target.value },
-                  })
-                }
-                placeholder="Escribe el mensaje o plantilla dinámica..."
-                className="w-full p-2 border rounded-md bg-background text-xs font-sans"
-              />
-            </div>
-          </div>
+          <WorkflowActionInspector step={step} onUpdate={onUpdate} />
         )}
       </div>
 

@@ -15,6 +15,9 @@ import { DiscordDispatcher } from './dispatchers/discord.dispatcher'
 import { AccountingDispatcher } from './dispatchers/accounting.dispatcher'
 import { CacheService } from '../../common/cache/cache.service'
 
+import { NativeActionsController } from './native-actions.controller'
+import { NativeActionsService } from './native-actions.service'
+
 const DISPATCHERS = [
   AiIntegrationDispatcher,
   SmtpEmailDispatcher,
@@ -30,16 +33,18 @@ const DISPATCHERS = [
 ]
 
 @Module({
-  controllers: [IntegrationsBffController],
+  controllers: [IntegrationsBffController, NativeActionsController],
   providers: [
     IntegrationsBffService,
     IntegrationsDispatcher,
+    NativeActionsService,
     CacheService,
     ...DISPATCHERS,
   ],
   exports: [
     IntegrationsBffService,
     IntegrationsDispatcher,
+    NativeActionsService,
     ...DISPATCHERS,
   ],
 })

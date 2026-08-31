@@ -19,9 +19,12 @@ import { ZapierConfigModal } from "./modals/zapier-config-modal"
 import { AwsSesConfigModal } from "./modals/aws-ses-config-modal"
 import { TiktokConfigModal } from "./modals/tiktok-config-modal"
 import { StorageConfigModal } from "./modals/storage-config-modal"
+import { DiscordConfigModal } from "./modals/discord-config-modal"
+import { AccountingConfigModal } from "./modals/accounting-config-modal"
 import {
   MessageSquare, Mail, Smartphone, Send, CreditCard,
   RefreshCw, Sparkles, Calendar, ShoppingBag, Database, Zap, Cloud, Megaphone, FileText, Camera, HardDrive,
+  TrendingUp,
 } from "lucide-react"
 
 export function IntegrationsSettingsTab() {
@@ -259,6 +262,26 @@ export function IntegrationsSettingsTab() {
             onConfigure={() => setActiveModal("ZAPIER_MAKE")}
             configureLabel={isConfigured("ZAPIER_MAKE") ? "Editar Webhook" : "Configurar Webhooks"}
           />
+          <IntegrationCard
+            title="Discord Server"
+            subtitle="Alertas & Embeds"
+            description="Envía notificaciones visuales automáticas a canales de Discord con embeds enriquecidos."
+            icon={<Send size={20} />}
+            iconColorClass="text-purple-400 bg-purple-500/10 border-purple-500/20"
+            isConfigured={isConfigured("DISCORD")}
+            onConfigure={() => setActiveModal("DISCORD")}
+            configureLabel={isConfigured("DISCORD") ? "Editar Discord" : "Conectar Discord"}
+          />
+          <IntegrationCard
+            title="Software Contable & ERP"
+            subtitle="Facturación Nativa"
+            description="Sincronización de facturas y cobros con QuickBooks, Siigo, Alegra, Facturama y ERPs."
+            icon={<TrendingUp size={20} />}
+            iconColorClass="text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
+            isConfigured={isConfigured("ACCOUNTING")}
+            onConfigure={() => setActiveModal("ACCOUNTING")}
+            configureLabel={isConfigured("ACCOUNTING") ? "Editar Contabilidad" : "Conectar Sistema Contable"}
+          />
         </div>
       </div>
 
@@ -300,6 +323,8 @@ export function IntegrationsSettingsTab() {
       <StripeConfigModal open={activeModal === "STRIPE"} onClose={() => setActiveModal(null)} onSuccess={loadStatuses} />
       <GoogleConfigModal open={activeModal === "GOOGLE_WORKSPACE"} onClose={() => setActiveModal(null)} onSuccess={loadStatuses} />
       <SlackConfigModal open={activeModal === "SLACK_APP"} onClose={() => setActiveModal(null)} onSuccess={loadStatuses} />
+      <DiscordConfigModal isOpen={activeModal === "DISCORD"} onClose={() => setActiveModal(null)} onSuccess={loadStatuses} />
+      <AccountingConfigModal isOpen={activeModal === "ACCOUNTING"} onClose={() => setActiveModal(null)} onSuccess={loadStatuses} />
       <ShopifyConfigModal open={activeModal === "SHOPIFY_STORE"} onClose={() => setActiveModal(null)} onSuccess={loadStatuses} />
       <HubSpotConfigModal open={activeModal === "HUBSPOT_SYNC"} onClose={() => setActiveModal(null)} onSuccess={loadStatuses} />
       <ZapierConfigModal open={activeModal === "ZAPIER_MAKE"} onClose={() => setActiveModal(null)} onSuccess={loadStatuses} />
