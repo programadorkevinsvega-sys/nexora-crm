@@ -42,6 +42,7 @@ import {
   Heart,
   ShieldCheck,
   TrendingUp,
+  FileSpreadsheet,
 } from "lucide-react"
 import { useUIStore } from "@src/application/crm/stores/ui.store"
 import { AuthProvider, useSession } from "@src/infrastructure/auth/auth-provider"
@@ -84,6 +85,7 @@ const navSections: NavSection[] = [
       { label: "Tasks", href: "/tasks", icon: CheckSquare },
       { label: "Calls", href: "/calls", icon: Phone },
       { label: "Analytics", href: "/analytics", icon: BarChart3 },
+      { label: "Reportes a Medida", href: "/analytics/reports", icon: FileSpreadsheet },
       { label: "Forecasting", href: "/analytics/forecast", icon: TrendingUp },
       { label: "Portal de Cliente", href: "/portal", icon: Globe },
     ],
