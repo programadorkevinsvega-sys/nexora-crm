@@ -2,8 +2,10 @@ import { Module } from '@nestjs/common'
 import { InboxBffController } from './inbox.bff.controller'
 import { InboxBffService } from './inbox.bff.service'
 import { CacheService } from '../../common/cache/cache.service'
+import { IntegrationsBffModule } from '../integrations/integrations.bff.module'
 
 @Module({
+  imports: [IntegrationsBffModule],
   controllers: [InboxBffController],
   providers: [InboxBffService, CacheService],
   exports: [InboxBffService],

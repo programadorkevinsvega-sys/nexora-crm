@@ -114,4 +114,20 @@ export class IntegrationsBffService {
     await this.cache.delete(this.key(tenantId, provider))
     return { ok: true }
   }
+
+  async getDecryptedConfig(tenantId: string, provider: IntegrationProvider): Promise<Record<string, any> | null> {
+    const stored = await this.cache.get<any>(this.key(tenantId, provider))
+    const creds = stored?.credentials
+    if (!creds || stored?.isEnabled === false) return null
+
+    const decryptedCreds: Record<string, any> = {}
+    for (const [k, v] of Object.entries(creds)) {
+      if (typeof v === 'string' && SecretsVault.isEncrypted(v)) {
+        decryptedCreds[k] = SecretsVault.decrypt(v, tenantId)
+      } else {
+        decryptedCreds[k] = v
+      }
+    }
+    return decryptedCreds
+  }
 }

@@ -1,6 +1,10 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { ApiCoreGrpcClient } from '../../common/grpc/api-core-grpc.client'
 import { CacheService } from '../../common/cache/cache.service'
+import { IntegrationsBffService } from '../integrations/integrations.bff.service'
+import { IntegrationsDispatcher } from '../integrations/integrations.dispatcher'
+import { SmtpEmailDispatcher } from '../integrations/dispatchers/smtp-email.dispatcher'
+import { AwsSesDispatcher } from '../integrations/dispatchers/aws-ses.dispatcher'
 import type {
   InboxConversation,
   InboxMessage,
@@ -12,9 +16,15 @@ const CACHE_KEY_PREFIX = 'inbox:'
 
 @Injectable()
 export class InboxBffService {
+  private readonly logger = new Logger(InboxBffService.name)
+
   constructor(
     private readonly api: ApiCoreGrpcClient,
     private readonly cache: CacheService,
+    private readonly integrationsService: IntegrationsBffService,
+    private readonly dispatcher: IntegrationsDispatcher,
+    private readonly smtpDispatcher: SmtpEmailDispatcher,
+    private readonly sesDispatcher: AwsSesDispatcher,
   ) {}
 
   async listConversations(
@@ -43,6 +53,41 @@ export class InboxBffService {
   ): Promise<InboxMessage> {
     const res = await this.api.sendInboxMessage({ tenantId, ...dto })
     this.cache.invalidate(CACHE_KEY_PREFIX)
+
+    // Attempt real dispatch over external channel using tenant credentials
+    try {
+      if (dto.channel === 'WHATSAPP') {
+        const waConfig = await this.integrationsService.getDecryptedConfig(tenantId, 'WHATSAPP_CLOUD')
+        if (waConfig) {
+          this.logger.log(`Dispatching real WhatsApp message to ${dto.recipientIdentifier}`)
+          await this.dispatcher.dispatchTest('WHATSAPP_CLOUD', waConfig, dto.recipientIdentifier, dto.bodyText)
+        }
+      } else if (dto.channel === 'EMAIL') {
+        const smtpConfig = await this.integrationsService.getDecryptedConfig(tenantId, 'SMTP_EMAIL')
+        const sesConfig = await this.integrationsService.getDecryptedConfig(tenantId, 'AWS_SES')
+
+        if (smtpConfig) {
+          this.logger.log(`Dispatching real SMTP email to ${dto.recipientIdentifier}`)
+          await this.smtpDispatcher.sendEmail(
+            smtpConfig,
+            dto.recipientIdentifier,
+            dto.subject || 'Mensaje de Nexora CRM',
+            dto.bodyText,
+          )
+        } else if (sesConfig) {
+          this.logger.log(`Dispatching real AWS SES email to ${dto.recipientIdentifier}`)
+          await this.sesDispatcher.sendEmail(
+            sesConfig,
+            dto.recipientIdentifier,
+            dto.subject || 'Mensaje de Nexora CRM',
+            dto.bodyText,
+          )
+        }
+      }
+    } catch (err: any) {
+      this.logger.error(`External dispatch error in inbox sendMessage: ${err.message}`)
+    }
+
     return res
   }
 }
