@@ -41,6 +41,7 @@ import {
   Smartphone,
   Heart,
   ShieldCheck,
+  TrendingUp,
 } from "lucide-react"
 import { useUIStore } from "@src/application/crm/stores/ui.store"
 import { AuthProvider, useSession } from "@src/infrastructure/auth/auth-provider"
@@ -83,6 +84,8 @@ const navSections: NavSection[] = [
       { label: "Tasks", href: "/tasks", icon: CheckSquare },
       { label: "Calls", href: "/calls", icon: Phone },
       { label: "Analytics", href: "/analytics", icon: BarChart3 },
+      { label: "Forecasting", href: "/analytics/forecast", icon: TrendingUp },
+      { label: "Portal de Cliente", href: "/portal", icon: Globe },
     ],
   },
   {
@@ -105,6 +108,8 @@ const navSections: NavSection[] = [
     items: [
       { label: "Tickets", href: "/support/tickets", icon: Ticket },
       { label: "Helpdesk", href: "/support/helpdesk/conversations", icon: LifeBuoy },
+      { label: "Agentes Helpdesk", href: "/support/helpdesk/settings/agents", icon: Users },
+      { label: "Buzones", href: "/support/helpdesk/settings/mailboxes", icon: InboxIcon },
       { label: "Knowledge Base", href: "/kb", icon: BookOpen },
     ],
   },
@@ -117,17 +122,27 @@ const navSections: NavSection[] = [
     ],
   },
   {
+    title: "Loyalty & Afiliados",
+    items: [
+      { label: "Loyalty Program", href: "/loyalty", icon: Star },
+      { label: "Segmentos", href: "/loyalty/segments", icon: Users },
+      { label: "Afiliados", href: "/affiliates", icon: Handshake },
+      { label: "Programas", href: "/affiliates/programs", icon: Briefcase },
+    ],
+  },
+  {
     title: "Other",
     items: [
       { label: "Hub Integraciones", href: "/integrations", icon: Globe },
-      { label: "Affiliates", href: "/affiliates", icon: Handshake },
-      { label: "Loyalty", href: "/loyalty", icon: Star },
       { label: "Auditoría", href: "/audit", icon: ShieldCheck },
       { label: "Settings", href: "/settings", icon: Settings },
+      { label: "Perfil", href: "/settings/profile", icon: Heart },
+      { label: "Tags", href: "/settings/tags", icon: Flame },
       { label: "Developer", href: "/settings/developer", icon: Code2 },
     ],
   },
 ]
+
 
 function Sidebar() {
   const pathname = usePathname()
