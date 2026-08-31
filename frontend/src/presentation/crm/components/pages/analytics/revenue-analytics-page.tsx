@@ -20,10 +20,11 @@ import { Card } from "@/src/presentation/crm/components/ui/Card"
 import { Badge } from "@/src/presentation/crm/components/ui/Badge"
 import { Skeleton } from "@/src/presentation/crm/components/ui/Skeleton"
 import { ApiAnalyticsRepository } from "@/src/infrastructure/crm/repositories/analytics/api-analytics.repository"
+import { ForecastingTab } from "./forecasting-tab"
 import type { RevenueMetrics, FunnelMetrics, CohortMetrics } from "@crm/contracts"
 
 export function RevenueAnalyticsPage() {
-  const [activeTab, setActiveTab] = useState<"REVENUE" | "FUNNEL" | "COHORTS">("REVENUE")
+  const [activeTab, setActiveTab] = useState<"REVENUE" | "FUNNEL" | "COHORTS" | "FORECAST">("REVENUE")
   const [revenue, setRevenue] = useState<RevenueMetrics | null>(null)
   const [funnel, setFunnel] = useState<FunnelMetrics | null>(null)
   const [cohorts, setCohorts] = useState<CohortMetrics | null>(null)
@@ -89,6 +90,7 @@ export function RevenueAnalyticsPage() {
           { id: "REVENUE", label: "💵 Ingresos & Métricas SaaS", icon: DollarSign },
           { id: "FUNNEL", label: "🔻 Funnels de Conversión & Abandono", icon: Filter },
           { id: "COHORTS", label: "👥 Matriz de Cohortes de Retención", icon: Users },
+          { id: "FORECAST", label: "🔮 Forecasting Predictivo (3M/6M)", icon: Sparkles },
         ].map((tab) => {
           const Icon = tab.icon
           return (
@@ -178,7 +180,7 @@ export function RevenueAnalyticsPage() {
                     {revenue.ltvCacRatio > 0 ? (
                       <>
                         <span className="text-emerald-600">{revenue.ltvCacRatio}x</span>
-                        {revenue.ltvCacRatio >= 3 && <Badge variant="secondary" className="text-[10px]">Saludable (&gt;3x)</Badge>}
+                        {revenue.ltvCacRatio >= 3 && <Badge variant="success" className="text-[10px]">Saludable (&gt;3x)</Badge>}
                       </>
                     ) : (
                       <span className="text-muted-foreground text-xs font-normal">Sin cerrar ventas</span>
@@ -210,7 +212,7 @@ export function RevenueAnalyticsPage() {
         <Card className="p-5 border shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-bold text-foreground">Embudo de Ventas con Tasa de Abandono (Drop-off Analysis)</h2>
-            <Badge variant="outline" className="font-mono text-xs">Conversión Global: {funnel.overallConversionRatePercent}%</Badge>
+            <Badge variant="info" className="font-mono text-xs">Conversión Global: {funnel.overallConversionRatePercent}%</Badge>
           </div>
           <div className="space-y-3">
             {funnel.stages.map((stage) => (
@@ -287,6 +289,9 @@ export function RevenueAnalyticsPage() {
           )}
         </Card>
       )}
+
+      {/* Tab 4: Predictive Forecasting */}
+      {activeTab === "FORECAST" && <ForecastingTab />}
 
     </div>
   )

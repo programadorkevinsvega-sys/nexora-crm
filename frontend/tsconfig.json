@@ -28,6 +28,9 @@
       ],
       "@src/*": [
         "./src/*"
+      ],
+      "@crm/contracts": [
+        "../packages/contracts/src/index.ts"
       ]
     }
   },

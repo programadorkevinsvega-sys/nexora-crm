@@ -3,11 +3,13 @@ import {
   GetRevenueMetricsQuery,
   GetFunnelMetricsQuery,
   GetCohortMetricsQuery,
+  GetRevenueForecastQuery,
 } from './analytics.queries'
 import { AnalyticsRepository } from '../../domain/repositories/analytics.repository'
 import { RevenueMetrics } from '../../domain/entities/revenue-metrics.entity'
 import { FunnelMetrics } from '../../domain/entities/funnel-metrics.entity'
 import { CohortMetrics } from '../../domain/entities/cohort-metrics.entity'
+import { RevenueForecast } from '../../domain/entities/revenue-forecast.entity'
 
 @Injectable()
 export class GetRevenueMetricsHandler {
@@ -33,5 +35,14 @@ export class GetCohortMetricsHandler {
 
   async execute(query: GetCohortMetricsQuery): Promise<CohortMetrics> {
     return this.repo.getCohortMetrics(query.tenantId)
+  }
+}
+
+@Injectable()
+export class GetRevenueForecastHandler {
+  constructor(private readonly repo: AnalyticsRepository) {}
+
+  async execute(query: GetRevenueForecastQuery): Promise<RevenueForecast> {
+    return this.repo.getRevenueForecast(query.tenantId)
   }
 }

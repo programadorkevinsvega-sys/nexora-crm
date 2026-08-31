@@ -1555,6 +1555,8 @@ export function useSimulateMetaLead() {
     },
     onError: (e: unknown) => useToastStore.getState().addToast(e instanceof Error ? e.message : "Error al simular lead", "error"),
   })
+}
+
 export function useFetchMetaPages() {
   return useMutation({
     mutationFn: async (accessToken: string) => ApiMetaLeadsRepository.fetchPages(accessToken),

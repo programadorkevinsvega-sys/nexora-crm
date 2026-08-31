@@ -14,6 +14,7 @@ import { ConfirmDialog } from "@/src/presentation/crm/components/common/ConfirmD
 import { ErrorState } from "@/src/presentation/components/error-state"
 import { useAuth } from "@/src/presentation/hooks/use-auth"
 import { useContact, useDeleteContact } from "@src/application/crm/di/hooks"
+import { ClickToCallButton } from "@/src/presentation/crm/components/common/click-to-call-button"
 
 export function ContactDetailPage() {
   const params = useParams()
@@ -40,7 +41,14 @@ export function ContactDetailPage() {
           { label: `${contact.firstName} ${contact.lastName}` },
         ]}
         actions={
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            <ClickToCallButton
+              phoneNumber={contact.phone}
+              contactName={`${contact.firstName} ${contact.lastName || ""}`}
+              contactId={id}
+              showText
+              size="sm"
+            />
             <Button variant="outline" onClick={() => router.push(`/contacts/${id}/360`)}>
               <Star className="h-4 w-4 mr-1.5 text-amber-500 fill-amber-500" />
               Customer 360 Hub

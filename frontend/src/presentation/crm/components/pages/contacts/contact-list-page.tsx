@@ -17,6 +17,7 @@ import { useAuth } from "@/src/presentation/hooks/use-auth"
 import { usePaginatedList } from "@/src/presentation/hooks/use-paginated-list"
 import { useContactsList, useDeleteContact } from "@src/application/crm/di/hooks"
 import { CreateContactModal } from "@/src/presentation/crm/components/modules/contacts/create-contact-modal"
+import { ClickToCallButton } from "@/src/presentation/crm/components/common/click-to-call-button"
 import type { Contact } from "@/src/domain/crm/contacts/contact.entity"
 
 export function ContactListPage() {
@@ -45,7 +46,22 @@ export function ContactListPage() {
       render: (row) => <span className="font-medium text-paper">{row.firstName} {row.lastName}</span>,
     },
     { key: "email", header: "Email" },
-    { key: "phone", header: "Phone" },
+    {
+      key: "phone",
+      header: "Phone",
+      render: (row) => (
+        <div className="flex items-center gap-2">
+          <span>{row.phone || "—"}</span>
+          {row.phone && (
+            <ClickToCallButton
+              phoneNumber={row.phone}
+              contactName={`${row.firstName} ${row.lastName || ""}`}
+              contactId={row.id}
+            />
+          )}
+        </div>
+      ),
+    },
     { key: "jobTitle", header: "Job Title" },
     { key: "createdAt", header: "Created", render: (row) => new Date(row.createdAt).toLocaleDateString() },
     {

@@ -21,6 +21,7 @@ describe('Analytics Handlers', () => {
       getRevenueMetrics: jest.fn(),
       getFunnelMetrics: jest.fn(),
       getCohortMetrics: jest.fn(),
+      getRevenueForecast: jest.fn(),
     }
   })
 

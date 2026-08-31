@@ -44,6 +44,8 @@ import { ErrorBoundary } from "@src/presentation/components/error-boundary"
 import { Toaster } from "@src/presentation/components/toast"
 import { registerDependencies } from "@src/application/crm/di/register"
 import { AuthService } from "@src/infrastructure/auth/auth.service"
+import { CallProvider } from "@/src/application/crm/context/call-context"
+import { CallWidget } from "@/src/presentation/crm/components/common/call-widget"
 
 registerDependencies()
 
@@ -272,8 +274,11 @@ export default function CrmLayout({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <ErrorBoundary>
         <AuthProvider>
-          <CrmShell>{children}</CrmShell>
-          <Toaster />
+          <CallProvider>
+            <CrmShell>{children}</CrmShell>
+            <CallWidget />
+            <Toaster />
+          </CallProvider>
         </AuthProvider>
       </ErrorBoundary>
     </QueryClientProvider>

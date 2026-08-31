@@ -49,3 +49,26 @@ export const CohortMetricsSchema = z.object({
   cohorts: z.array(CohortRowSchema).default([]),
 })
 export type CohortMetrics = z.infer<typeof CohortMetricsSchema>
+
+export const ForecastDataPointSchema = z.object({
+  month: z.string(),
+  forecastedRevenue: z.number().default(0),
+  pessimisticRevenue: z.number().default(0),
+  optimisticRevenue: z.number().default(0),
+  pipelineValue: z.number().default(0),
+  confidence: z.number().min(0).max(100).default(75),
+})
+export type ForecastDataPoint = z.infer<typeof ForecastDataPointSchema>
+
+export const RevenueForecastSchema = z.object({
+  horizon: z.enum(['3M', '6M']).default('3M'),
+  baseRevenue: z.number().default(0),
+  dataPoints: z.array(ForecastDataPointSchema).default([]),
+  totalForecast3M: z.number().default(0),
+  totalForecast6M: z.number().default(0),
+  avgSalesCycleDays: z.number().default(0),
+  pipelineVelocity: z.number().default(0),
+  winRate: z.number().default(0),
+  currency: z.string().default('USD'),
+})
+export type RevenueForecast = z.infer<typeof RevenueForecastSchema>

@@ -14,12 +14,22 @@ import { AnalyticsRepository } from '../domain/repositories/analytics.repository
 import { RevenueMetrics } from '../domain/entities/revenue-metrics.entity'
 import { FunnelMetrics } from '../domain/entities/funnel-metrics.entity'
 import { CohortMetrics } from '../domain/entities/cohort-metrics.entity'
+import { RevenueForecast } from '../domain/entities/revenue-forecast.entity'
 import { FunnelStage, CohortRow } from '@crm/contracts'
+import { DrizzleForecastRepository } from './drizzle-forecast.repository'
 
 @Injectable()
 export class DrizzleAnalyticsRepository extends AnalyticsRepository {
+  constructor(private readonly forecastRepo: DrizzleForecastRepository) {
+    super()
+  }
+
   private get db() {
     return getDb()
+  }
+
+  async getRevenueForecast(tenantId: string): Promise<RevenueForecast> {
+    return this.forecastRepo.getRevenueForecast(tenantId)
   }
 
   async getRevenueMetrics(tenantId: string): Promise<RevenueMetrics> {

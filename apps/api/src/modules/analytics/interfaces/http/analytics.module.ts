@@ -5,9 +5,11 @@ import {
   GetRevenueMetricsHandler,
   GetFunnelMetricsHandler,
   GetCohortMetricsHandler,
+  GetRevenueForecastHandler,
 } from '../../application/queries/analytics.handlers'
 import { AnalyticsRepository } from '../../domain/repositories/analytics.repository'
 import { DrizzleAnalyticsRepository } from '../../infrastructure/drizzle-analytics.repository'
+import { DrizzleForecastRepository } from '../../infrastructure/drizzle-forecast.repository'
 
 @Module({
   controllers: [AnalyticsController, AnalyticsGrpcController],
@@ -15,6 +17,8 @@ import { DrizzleAnalyticsRepository } from '../../infrastructure/drizzle-analyti
     GetRevenueMetricsHandler,
     GetFunnelMetricsHandler,
     GetCohortMetricsHandler,
+    GetRevenueForecastHandler,
+    DrizzleForecastRepository,
     {
       provide: AnalyticsRepository,
       useClass: DrizzleAnalyticsRepository,
@@ -25,6 +29,7 @@ import { DrizzleAnalyticsRepository } from '../../infrastructure/drizzle-analyti
     GetRevenueMetricsHandler,
     GetFunnelMetricsHandler,
     GetCohortMetricsHandler,
+    GetRevenueForecastHandler,
   ],
 })
 export class AnalyticsModule {}

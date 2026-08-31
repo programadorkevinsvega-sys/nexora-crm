@@ -24,7 +24,7 @@ import type {
   LeadScoringRule, LeadScore, ScoringRuleCategory, ScoringCondition,
   Product, ProductTemplate, QuoteApproval, ESignature, ProductPricingType,
   Customer360Profile, InboxConversation, InboxMessage, InboxChannel, InboxConversationStatus,
-  RevenueMetrics, FunnelMetrics, CohortMetrics,
+  RevenueMetrics, FunnelMetrics, CohortMetrics, RevenueForecast,
   KnowledgeBaseCategory, KnowledgeBaseArticle, CustomerPortalOverview,
   DealWinProbability, GeneratedMessageDraft, ContactExecutiveSummary, ChurnRiskPrediction,
   ApiKey, CreatedApiKey, CreateApiKey, WebhookEndpoint, CreateWebhookEndpoint, WebhookDeliveryLog,
@@ -57,6 +57,7 @@ interface AnalyticsGrpc {
   getRevenueMetrics: (data: { tenantId: string }) => Observable<{ json: string }>
   getFunnelMetrics: (data: { tenantId: string }) => Observable<{ json: string }>
   getCohortMetrics: (data: { tenantId: string }) => Observable<{ json: string }>
+  getForecast: (data: { tenantId: string; horizon?: string }) => Observable<{ json: string }>
 }
 
 interface KnowledgeBaseGrpc {
@@ -1802,6 +1803,11 @@ export class ApiCoreGrpcClient implements OnModuleInit {
 
   async getCohortMetrics(tenantId: string): Promise<CohortMetrics> {
     const res = await lastValueFrom(this.analytics.getCohortMetrics({ tenantId }))
+    return JSON.parse(res.json)
+  }
+
+  async getForecast(tenantId: string, horizon: '3M' | '6M' = '3M'): Promise<RevenueForecast> {
+    const res = await lastValueFrom(this.analytics.getForecast({ tenantId, horizon }))
     return JSON.parse(res.json)
   }
 

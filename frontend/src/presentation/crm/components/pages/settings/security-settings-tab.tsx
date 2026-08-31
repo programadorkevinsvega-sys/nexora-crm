@@ -95,7 +95,7 @@ export function SecuritySettingsTab() {
             </div>
           </div>
           <Button
-            variant={twoFactorEnabled ? 'secondary' : 'primary'}
+            variant={twoFactorEnabled ? 'secondary' : 'default'}
             onClick={handleOpenSetup}
             className="self-start text-xs"
           >

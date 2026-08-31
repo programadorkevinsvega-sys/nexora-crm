@@ -32,8 +32,8 @@ import { IntegrationsBffModule } from './modules/integrations/integrations.bff.m
 import { AuditBffModule } from './modules/audit/audit.bff.module'
 import { WebFormsBffModule } from './modules/web-forms/web-forms.bff.module'
 import { MetaLeadsBffModule } from './modules/meta-leads/meta-leads.bff.module'
-
-
+import { WhatsappWebhookModule } from './modules/inbox/webhooks/whatsapp-webhook.module'
+import { VoipBffModule } from './modules/voip/voip.bff.module'
 
 import { APP_INTERCEPTOR } from '@nestjs/core'
 import { IdempotencyInterceptor } from './common/idempotency/idempotency.interceptor'
@@ -71,6 +71,8 @@ import { IdempotencyInterceptor } from './common/idempotency/idempotency.interce
     AuditBffModule,
     WebFormsBffModule,
     MetaLeadsBffModule,
+    WhatsappWebhookModule,
+    VoipBffModule,
   ],
 
 
