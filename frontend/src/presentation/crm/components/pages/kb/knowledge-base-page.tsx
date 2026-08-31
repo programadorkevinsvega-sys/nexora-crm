@@ -41,6 +41,12 @@ export function KnowledgeBasePage() {
   const [contentMarkdown, setContentMarkdown] = useState("")
   const [saving, setSaving] = useState(false)
 
+  // Create category modal state
+  const [showCreateCategory, setShowCreateCategory] = useState(false)
+  const [newCatName, setNewCatName] = useState("")
+  const [newCatDescription, setNewCatDescription] = useState("")
+  const [savingCategory, setSavingCategory] = useState(false)
+
   const fetchData = async () => {
     try {
       setLoading(true)
@@ -107,6 +113,26 @@ export function KnowledgeBasePage() {
     }
   }
 
+  const handleCreateCategory = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newCatName.trim()) return
+    setSavingCategory(true)
+    try {
+      await ApiKnowledgeBaseRepository.createCategory({
+        name: newCatName.trim(),
+        description: newCatDescription.trim() || undefined,
+      })
+      setShowCreateCategory(false)
+      setNewCatName("")
+      setNewCatDescription("")
+      fetchData()
+    } catch (err: any) {
+      alert(`Error al crear categoría: ${err?.message || err}`)
+    } finally {
+      setSavingCategory(false)
+    }
+  }
+
   return (
     <div className="space-y-6 max-w-6xl mx-auto pb-12">
       {/* Header */}
@@ -166,13 +192,21 @@ export function KnowledgeBasePage() {
             key={c.id}
             size="sm"
             variant={selectedCategory === c.id ? "default" : "outline"}
-            className="text-xs"
+            className="text-xs shrink-0"
             onClick={() => setSelectedCategory(c.id)}
           >
             <Folder className="h-3.5 w-3.5 mr-1" />
             {c.name} ({c.articlesCount})
           </Button>
         ))}
+        <Button
+          size="sm"
+          variant="outline"
+          className="text-xs border-dashed text-primary hover:bg-primary/5 shrink-0"
+          onClick={() => setShowCreateCategory(true)}
+        >
+          <Plus className="h-3.5 w-3.5 mr-1" /> Nueva Categoría
+        </Button>
       </div>
 
       {/* Articles Grid or Reader View */}
@@ -304,6 +338,47 @@ export function KnowledgeBasePage() {
             </Button>
           </div>
         </div>
+      </Modal>
+
+      {/* Create Category Modal */}
+      <Modal
+        isOpen={showCreateCategory}
+        onClose={() => setShowCreateCategory(false)}
+        title="📁 Crear Nueva Categoría"
+      >
+        <form onSubmit={handleCreateCategory} className="space-y-4 min-w-[380px]">
+          <div>
+            <label className="block text-xs font-medium mb-1">Nombre de la Categoría *</label>
+            <input
+              type="text"
+              required
+              placeholder="Ej: Manuales de Producto, Políticas, Precios..."
+              value={newCatName}
+              onChange={(e) => setNewCatName(e.target.value)}
+              className="w-full p-2 border rounded-md bg-background text-xs"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium mb-1">Descripción (opcional)</label>
+            <textarea
+              rows={2}
+              placeholder="Breve descripción del propósito de esta categoría..."
+              value={newCatDescription}
+              onChange={(e) => setNewCatDescription(e.target.value)}
+              className="w-full p-2 border rounded-md bg-background text-xs"
+            />
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2 border-t">
+            <Button type="button" variant="outline" size="sm" onClick={() => setShowCreateCategory(false)} disabled={savingCategory}>
+              Cancelar
+            </Button>
+            <Button type="submit" size="sm" disabled={savingCategory || !newCatName.trim()}>
+              {savingCategory ? "Guardando..." : "Crear Categoría"}
+            </Button>
+          </div>
+        </form>
       </Modal>
     </div>
   )

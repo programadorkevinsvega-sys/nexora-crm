@@ -1,9 +1,10 @@
 "use client"
 
 import { useState, useRef } from "react"
-import { Upload, FileText, FileImage, File, X, CheckCircle2, Loader2 } from "lucide-react"
+import { Upload, FileText, FileImage, File, X, CheckCircle2, Loader2, Plus, FolderPlus } from "lucide-react"
 import { Button } from "@/src/presentation/crm/components/ui/Button"
 import { Modal } from "@/src/presentation/crm/components/ui/Modal"
+import { ApiKnowledgeBaseRepository } from "@/src/infrastructure/crm/repositories/knowledge-base/api-knowledge-base.repository"
 import type { KnowledgeBaseCategory } from "@crm/contracts"
 
 const ACCEPTED = ".pdf,.txt,.md,.csv,.doc,.docx,.png,.jpg,.jpeg,.webp"
@@ -24,6 +25,7 @@ function fileIcon(name: string) {
 }
 
 export function KbFileUploadModal({ open, onClose, categories, onSuccess }: Props) {
+  const [localCategories, setLocalCategories] = useState<KnowledgeBaseCategory[]>(categories)
   const [file, setFile] = useState<File | null>(null)
   const [title, setTitle] = useState("")
   const [categoryId, setCategoryId] = useState("")
@@ -32,11 +34,40 @@ export function KbFileUploadModal({ open, onClose, categories, onSuccess }: Prop
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState("")
   const [dragging, setDragging] = useState(false)
+  const [showNewCatInput, setShowNewCatInput] = useState(false)
+  const [newCatName, setNewCatName] = useState("")
+  const [creatingCat, setCreatingCat] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  // Keep localCategories synced with incoming props
+  if (categories.length > 0 && localCategories.length === 0) {
+    setLocalCategories(categories)
+  }
+
+  const handleCreateCategory = async () => {
+    if (!newCatName.trim()) return
+    setCreatingCat(true)
+    setError("")
+    try {
+      const created = await ApiKnowledgeBaseRepository.createCategory({
+        name: newCatName.trim(),
+        description: "Categoría creada al importar documentos",
+      })
+      setLocalCategories((prev) => [...prev, created])
+      setCategoryId(created.id)
+      setNewCatName("")
+      setShowNewCatInput(false)
+    } catch (err: any) {
+      setError(err?.message || "Error al crear la categoría")
+    } finally {
+      setCreatingCat(false)
+    }
+  }
 
   const reset = () => {
     setFile(null); setTitle(""); setCategoryId(""); setUploading(false)
     setProgress(0); setSuccess(false); setError(""); setDragging(false)
+    setShowNewCatInput(false); setNewCatName("")
   }
 
   const handleClose = () => { reset(); onClose() }
@@ -114,11 +145,45 @@ export function KbFileUploadModal({ open, onClose, categories, onSuccess }: Prop
 
         {/* Category */}
         <div>
-          <label className="text-xs font-medium text-muted-foreground">Categoría de la Base de Conocimiento</label>
-          <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className="w-full mt-1 px-3 py-2 text-sm border rounded-md bg-background focus:outline-none focus:ring-1 focus:ring-primary">
-            <option value="">Sin categoría</option>
-            {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
+          <div className="flex items-center justify-between mb-1">
+            <label className="text-xs font-medium text-muted-foreground">Categoría de la Base de Conocimiento</label>
+            <button
+              type="button"
+              onClick={() => setShowNewCatInput(!showNewCatInput)}
+              className="text-[11px] text-primary hover:underline flex items-center gap-0.5 font-medium"
+            >
+              <Plus className="h-3 w-3" /> {showNewCatInput ? "Elegir existente" : "+ Nueva Categoría"}
+            </button>
+          </div>
+
+          {showNewCatInput ? (
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newCatName}
+                onChange={(e) => setNewCatName(e.target.value)}
+                placeholder="Ej: Manuales de Producto, Políticas..."
+                className="flex-1 px-3 py-1.5 text-xs border rounded-md bg-background focus:outline-none focus:ring-1 focus:ring-primary"
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleCreateCategory() } }}
+              />
+              <Button size="sm" type="button" onClick={handleCreateCategory} disabled={creatingCat || !newCatName.trim()} className="text-xs h-8 px-3">
+                {creatingCat ? "Creando..." : "Crear"}
+              </Button>
+            </div>
+          ) : (
+            <select
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
+              className="w-full px-3 py-2 text-sm border rounded-md bg-background focus:outline-none focus:ring-1 focus:ring-primary"
+            >
+              <option value="">Sin categoría (General)</option>
+              {localCategories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  📁 {c.name}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
 
         {/* Progress */}
