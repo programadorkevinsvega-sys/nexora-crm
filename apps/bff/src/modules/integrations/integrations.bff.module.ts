@@ -33,6 +33,10 @@ const DISPATCHERS = [
     CacheService,
     ...DISPATCHERS,
   ],
-  exports: [IntegrationsBffService, IntegrationsDispatcher],
+  exports: [
+    IntegrationsBffService,
+    IntegrationsDispatcher,
+    ...DISPATCHERS,
+  ],
 })
 export class IntegrationsBffModule {}
