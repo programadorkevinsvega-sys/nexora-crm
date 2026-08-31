@@ -5,6 +5,8 @@ export interface ContactFilter {
   leadStatus?: string
   companyId?: string
   isStarred?: boolean
+  assignedUserId?: string
+  visibleUserIds?: string[]
   cursor?: string
   limit: number
 }

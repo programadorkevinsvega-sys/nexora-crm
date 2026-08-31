@@ -27,8 +27,23 @@ export class ContactsBffController {
     @Query('leadStatus') leadStatus?: string,
     @Query('companyId') companyId?: string,
     @Query('isStarred') isStarred?: string,
+    @Query('assignedUserId') assignedUserId?: string,
+    @Query('scope') scope?: 'mine' | 'team' | 'all',
     @Headers('X-Tenant-Id') tenantId?: string,
+    @Headers('X-User-Id') userId?: string,
+    @Headers('X-User-Role') userRole?: string,
   ): Promise<PaginatedResult<Contact>> {
+    const role = (userRole || '').toLowerCase()
+    let effectiveAssignedUserId = assignedUserId
+
+    // Strict Role-Based Visibility Hierarchy
+    if (role === 'agent' && userId) {
+      // Agents strictly only see their own assigned contacts
+      effectiveAssignedUserId = userId
+    } else if (role === 'manager' && scope === 'mine' && userId) {
+      effectiveAssignedUserId = userId
+    }
+
     const filters: ContactFilters = {
       cursor,
       limit: limit ? Number(limit) : undefined,
@@ -36,6 +51,7 @@ export class ContactsBffController {
       leadStatus,
       companyId,
       isStarred: isStarred != null ? isStarred === 'true' : undefined,
+      assignedUserId: effectiveAssignedUserId,
     }
     return this.service.list(filters, tenantId!)
   }

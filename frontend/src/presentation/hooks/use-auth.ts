@@ -7,6 +7,8 @@ export function useAuth() {
     token: session?.token ?? null,
     tenantId: session?.tenantId ?? null,
     userId: session?.userId ?? null,
+    userRole: session?.userRole ?? "admin",
+    userName: session?.userName ?? "Usuario",
     isAuthenticated: !!session,
     login: setSession,
     logout: clear,

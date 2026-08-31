@@ -112,6 +112,8 @@ export interface ContactFilters {
   search?: string
   leadStatus?: string
   isStarred?: boolean
+  assignedUserId?: string
+  scope?: string
   cursor?: string
   limit?: number
 }

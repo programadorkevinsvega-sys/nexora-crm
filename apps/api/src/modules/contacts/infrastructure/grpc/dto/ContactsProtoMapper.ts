@@ -85,6 +85,8 @@ export class ContactsProtoMapper {
       leadStatus: data.leadStatus || data.lead_status,
       companyId: data.companyId || data.company_id,
       isStarred: data.isStarred ?? data.is_starred,
+      assignedUserId: data.assignedUserId || data.assigned_user_id,
+      visibleUserIds: data.visibleUserIds || data.visible_user_ids,
     }
   }
 }

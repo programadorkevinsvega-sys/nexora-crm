@@ -13,6 +13,8 @@ export class ListContactsUseCase implements IListContactsUseCase {
       leadStatus: input.leadStatus,
       companyId: input.companyId,
       isStarred: input.isStarred,
+      assignedUserId: input.assignedUserId,
+      visibleUserIds: input.visibleUserIds,
       cursor: input.cursor,
       limit: Math.min(input.limit || 20, 100),
     })

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { eq, ilike, and, asc, or, gt } from 'drizzle-orm'
+import { eq, ilike, and, asc, or, gt, sql } from 'drizzle-orm'
 import { getDb, contacts as contactsTable } from '@crm/database'
 import { IContactRepository, ContactFilter, PaginatedContacts } from '../../../../domain/repositories/IContactRepository'
 import { Contact } from '../../../../domain/entities/Contact'
@@ -41,6 +41,17 @@ export class DrizzleContactRepository implements IContactRepository {
     if (filter.leadStatus) conditions.push(eq(contactsTable.leadStatus, filter.leadStatus))
     if (filter.companyId) conditions.push(eq(contactsTable.companyId, filter.companyId))
     if (filter.isStarred !== undefined) conditions.push(eq(contactsTable.isStarred, filter.isStarred))
+
+    if (filter.assignedUserId) {
+      conditions.push(
+        sql`(${contactsTable.metadata}->>'assignedUserId' = ${filter.assignedUserId} OR ${contactsTable.metadata}->>'creatorId' = ${filter.assignedUserId} OR ${contactsTable.metadata}->>'ownerId' = ${filter.assignedUserId})` as any,
+      )
+    } else if (filter.visibleUserIds && filter.visibleUserIds.length > 0) {
+      const userList = filter.visibleUserIds.map((id) => `'${id}'`).join(',')
+      conditions.push(
+        sql`(${contactsTable.metadata}->>'assignedUserId' IN (${sql.raw(userList)}) OR ${contactsTable.metadata}->>'assignedUserId' IS NULL)` as any,
+      )
+    }
 
     const rows = await this.db.query.contacts.findMany({
       where: and(...conditions.filter(Boolean)!) as any,

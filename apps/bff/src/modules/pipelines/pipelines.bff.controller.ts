@@ -37,8 +37,14 @@ export class PipelinesBffController {
   async listDeals(
     @Query() raw: Record<string, string>,
     @Headers('X-Tenant-Id') tenantId?: string,
+    @Headers('X-User-Id') userId?: string,
+    @Headers('X-User-Role') userRole?: string,
   ): Promise<PaginatedResult<Deal>> {
     const filters: DealFilter = DealFilterSchema.parse(raw)
+    const role = (userRole || '').toLowerCase()
+    if (role === 'agent' && userId) {
+      filters.assignedUserId = userId
+    }
     return this.service.listDeals(filters, tenantId!)
   }
 

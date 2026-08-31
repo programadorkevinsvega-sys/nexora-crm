@@ -10,6 +10,8 @@ export interface ContactFilters {
   leadStatus?: string
   companyId?: string
   isStarred?: boolean
+  assignedUserId?: string
+  visibleUserIds?: string[]
 }
 
 export interface PaginatedResult<T> {
