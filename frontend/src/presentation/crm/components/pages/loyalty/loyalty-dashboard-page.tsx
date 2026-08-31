@@ -20,8 +20,8 @@ import { Badge } from "@/src/presentation/crm/components/ui/Badge"
 import { Skeleton } from "@/src/presentation/crm/components/ui/Skeleton"
 import {
   ApiLoyaltyRepository,
-  CustomerSegment,
 } from "@/src/infrastructure/crm/repositories/loyalty/api-loyalty.repository"
+import type { CustomerSegment } from "@/src/domain/crm/loyalty/customer-segment.entity"
 
 export function LoyaltyDashboardPage() {
   const router = useRouter()
@@ -130,20 +130,15 @@ export function LoyaltyDashboardPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {segments.map((s) => (
+            {segments.map((s: any) => (
               <div key={s.id} className="p-3.5 border rounded-lg bg-muted/20 space-y-1">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-xs text-foreground">{s.name}</span>
                   <Badge variant="secondary" className="text-[10px]">
-                    {s.memberCount ?? 0} miembros
+                    {s.isDynamic ? "Segmento Dinámico" : "Segmento Fijo"}
                   </Badge>
                 </div>
                 {s.description && <p className="text-[11px] text-muted-foreground">{s.description}</p>}
-                {(s.minPoints !== undefined || s.maxPoints !== undefined) && (
-                  <p className="text-[10px] text-primary font-mono pt-1">
-                    Rango: {s.minPoints ?? 0} - {s.maxPoints ?? "∞"} pts
-                  </p>
-                )}
               </div>
             ))}
           </div>

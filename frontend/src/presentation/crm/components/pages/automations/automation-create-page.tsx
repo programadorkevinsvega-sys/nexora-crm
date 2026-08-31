@@ -144,7 +144,7 @@ export function AutomationCreatePage() {
   }
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-6 w-full">
       <PageHeader
         title="Diseñador de Flujos de Automatización"
         description="Construye secuencias interactivas multicanal (WhatsApp, Email, SMS, Telegram, Webhook, Retardos y Decisiones)."

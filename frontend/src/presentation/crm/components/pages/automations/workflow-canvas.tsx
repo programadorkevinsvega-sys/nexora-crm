@@ -1,12 +1,15 @@
 "use client"
 
-import React, { useState } from "react"
-import { Play, Plus, Zap, ZoomIn, ZoomOut, Sparkles, Move } from "lucide-react"
+import React, { useState, useRef, useEffect } from "react"
+import { Play, Plus, ZoomIn, ZoomOut, Sparkles, Move, RefreshCw } from "lucide-react"
 import { Button } from "@/src/presentation/crm/components/ui/Button"
 import { Badge } from "@/src/presentation/crm/components/ui/Badge"
 import { WorkflowNodeCard } from "./workflow-node-card"
+import { WorkflowTriggerNode } from "./workflow-trigger-node"
+import { WorkflowWire } from "./workflow-wire"
 import { WorkflowPalette } from "./workflow-palette"
 import { WorkflowNodeInspector } from "./workflow-node-inspector"
+import type { CanvasNode, ConnectionWire, DraggingWireState } from "./workflow-types"
 import type { WorkflowStep, WorkflowDefinition } from "@/src/domain/crm/automation/workflow.entity"
 
 interface WorkflowCanvasProps {
@@ -16,13 +19,109 @@ interface WorkflowCanvasProps {
 }
 
 export function WorkflowCanvas({ workflow, steps, onChangeSteps }: WorkflowCanvasProps) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [nodes, setNodes] = useState<CanvasNode[]>([])
+  const [triggerPos, setTriggerPos] = useState({ x: 60, y: 220 })
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null)
   const [showPalette, setShowPalette] = useState(false)
   const [zoom, setZoom] = useState(100)
   const [simulatingStep, setSimulatingStep] = useState<number | null>(null)
-  const [draggedIdx, setDraggedIdx] = useState<number | null>(null)
+
+  // Dragging states
+  const [draggingNodeId, setDraggingNodeId] = useState<string | "trigger" | null>(null)
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
+  const [drawingWire, setDrawingWire] = useState<DraggingWireState | null>(null)
+
+  // Initialize or update canvas 2D coordinates for steps
+  useEffect(() => {
+    setNodes((prev) =>
+      steps.map((step, idx) => {
+        const existing = prev.find((p) => p.id === step.id)
+        return {
+          ...step,
+          x: existing?.x ?? 380 + idx * 320,
+          y: existing?.y ?? 220 + (idx % 2 === 1 ? 40 : 0),
+        }
+      })
+    )
+  }, [steps.length])
+
+  // Mouse handlers for 2D Node Movement
+  const handleCanvasMouseMove = (e: React.MouseEvent) => {
+    if (!containerRef.current) return
+    const rect = containerRef.current.getBoundingClientRect()
+    const mouseX = (e.clientX - rect.left) / (zoom / 100)
+    const mouseY = (e.clientY - rect.top) / (zoom / 100)
+
+    if (draggingNodeId) {
+      const newX = Math.max(20, mouseX - dragOffset.x)
+      const newY = Math.max(20, mouseY - dragOffset.y)
+      if (draggingNodeId === "trigger") {
+        setTriggerPos({ x: newX, y: newY })
+      } else {
+        setNodes((prev) =>
+          prev.map((n) => (n.id === draggingNodeId ? { ...n, x: newX, y: newY } : n))
+        )
+      }
+    }
+
+    if (drawingWire) {
+      setDrawingWire({ ...drawingWire, currentX: mouseX, currentY: mouseY })
+    }
+  }
+
+  const handleCanvasMouseUp = () => {
+    if (draggingNodeId && draggingNodeId !== "trigger") {
+      onChangeSteps(nodes.map(({ x, y, ...rest }) => ({ ...rest, config: { ...rest.config, x, y } })))
+    }
+    setDraggingNodeId(null)
+    setDrawingWire(null)
+  }
+
+  const handleStartDragNode = (id: string | "trigger", e: React.MouseEvent, currentX: number, currentY: number) => {
+    if (!containerRef.current) return
+    const rect = containerRef.current.getBoundingClientRect()
+    const mouseX = (e.clientX - rect.left) / (zoom / 100)
+    const mouseY = (e.clientY - rect.top) / (zoom / 100)
+    setDraggingNodeId(id)
+    setDragOffset({ x: mouseX - currentX, y: mouseY - currentY })
+  }
+
+  // Connection Wires creation & deletion
+  const handleStartConnect = (fromNodeId: string, port: "output" | "true" | "false", startX: number, startY: number) => {
+    setDrawingWire({ fromNodeId, fromPort: port, startX, startY, currentX: startX, currentY: startY })
+  }
+
+  const handleConnectToNode = (targetNodeId: string) => {
+    if (!drawingWire || drawingWire.fromNodeId === targetNodeId) return
+    const updated = steps.map((s) => {
+      if (s.id === drawingWire.fromNodeId) {
+        if (drawingWire.fromPort === "true") return { ...s, onTrueStepId: targetNodeId }
+        if (drawingWire.fromPort === "false") return { ...s, onFalseStepId: targetNodeId }
+        return { ...s, nextStepId: targetNodeId }
+      }
+      return s
+    })
+    onChangeSteps(updated)
+    setDrawingWire(null)
+  }
+
+  const handleDisconnect = (fromId: string, port: "output" | "true" | "false") => {
+    const updated = steps.map((s) => {
+      if (s.id === fromId) {
+        if (port === "true") return { ...s, onTrueStepId: undefined }
+        if (port === "false") return { ...s, onFalseStepId: undefined }
+        return { ...s, nextStepId: undefined }
+      }
+      return s
+    })
+    onChangeSteps(updated)
+  }
 
   const handleAddStep = (partial: Partial<WorkflowStep>) => {
+    const lastNode = nodes[nodes.length - 1]
+    const newX = lastNode ? lastNode.x + 320 : 380
+    const newY = lastNode ? lastNode.y : 220
     const newStep: WorkflowStep = {
       id: `step_${Date.now()}`,
       type: partial.type || "ACTION",
@@ -30,45 +129,21 @@ export function WorkflowCanvas({ workflow, steps, onChangeSteps }: WorkflowCanva
       name: partial.name || "Nuevo Paso",
       duration: partial.duration || (partial.type === "DELAY" ? "1h" : undefined),
       condition: partial.type === "CONDITION" ? { field: "contact.leadScore", operator: "GREATER_THAN", value: 80 } : undefined,
-      config: {},
+      config: { x: newX, y: newY },
     }
-    const updated = [...steps, newStep]
-    onChangeSteps(updated)
-    setSelectedIdx(updated.length - 1)
+    const nextSteps = [...steps, newStep]
+    onChangeSteps(nextSteps)
+    setSelectedIdx(nextSteps.length - 1)
     setShowPalette(false)
   }
 
-  const handleUpdateStep = (idx: number, updated: WorkflowStep) => {
-    const next = [...steps]
-    next[idx] = updated
-    onChangeSteps(next)
-  }
-
-  const handleDeleteStep = (idx: number, e?: React.MouseEvent) => {
-    if (e) e.stopPropagation()
-    const updated = steps.filter((_, i) => i !== idx)
-    onChangeSteps(updated)
-    if (selectedIdx === idx) setSelectedIdx(null)
-  }
-
-  const handleDragStart = (idx: number) => setDraggedIdx(idx)
-  const handleDragOver = (e: React.DragEvent) => e.preventDefault()
-  const handleDropOn = (targetIdx: number) => {
-    if (draggedIdx === null || draggedIdx === targetIdx) return
-    const reordered = [...steps]
-    const [moved] = reordered.splice(draggedIdx, 1)
-    reordered.splice(targetIdx, 0, moved)
-    onChangeSteps(reordered)
-    setDraggedIdx(null)
-  }
-
   const handleSimulate = () => {
-    if (steps.length === 0) return
+    if (nodes.length === 0) return
     let current = 0
     setSimulatingStep(0)
     const interval = setInterval(() => {
       current++
-      if (current >= steps.length) {
+      if (current >= nodes.length) {
         clearInterval(interval)
         setTimeout(() => setSimulatingStep(null), 1200)
       } else {
@@ -78,107 +153,97 @@ export function WorkflowCanvas({ workflow, steps, onChangeSteps }: WorkflowCanva
   }
 
   return (
-    <div className="relative w-full h-[720px] bg-[#07080d] border-2 border-border/80 rounded-2xl overflow-hidden shadow-2xl flex flex-col">
-      {/* Top Toolbar */}
-      <div className="h-14 border-b border-border/80 bg-card/70 backdrop-blur-md px-4 flex items-center justify-between z-20">
-        <div className="flex items-center gap-2">
-          <Badge variant="default" className="bg-cyan-500/10 text-cyan-400 border-cyan-500/20 text-xs">
-            🎨 Canvas Visual Interactivo (ActiveCampaign / Make)
+    <div className="relative w-full h-[calc(100vh-11rem)] min-h-[640px] bg-[#05070e] border-2 border-border/80 rounded-2xl overflow-hidden shadow-2xl flex flex-col select-none">
+      {/* Top Controls Toolbar */}
+      <div className="h-14 border-b border-border/80 bg-card/75 backdrop-blur-md px-5 flex items-center justify-between z-20">
+        <div className="flex items-center gap-3">
+          <Badge variant="default" className="bg-cyan-500/10 text-cyan-400 border-cyan-500/30 text-xs px-3 py-1 font-semibold">
+            🎨 Lienzo Visual 2D (Estilo n8n & Make)
           </Badge>
           <span className="text-xs text-muted-foreground font-mono">
-            {steps.length} {steps.length === 1 ? "nodo" : "nodos"}
+            {nodes.length} nodos • Mueve libremente las tarjetas y conecta sus puertos
           </span>
         </div>
 
         <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            className="text-xs h-8 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10"
-            onClick={handleSimulate}
-            disabled={simulatingStep !== null || steps.length === 0}
-          >
+          <Button size="sm" variant="outline" className="text-xs h-8 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10" onClick={handleSimulate} disabled={simulatingStep !== null || nodes.length === 0}>
             <Play className="h-3.5 w-3.5 mr-1" />
-            {simulatingStep !== null ? `Simulando Paso ${simulatingStep + 1}...` : "Simular Flujo"}
+            {simulatingStep !== null ? `Ejecutando Paso ${simulatingStep + 1}...` : "Simular Flujo"}
           </Button>
 
-          <Button
-            size="sm"
-            variant={showPalette ? "default" : "outline"}
-            className="text-xs h-8"
-            onClick={() => setShowPalette(!showPalette)}
-          >
+          <Button size="sm" variant={showPalette ? "default" : "outline"} className="text-xs h-8" onClick={() => setShowPalette(!showPalette)}>
             <Plus className="h-3.5 w-3.5 mr-1" /> Agregar Bloque
           </Button>
 
           <div className="flex items-center bg-background/80 border rounded-lg p-0.5">
-            <button onClick={() => setZoom(Math.max(60, zoom - 10))} className="p-1 hover:bg-muted rounded text-xs text-muted-foreground">
-              <ZoomOut className="h-3.5 w-3.5" />
-            </button>
+            <button onClick={() => setZoom(Math.max(50, zoom - 10))} className="p-1 hover:bg-muted rounded text-xs text-muted-foreground"><ZoomOut className="h-3.5 w-3.5" /></button>
             <span className="text-[11px] font-mono px-1.5 text-muted-foreground">{zoom}%</span>
-            <button onClick={() => setZoom(Math.min(140, zoom + 10))} className="p-1 hover:bg-muted rounded text-xs text-muted-foreground">
-              <ZoomIn className="h-3.5 w-3.5" />
-            </button>
+            <button onClick={() => setZoom(Math.min(150, zoom + 10))} className="p-1 hover:bg-muted rounded text-xs text-muted-foreground"><ZoomIn className="h-3.5 w-3.5" /></button>
           </div>
         </div>
       </div>
 
-      {/* Main Canvas & Inspector Container */}
+      {/* 2D Canvas Area */}
       <div className="relative flex-1 flex overflow-hidden">
-        {/* Infinite Grid Workspace */}
-        <div className="flex-1 overflow-auto p-8 flex justify-center bg-[radial-gradient(#1e293b_1.5px,transparent_1.5px)] [background-size:24px_24px]">
-          <div
-            style={{ transform: `scale(${zoom / 100})`, transformOrigin: "top center" }}
-            className="flex flex-col items-center space-y-8 transition-transform duration-150 py-4 w-full max-w-xl"
-          >
-            {/* Trigger Root */}
-            <div className="relative w-72 rounded-xl border-2 border-emerald-500/60 p-4 bg-card shadow-lg shadow-emerald-500/10 text-center space-y-1.5">
-              <div className="flex items-center justify-center gap-1.5 text-emerald-400 text-xs font-bold uppercase tracking-wider">
-                <Zap className="h-4 w-4" /> DISPARADOR (TRIGGER)
-              </div>
-              <div className="font-semibold text-sm text-foreground">{workflow.triggerEvent || "crm.contact.created"}</div>
-              <p className="text-[11px] text-muted-foreground">Evento de inicio automático en el CRM</p>
-              <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-background shadow" />
-            </div>
+        <div
+          ref={containerRef}
+          onMouseMove={handleCanvasMouseMove}
+          onMouseUp={handleCanvasMouseUp}
+          className="relative flex-1 w-full h-full overflow-auto bg-[radial-gradient(#1e293b_1.5px,transparent_1.5px)] [background-size:28px_28px]"
+        >
+          <div style={{ transform: `scale(${zoom / 100})`, transformOrigin: "0 0", minWidth: 2600, minHeight: 1800 }} className="relative w-full h-full">
+            {/* SVG Bézier Cables Layer */}
+            <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
+              {/* Trigger to first step wire */}
+              {nodes[0] && (
+                <WorkflowWire id="wire_trigger" startX={triggerPos.x + 288} startY={triggerPos.y + 42} endX={nodes[0].x} endY={nodes[0].y + 42} isSimulating={simulatingStep === 0} />
+              )}
 
-            {steps.length > 0 && (
-              <div className={`w-0.5 h-8 ${simulatingStep === 0 ? "bg-emerald-400 animate-pulse w-1" : "bg-gradient-to-b from-emerald-500 to-cyan-500"}`} />
-            )}
+              {/* Node-to-node wires */}
+              {nodes.map((node, idx) => {
+                const targetNode = node.nextStepId ? nodes.find((n) => n.id === node.nextStepId) : (node.type !== "CONDITION" ? nodes[idx + 1] : undefined)
+                const trueTarget = node.onTrueStepId ? nodes.find((n) => n.id === node.onTrueStepId) : undefined
+                const falseTarget = node.onFalseStepId ? nodes.find((n) => n.id === node.onFalseStepId) : undefined
 
-            {/* Step Nodes */}
-            {steps.map((step, idx) => (
-              <React.Fragment key={step.id}>
-                <div
-                  draggable
-                  onDragStart={() => handleDragStart(idx)}
-                  onDragOver={handleDragOver}
-                  onDrop={() => handleDropOn(idx)}
-                  className="cursor-move"
-                >
-                  <WorkflowNodeCard
-                    step={step}
-                    index={idx}
-                    isSelected={selectedIdx === idx}
-                    isSimulating={simulatingStep === idx}
-                    onClick={() => setSelectedIdx(idx)}
-                    onDelete={(e) => handleDeleteStep(idx, e)}
-                  />
-                </div>
+                return (
+                  <React.Fragment key={node.id}>
+                    {targetNode && (
+                      <WorkflowWire id={`wire_${node.id}`} startX={node.x + 256} startY={node.y + 42} endX={targetNode.x} endY={targetNode.y + 42} isSimulating={simulatingStep === idx + 1} onDelete={() => handleDisconnect(node.id, "output")} />
+                    )}
+                    {trueTarget && (
+                      <WorkflowWire id={`wire_true_${node.id}`} startX={node.x + 256} startY={node.y + 28} endX={trueTarget.x} endY={trueTarget.y + 42} portType="true" isSimulating={simulatingStep === idx + 1} onDelete={() => handleDisconnect(node.id, "true")} />
+                    )}
+                    {falseTarget && (
+                      <WorkflowWire id={`wire_false_${node.id}`} startX={node.x + 256} startY={node.y + 56} endX={falseTarget.x} endY={falseTarget.y + 42} portType="false" isSimulating={simulatingStep === idx + 1} onDelete={() => handleDisconnect(node.id, "false")} />
+                    )}
+                  </React.Fragment>
+                )
+              })}
 
-                {idx < steps.length - 1 && (
-                  <div className={`w-0.5 h-8 ${simulatingStep === idx + 1 ? "bg-emerald-400 animate-pulse w-1" : "bg-gradient-to-b from-cyan-500 to-cyan-400"}`} />
-                )}
-              </React.Fragment>
+              {/* In-flight drawing wire */}
+              {drawingWire && (
+                <WorkflowWire id="drawing_wire" startX={drawingWire.startX} startY={drawingWire.startY} endX={drawingWire.currentX} endY={drawingWire.currentY} portType={drawingWire.fromPort} />
+              )}
+            </svg>
+
+            {/* Trigger Root Card */}
+            <WorkflowTriggerNode x={triggerPos.x} y={triggerPos.y} triggerEvent={workflow.triggerEvent || "crm.contact.created"} onMouseDown={(e) => handleStartDragNode("trigger", e, triggerPos.x, triggerPos.y)} onStartConnect={(e) => handleStartConnect("trigger", "output", triggerPos.x + 288, triggerPos.y + 42)} />
+
+            {/* Draggable Step Node Cards */}
+            {nodes.map((node, idx) => (
+              <WorkflowNodeCard
+                key={node.id}
+                node={node}
+                index={idx}
+                isSelected={selectedIdx === idx}
+                isSimulating={simulatingStep === idx}
+                onClick={() => setSelectedIdx(idx)}
+                onDelete={(e) => { e.stopPropagation(); onChangeSteps(steps.filter((_, i) => i !== idx)); if (selectedIdx === idx) setSelectedIdx(null) }}
+                onMouseDownCard={(e) => handleStartDragNode(node.id, e, node.x, node.y)}
+                onStartConnect={(port, e) => handleStartConnect(node.id, port, node.x + 256, node.y + (port === "true" ? 28 : port === "false" ? 56 : 42))}
+                onDropConnect={() => handleConnectToNode(node.id)}
+              />
             ))}
-
-            {/* Add Step Button */}
-            <button
-              onClick={() => setShowPalette(true)}
-              className="w-64 border-2 border-dashed border-border/80 hover:border-primary/60 p-3.5 rounded-xl text-center text-xs text-muted-foreground hover:text-primary transition-all flex items-center justify-center gap-2 group"
-            >
-              <Plus className="h-4 w-4 group-hover:scale-125 transition-transform text-primary" />
-              <span>Agregar siguiente paso...</span>
-            </button>
           </div>
         </div>
 
@@ -190,12 +255,12 @@ export function WorkflowCanvas({ workflow, steps, onChangeSteps }: WorkflowCanva
         )}
 
         {/* Inspector Sidebar */}
-        {selectedIdx !== null && steps[selectedIdx] && (
+        {selectedIdx !== null && nodes[selectedIdx] && (
           <WorkflowNodeInspector
-            step={steps[selectedIdx]}
+            step={nodes[selectedIdx]}
             index={selectedIdx}
-            onUpdate={(u) => handleUpdateStep(selectedIdx, u)}
-            onDelete={() => handleDeleteStep(selectedIdx)}
+            onUpdate={(u) => onChangeSteps(steps.map((s, i) => (i === selectedIdx ? u : s)))}
+            onDelete={() => { onChangeSteps(steps.filter((_, i) => i !== selectedIdx)); setSelectedIdx(null) }}
             onClose={() => setSelectedIdx(null)}
           />
         )}

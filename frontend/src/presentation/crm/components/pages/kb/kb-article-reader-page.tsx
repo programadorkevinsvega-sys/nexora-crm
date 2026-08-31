@@ -108,13 +108,13 @@ export function KbArticleReaderPage({ articleId }: Props) {
           <Badge variant="secondary" className="text-[11px]">
             <Tag className="h-3 w-3 mr-1" /> {article.categoryName || "General"}
           </Badge>
-          {article.isPublic ? (
+          {article.isPublished ? (
             <Badge variant="outline" className="text-[10px] text-emerald-600 border-emerald-500/30">
-              Público en Portal
+              Publicado
             </Badge>
           ) : (
             <Badge variant="outline" className="text-[10px] text-amber-600 border-amber-500/30">
-              Interno
+              Borrador
             </Badge>
           )}
         </div>
@@ -134,7 +134,7 @@ export function KbArticleReaderPage({ articleId }: Props) {
 
         {/* Article Body */}
         <div className="prose prose-sm dark:prose-invert max-w-none py-4 text-foreground/90 whitespace-pre-line leading-relaxed text-sm">
-          {article.content}
+          {article.contentMarkdown}
         </div>
 
         {/* Feedback Section */}
@@ -166,7 +166,7 @@ export function KbArticleReaderPage({ articleId }: Props) {
                 disabled={voting}
                 onClick={() => handleVote(false)}
               >
-                <ThumbsDown className="h-3.5 w-3.5 mr-1 text-rose-600" /> No ({article.notHelpfulVotes || 0})
+                <ThumbsDown className="h-3.5 w-3.5 mr-1 text-rose-600" /> No ({article.unhelpfulVotes || 0})
               </Button>
             </div>
           )}

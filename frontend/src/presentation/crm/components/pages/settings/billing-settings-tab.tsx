@@ -14,8 +14,8 @@ export function BillingSettingsTab() {
 
   useEffect(() => {
     ApiContactRepository.list({}, { limit: 1 })
-      .then((res) => {
-        setContactCount(res.total ?? 0)
+      .then((res: any) => {
+        setContactCount(res?.total ?? res?.items?.length ?? res?.data?.length ?? 0)
       })
       .catch(() => setContactCount(0))
       .finally(() => setLoading(false))

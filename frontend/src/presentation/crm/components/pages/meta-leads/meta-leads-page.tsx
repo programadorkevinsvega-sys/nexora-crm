@@ -94,7 +94,7 @@ export function MetaLeadsPage() {
 
       {/* Connect Modal */}
       {showConnectModal && (
-        <MetaConnectModal onClose={() => setShowConnectModal(false)} />
+        <MetaConnectModal onClose={() => setShowConnectModal(false)} onSuccess={() => setShowConnectModal(false)} />
       )}
     </div>
   )

@@ -121,7 +121,7 @@ export function ApprovalsPage() {
                     </Button>
                     <Button
                       size="sm"
-                      variant="destructive"
+                      variant="danger"
                       disabled={processingId === a.id}
                       onClick={() => handleDecision(a.id, "REJECTED")}
                     >

@@ -14,6 +14,9 @@ export const badgeVariants = cva(
         warning: "bg-[#2a220f] text-[#fbbf24]",
         danger: "bg-[#2a1010] text-[#f87171]",
         info: "bg-[#0a1f3d] text-[#5ea0ff]",
+        secondary: "bg-muted text-muted-foreground",
+        outline: "border border-border text-foreground bg-transparent",
+        destructive: "bg-[#2a1010] text-[#f87171]",
       },
       size: {
         sm: "px-2 py-0.5 text-[10px]",

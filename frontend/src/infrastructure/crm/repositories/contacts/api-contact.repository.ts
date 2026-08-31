@@ -117,7 +117,7 @@ export interface ContactFilters {
 }
 
 export const ApiContactRepository = {
-  async list(filters: ContactFilters = {}, pagination?: Pagination): Promise<PaginatedResult<Contact>> {
+  async list(filters: ContactFilters = {}, pagination?: { cursor?: string; limit?: number } | Pagination): Promise<PaginatedResult<Contact>> {
     const params = { ...filters, cursor: pagination?.cursor ?? undefined, limit: pagination?.limit ?? 20 }
     return api.get<PaginatedResult<Contact>>(`/api/contacts${qs(params)}`)
   },

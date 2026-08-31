@@ -42,7 +42,6 @@ export function MailboxListPage() {
         tenantId: tenantId || "00000000-0000-0000-0000-000000000001",
         name: name.trim(),
         emailAddress: emailAddress.trim(),
-        inboundAddress: inboundAddress.trim() || emailAddress.trim(),
       })
       setShowCreate(false)
       setName("")

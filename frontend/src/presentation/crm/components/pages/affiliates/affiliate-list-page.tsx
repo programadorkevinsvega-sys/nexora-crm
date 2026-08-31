@@ -162,7 +162,7 @@ export function AffiliateListPage() {
                 onChange={(e) => setSelectedProgramId(e.target.value)}
                 className="w-full p-2 border rounded-md bg-background text-xs"
               >
-                {programs.map((p) => (
+                {programs.map((p: any) => (
                   <option key={p.id} value={p.id}>
                     {p.name} ({p.commissionRate}% {p.commissionType === "PERCENTAGE" ? "comisión" : "$"})
                   </option>

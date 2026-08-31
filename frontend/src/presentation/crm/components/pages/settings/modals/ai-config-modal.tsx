@@ -53,11 +53,11 @@ export function AiConfigModal({ open, onClose, onSuccess }: Props) {
     setTesting(true)
     setTestResult(null)
     try {
-      const res = await ApiIntegrationsRepository.testIntegration({
-        provider: 'OPENAI_LLM' as any,
-        recipient: 'test',
-        testMessage: testPrompt,
-      })
+      const res = await ApiIntegrationsRepository.testIntegration(
+        'OPENAI_LLM' as any,
+        'test',
+        testPrompt,
+      )
       setTestResult(res)
     } catch (err: any) {
       setTestResult({ success: false, message: err.message || 'Error al conectar con el modelo AI' })
@@ -70,8 +70,9 @@ export function AiConfigModal({ open, onClose, onSuccess }: Props) {
     e.preventDefault()
     setLoading(true)
     try {
-      await ApiIntegrationsRepository.saveIntegration({
+      await ApiIntegrationsRepository.saveConfig({
         provider: 'OPENAI_LLM' as any,
+        isEnabled: true,
         credentials: {
           providerPreset: preset,
           baseUrl,
