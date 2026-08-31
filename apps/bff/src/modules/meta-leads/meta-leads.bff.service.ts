@@ -1,7 +1,10 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common'
 import { getDb, metaIntegrations, metaLeadAdLogs, contacts, deals, pipelines, pipelineStages } from '@crm/database'
 import { eq, and, desc, sql } from 'drizzle-orm'
-import type { MetaIntegration, MetaLeadAdLog, MetaConfigUpdate, SimulateMetaLead, MetaLeadForm } from '@crm/contracts'
+import type {
+  MetaIntegration, MetaLeadAdLog, MetaConfigUpdate, SimulateMetaLead,
+  MetaLeadForm, ConnectMetaPageInput
+} from '@crm/contracts'
 
 const DEFAULT_TENANT_ID = '00000000-0000-0000-0000-000000000001'
 
@@ -25,12 +28,9 @@ export class MetaLeadsBffService {
           id: crypto.randomUUID(),
           tenantId: tid,
           status: 'DISCONNECTED',
-          metaAppId: process.env.META_APP_ID || '104857291029384',
+          metaAppId: process.env.META_APP_ID || null,
           webhookSecret: `fb_verify_${crypto.randomUUID().slice(0, 8)}`,
-          leadGenForms: [
-            { formId: 'meta_form_101', formName: 'Formulario Clientes Potenciales - Facebook Ads', status: 'ACTIVE', leadsCount: 38, defaultLeadStatus: 'NEW' },
-            { formName: 'Registro Demo Software LATAM 2026', formId: 'meta_form_102', status: 'ACTIVE', leadsCount: 19, defaultLeadStatus: 'QUALIFIED' },
-          ],
+          leadGenForms: [],
           autoCreateDeal: true,
           createdAt: now,
           updatedAt: now,
@@ -70,15 +70,90 @@ export class MetaLeadsBffService {
       .update(metaIntegrations)
       .set({
         status: 'CONNECTED',
-        metaUserId: 'meta_usr_99887711',
-        metaUserName: 'Nexora Marketing Director',
-        accessToken: `EAAB${crypto.randomUUID().replace(/-/g, '')}`,
+        accessToken: `EAAB_${code.slice(0, 16)}`,
         tokenExpiresAt: expiresAt,
-        selectedPageId: 'page_33445566',
-        selectedPageName: 'Nexora Enterprise Software & AI',
-        pageAccessToken: `EAAP${crypto.randomUUID().replace(/-/g, '')}`,
-        adAccountId: 'act_90881122',
-        adAccountName: 'Cuenta Publicitaria Nexora Growth',
+        lastSyncAt: now,
+        updatedAt: now,
+      })
+      .where(eq(metaIntegrations.tenantId, tid))
+      .returning()
+
+    return updated as MetaIntegration
+  }
+
+  async fetchMetaPagesAndAccounts(accessToken: string): Promise<{
+    pages: Array<{ id: string; name: string; access_token?: string; category?: string }>
+    adAccounts: Array<{ id: string; name: string }>
+  }> {
+    try {
+      const pagesRes = await fetch(
+        `https://graph.facebook.com/v20.0/me/accounts?access_token=${encodeURIComponent(accessToken)}&fields=id,name,access_token,category`
+      )
+      const pagesData = await pagesRes.json()
+      const pages = Array.isArray(pagesData.data)
+        ? pagesData.data.map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            access_token: p.access_token,
+            category: p.category,
+          }))
+        : []
+
+      const adsRes = await fetch(
+        `https://graph.facebook.com/v20.0/me/adaccounts?access_token=${encodeURIComponent(accessToken)}&fields=id,name,account_id`
+      )
+      const adsData = await adsRes.json()
+      const adAccounts = Array.isArray(adsData.data)
+        ? adsData.data.map((a: any) => ({
+            id: a.id || a.account_id,
+            name: a.name || `Cuenta Ads ${a.id}`,
+          }))
+        : []
+
+      return { pages, adAccounts }
+    } catch (err: any) {
+      this.logger.error(`Error querying Meta Graph API: ${err.message}`)
+      return { pages: [], adAccounts: [] }
+    }
+  }
+
+  async connectPage(dto: ConnectMetaPageInput, tenantId?: string): Promise<MetaIntegration> {
+    const tid = tenantId || DEFAULT_TENANT_ID
+    const now = new Date()
+    let forms: MetaLeadForm[] = []
+
+    if (dto.pageAccessToken && dto.pageId) {
+      try {
+        const formsRes = await fetch(
+          `https://graph.facebook.com/v20.0/${dto.pageId}/leadgen_forms?access_token=${encodeURIComponent(dto.pageAccessToken)}&fields=id,name,status,leads_count`
+        )
+        const formsData = await formsRes.json()
+        if (Array.isArray(formsData.data)) {
+          forms = formsData.data.map((f: any) => ({
+            formId: f.id,
+            formName: f.name,
+            status: f.status || 'ACTIVE',
+            leadsCount: f.leads_count || 0,
+            defaultLeadStatus: 'NEW',
+          }))
+        }
+      } catch (err: any) {
+        this.logger.warn(`Could not fetch leadgen forms immediately: ${err.message}`)
+      }
+    }
+
+    const [updated] = await this.db
+      .update(metaIntegrations)
+      .set({
+        status: 'CONNECTED',
+        selectedPageId: dto.pageId,
+        selectedPageName: dto.pageName,
+        pageAccessToken: dto.pageAccessToken || null,
+        adAccountId: dto.adAccountId || null,
+        adAccountName: dto.adAccountName || null,
+        accessToken: dto.userAccessToken || null,
+        metaAppId: dto.metaAppId || null,
+        leadGenForms: forms,
         lastSyncAt: now,
         updatedAt: now,
       })
@@ -103,16 +178,32 @@ export class MetaLeadsBffService {
 
   async syncForms(tenantId?: string): Promise<MetaLeadForm[]> {
     const integration = await this.getStatus(tenantId)
-    const forms: MetaLeadForm[] = [
-      { formId: 'meta_form_101', formName: 'Formulario Clientes Potenciales - Facebook Ads', status: 'ACTIVE', leadsCount: (integration.leadGenForms?.[0]?.leadsCount || 0) + 1, defaultLeadStatus: 'NEW' },
-      { formId: 'meta_form_102', formName: 'Registro Demo Software LATAM 2026', status: 'ACTIVE', leadsCount: (integration.leadGenForms?.[1]?.leadsCount || 0), defaultLeadStatus: 'QUALIFIED' },
-      { formId: 'meta_form_103', formName: 'Descarga Ebook Arquitectura CRM Enterprise', status: 'ACTIVE', leadsCount: 42, defaultLeadStatus: 'NEW' },
-    ]
+    let forms: MetaLeadForm[] = (integration.leadGenForms as MetaLeadForm[]) || []
 
-    await this.db
-      .update(metaIntegrations)
-      .set({ leadGenForms: forms, lastSyncAt: new Date(), updatedAt: new Date() })
-      .where(eq(metaIntegrations.id, integration.id))
+    if (integration.selectedPageId && (integration as any).pageAccessToken) {
+      try {
+        const formsRes = await fetch(
+          `https://graph.facebook.com/v20.0/${integration.selectedPageId}/leadgen_forms?access_token=${encodeURIComponent((integration as any).pageAccessToken)}&fields=id,name,status,leads_count`
+        )
+        const formsData = await formsRes.json()
+        if (Array.isArray(formsData.data)) {
+          forms = formsData.data.map((f: any) => ({
+            formId: f.id,
+            formName: f.name,
+            status: f.status || 'ACTIVE',
+            leadsCount: f.leads_count || 0,
+            defaultLeadStatus: 'NEW',
+          }))
+
+          await this.db
+            .update(metaIntegrations)
+            .set({ leadGenForms: forms, lastSyncAt: new Date(), updatedAt: new Date() })
+            .where(eq(metaIntegrations.id, integration.id))
+        }
+      } catch (err: any) {
+        this.logger.warn(`Failed to sync forms from Graph API: ${err.message}`)
+      }
+    }
 
     return forms
   }
@@ -127,6 +218,9 @@ export class MetaLeadsBffService {
         pageAccessToken: null,
         selectedPageId: null,
         selectedPageName: null,
+        adAccountId: null,
+        adAccountName: null,
+        leadGenForms: [],
         updatedAt: new Date(),
       })
       .where(eq(metaIntegrations.tenantId, tid))
@@ -134,32 +228,21 @@ export class MetaLeadsBffService {
 
   async listLogs(tenantId?: string): Promise<MetaLeadAdLog[]> {
     const tid = tenantId || DEFAULT_TENANT_ID
-    const logs = await this.db
-      .select()
-      .from(metaLeadAdLogs)
-      .where(eq(metaLeadAdLogs.tenantId, tid))
-      .orderBy(desc(metaLeadAdLogs.receivedAt))
-      .limit(50)
-
-    return logs as MetaLeadAdLog[]
+    return (await this.db.select().from(metaLeadAdLogs).where(eq(metaLeadAdLogs.tenantId, tid)).orderBy(desc(metaLeadAdLogs.receivedAt)).limit(50)) as MetaLeadAdLog[]
   }
 
   async simulateLead(dto: SimulateMetaLead, tenantId?: string) {
     const tid = tenantId || DEFAULT_TENANT_ID
     const integration = await this.getStatus(tid)
     const now = new Date()
-
-    // 1. Create Contact
     const contactId = crypto.randomUUID()
     const names = dto.fullName.split(' ')
-    const firstName = names[0] || 'Lead'
-    const lastName = names.slice(1).join(' ') || null
 
     await this.db.insert(contacts).values({
       id: contactId,
       tenantId: tid,
-      firstName,
-      lastName,
+      firstName: names[0] || 'Lead',
+      lastName: names.slice(1).join(' ') || null,
       email: dto.email,
       phone: dto.phone || '+57-310-555-0199',
       jobTitle: dto.jobTitle || 'Gerente Comercial',
@@ -170,7 +253,6 @@ export class MetaLeadsBffService {
       updatedAt: now,
     }).onConflictDoNothing()
 
-    // 2. Create Deal if enabled
     let dealId: string | null = null
     if (integration.autoCreateDeal) {
       const [firstPipeline] = await this.db.select().from(pipelines).where(eq(pipelines.tenantId, tid)).limit(1)
@@ -193,26 +275,21 @@ export class MetaLeadsBffService {
       }
     }
 
-    // 3. Record Log
     const logId = crypto.randomUUID()
-    const leadgenId = `leadgen_${Date.now()}`
-    const [log] = await this.db
-      .insert(metaLeadAdLogs)
-      .values({
-        id: logId,
-        tenantId: tid,
-        metaIntegrationId: integration.id,
-        leadgenId,
-        formName: dto.formName,
-        campaignName: dto.campaignName,
-        adName: dto.adName,
-        contactId,
-        dealId,
-        leadData: dto,
-        status: 'PROCESSED',
-        receivedAt: now,
-      })
-      .returning()
+    const [log] = await this.db.insert(metaLeadAdLogs).values({
+      id: logId,
+      tenantId: tid,
+      metaIntegrationId: integration.id,
+      leadgenId: `leadgen_${Date.now()}`,
+      formName: dto.formName,
+      campaignName: dto.campaignName,
+      adName: dto.adName,
+      contactId,
+      dealId,
+      leadData: dto,
+      status: 'PROCESSED',
+      receivedAt: now,
+    }).returning()
 
     return { success: true, contactId, dealId, log }
   }
