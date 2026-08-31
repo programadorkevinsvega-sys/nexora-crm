@@ -1,11 +1,19 @@
 "use client"
 
 import React, { useState } from "react"
-import { Facebook, Key, Building2, Check, Loader2, Sparkles, HelpCircle, ExternalLink } from "lucide-react"
+import { Key, Building2, Check, Loader2, Sparkles, HelpCircle, ExternalLink } from "lucide-react"
 import { Modal } from "@/src/presentation/crm/components/ui/Modal"
 import { Button } from "@/src/presentation/crm/components/ui/Button"
 import { useFetchMetaPages, useConnectMetaAccount } from "@/src/application/crm/di/hooks"
 import { ApiMetaLeadsRepository } from "@/src/infrastructure/crm/repositories/meta-leads/api-meta-leads.repository"
+
+function FacebookIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+    </svg>
+  )
+}
 
 interface MetaConnectModalProps {
   onClose: () => void
@@ -97,14 +105,14 @@ export function MetaConnectModal({ onClose, onSuccess }: MetaConnectModalProps) 
                 : "text-zinc-400 hover:text-zinc-200"
             }`}
           >
-            <Facebook className="h-3.5 w-3.5" />
+            <FacebookIcon className="h-3.5 w-3.5" />
             <span>OAuth 2.0 Directo</span>
           </button>
         </div>
 
         {activeTab === "oauth" ? (
           <div className="space-y-4 p-4 rounded-xl border border-zinc-800 bg-zinc-950/60 text-center">
-            <Facebook className="h-10 w-10 text-blue-500 mx-auto" />
+            <FacebookIcon className="h-10 w-10 text-blue-500 mx-auto" />
             <div className="space-y-1">
               <h4 className="font-semibold text-zinc-100">Iniciar Sesión con tu Cuenta de Facebook</h4>
               <p className="text-zinc-400 max-w-sm mx-auto text-[11px]">
@@ -112,7 +120,7 @@ export function MetaConnectModal({ onClose, onSuccess }: MetaConnectModalProps) 
               </p>
             </div>
             <Button onClick={handleOAuth} className="bg-blue-600 hover:bg-blue-500 text-white gap-2 mx-auto">
-              <Facebook className="h-4 w-4" />
+              <FacebookIcon className="h-4 w-4" />
               Abrir Login de Meta Facebook
             </Button>
           </div>
