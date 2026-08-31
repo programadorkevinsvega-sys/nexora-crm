@@ -70,6 +70,14 @@ export class AffiliatesBffController {
     return this.service.registerAffiliate(dto, tenantId!)
   }
 
+  @Post()
+  async registerAffiliateRoot(
+    @Body() dto: RegisterAffiliate,
+    @Headers('X-Tenant-Id') tenantId?: string,
+  ): Promise<Affiliate> {
+    return this.service.registerAffiliate(dto, tenantId!)
+  }
+
   @Get(':id')
   async getAffiliate(
     @Param('id', ParseUUIDPipe) id: string,

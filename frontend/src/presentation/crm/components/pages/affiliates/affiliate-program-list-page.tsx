@@ -53,8 +53,8 @@ export function ProgramListPage() {
         title="Affiliate Programs"
         description="Manage your affiliate programs"
         actions={
-          <Button onClick={() => router.push("/crm/affiliates/programs/new")}>
-            <Plus className="h-4 w-4" />
+          <Button onClick={() => router.push("/affiliates/programs/new")}>
+            <Plus className="h-4 w-4 mr-1.5" />
             Add Program
           </Button>
         }
@@ -69,7 +69,7 @@ export function ProgramListPage() {
           nextCursor={nextCursor}
           onLoadMore={loadMore}
           loadingMore={isLoadingMore}
-          onRowClick={(row) => router.push(`/crm/affiliates/programs/${row.id}`)}
+          onRowClick={(row) => router.push(`/affiliates/programs/${row.id}`)}
         />
       ) : (
         <EmptyState title="No affiliate programs found" description="Create your first program to get started" />
