@@ -13,6 +13,7 @@ import {
   Sparkles,
   CheckCircle2,
   Tag,
+  Upload,
 } from "lucide-react"
 import { Button } from "@/src/presentation/crm/components/ui/Button"
 import { Card } from "@/src/presentation/crm/components/ui/Card"
@@ -20,6 +21,7 @@ import { Badge } from "@/src/presentation/crm/components/ui/Badge"
 import { Modal } from "@/src/presentation/crm/components/ui/Modal"
 import { Skeleton } from "@/src/presentation/crm/components/ui/Skeleton"
 import { ApiKnowledgeBaseRepository } from "@/src/infrastructure/crm/repositories/knowledge-base/api-knowledge-base.repository"
+import { KbFileUploadModal } from "./kb-file-upload-modal"
 import type { KnowledgeBaseCategory, KnowledgeBaseArticle } from "@crm/contracts"
 
 export function KnowledgeBasePage() {
@@ -32,6 +34,7 @@ export function KnowledgeBasePage() {
 
   // Create article modal state
   const [showCreate, setShowCreate] = useState(false)
+  const [showUpload, setShowUpload] = useState(false)
   const [title, setTitle] = useState("")
   const [categoryId, setCategoryId] = useState("")
   const [summary, setSummary] = useState("")
@@ -116,10 +119,23 @@ export function KnowledgeBasePage() {
             Artículos, manuales de usuario y guías de autoayuda para clientes y agentes de soporte.
           </p>
         </div>
-        <Button size="sm" onClick={() => setShowCreate(true)}>
-          <Plus className="h-4 w-4 mr-1.5" /> Nuevo Artículo
-        </Button>
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" onClick={() => setShowUpload(true)}>
+            <Upload className="h-4 w-4 mr-1.5" /> Subir Documento
+          </Button>
+          <Button size="sm" onClick={() => setShowCreate(true)}>
+            <Plus className="h-4 w-4 mr-1.5" /> Nuevo Artículo
+          </Button>
+        </div>
       </div>
+
+      {/* Upload modal */}
+      <KbFileUploadModal
+        open={showUpload}
+        onClose={() => setShowUpload(false)}
+        categories={categories}
+        onSuccess={fetchData}
+      />
 
       {/* Search Bar */}
       <Card className="p-4 border shadow-sm bg-muted/10">

@@ -164,5 +164,6 @@ export {
 } from './schema/017-developer/developer'
 
 export { outboxEvents } from './schema/099-outbox/outbox-events'
+export { socialComments, socialAutoResponderRules } from './schema/018-social-inbox/social-inbox.schema'
 export { getDb } from './db'
 export type { DrizzleDb } from './db'
