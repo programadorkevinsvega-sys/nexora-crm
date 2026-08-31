@@ -96,6 +96,18 @@ export class IntegrationsDispatcher {
           message: 'Meta Facebook Lead Ads ya está conectado a través del módulo dedicado. Dirígete al panel de Facebook Ads para gestionar la integración.',
         }
 
+      case 'INSTAGRAM_LEADS':
+        return {
+          success: true,
+          message: 'Instagram Lead Ads se gestiona a través del mismo conector de Meta Business. Asegúrate de conectar tu cuenta de Instagram Business al panel de Facebook Ads.',
+        }
+
+      case 'TIKTOK_LEADS':
+        return {
+          success: true,
+          message: 'TikTok Lead Generation conectado. Configura tu TikTok Ads Manager con el Webhook URL del CRM para recibir leads en tiempo real desde campañas de TikTok.',
+        }
+
       default:
         throw new BadRequestException(`Proveedor desconocido: ${provider}`)
     }
