@@ -108,25 +108,40 @@ export async function seedCoreData(db: ReturnType<typeof getDb>, tenantId: strin
     tagIds.push(id)
   }
 
-  // 4. Contacts
+  // 4. Contacts & Organizational Hierarchy Tree
+  const stripeCeoId = crypto.randomUUID()
+  const stripeVpEngId = crypto.randomUUID()
+  const stripeVpSalesId = crypto.randomUUID()
+  const meliCtoId = crypto.randomUUID()
+
   const contactsData = [
-    { fn: 'Carlos', ln: 'Mendoza', em: 'carlos.mendoza@stripe.com', ph: '+57-300-111-2233', title: 'VP de Expansión LATAM', lead: 'CUSTOMER', star: true },
-    { fn: 'Valentina', ln: 'Rios', em: 'valentina.rios@mercadolibre.com', ph: '+54-911-555-4422', title: 'Directora de Tecnología (CTO)', lead: 'QUALIFIED', star: true },
-    { fn: 'David', ln: 'Silva', em: 'david.silva@nubank.com', ph: '+55-11-9888-7766', title: 'Head of Enterprise Procurement', lead: 'CUSTOMER', star: false },
-    { fn: 'Camila', ln: 'Ortega', em: 'camila.ortega@rappi.com', ph: '+57-310-999-8877', title: 'VP of Commercial Strategy', lead: 'QUALIFIED', star: true },
-    { fn: 'Alejandro', ln: 'Morales', em: 'a.morales@cloudscale.io', ph: '+1-415-555-0199', title: 'Chief Executive Officer (CEO)', lead: 'NEW', star: false },
-    { fn: 'Lucía', ln: 'Fernandez', em: 'lucia.f@biohealth.org', ph: '+52-55-8888-3322', title: 'Directora de Operaciones', lead: 'CONTACTED', star: false },
-    { fn: 'Mateo', ln: 'Gomez', em: 'mateo.gomez@stripe.com', ph: '+57-320-444-5566', title: 'Lead Architect', lead: 'CUSTOMER', star: false },
-    { fn: 'Sofia', ln: 'Castro', em: 'sofia.castro@mercadolibre.com', ph: '+54-911-333-2211', title: 'Gerente de Proyectos Cloud', lead: 'QUALIFIED', star: true },
+    // Stripe Latin America (Full 3-Tier Org Tree)
+    { id: stripeCeoId, compIdx: 0, fn: 'Carlos', ln: 'Mendoza', em: 'carlos.mendoza@stripe.com', ph: '+57-300-111-2233', title: 'Director General & CEO LATAM', lead: 'CUSTOMER', star: true, repId: null, dept: 'Dirección General & Estrategia', sen: 'C_LEVEL' },
+    { id: stripeVpEngId, compIdx: 0, fn: 'Mateo', ln: 'Gomez', em: 'mateo.gomez@stripe.com', ph: '+57-320-444-5566', title: 'VP de Tecnología e Infraestructura', lead: 'CUSTOMER', star: true, repId: stripeCeoId, dept: 'Tecnología & Ingeniería', sen: 'VP' },
+    { id: stripeVpSalesId, compIdx: 0, fn: 'Mariana', ln: 'Torres', em: 'mariana.torres@stripe.com', ph: '+57-311-888-9900', title: 'VP de Expansión & Revenue', lead: 'CUSTOMER', star: true, repId: stripeCeoId, dept: 'Ventas & Expansión Comercial', sen: 'VP' },
+    { id: crypto.randomUUID(), compIdx: 0, fn: 'Felipe', ln: 'Morales', em: 'felipe.morales@stripe.com', ph: '+57-315-777-6655', title: 'Lead Cloud Architect', lead: 'CUSTOMER', star: false, repId: stripeVpEngId, dept: 'Tecnología & Ingeniería', sen: 'LEAD' },
+    { id: crypto.randomUUID(), compIdx: 0, fn: 'Andrea', ln: 'Vargas', em: 'andrea.vargas@stripe.com', ph: '+57-301-444-3322', title: 'Senior Security Engineer', lead: 'CUSTOMER', star: false, repId: stripeVpEngId, dept: 'Tecnología & Ingeniería', sen: 'SPECIALIST' },
+    { id: crypto.randomUUID(), compIdx: 0, fn: 'Esteban', ln: 'Ruiz', em: 'esteban.ruiz@stripe.com', ph: '+57-318-222-1100', title: 'Senior Enterprise Account Executive', lead: 'CUSTOMER', star: false, repId: stripeVpSalesId, dept: 'Ventas & Expansión Comercial', sen: 'SPECIALIST' },
+
+    // MercadoLibre Corp
+    { id: meliCtoId, compIdx: 1, fn: 'Valentina', ln: 'Rios', em: 'valentina.rios@mercadolibre.com', ph: '+54-911-555-4422', title: 'Chief Technology Officer (CTO)', lead: 'QUALIFIED', star: true, repId: null, dept: 'Tecnología & Ingeniería', sen: 'C_LEVEL' },
+    { id: crypto.randomUUID(), compIdx: 1, fn: 'Sofia', ln: 'Castro', em: 'sofia.castro@mercadolibre.com', ph: '+54-911-333-2211', title: 'Gerente de Proyectos Cloud', lead: 'QUALIFIED', star: true, repId: meliCtoId, dept: 'Tecnología & Ingeniería', sen: 'MANAGER' },
+    { id: crypto.randomUUID(), compIdx: 1, fn: 'Diego', ln: 'Navarro', em: 'diego.navarro@mercadolibre.com', ph: '+54-911-777-8899', title: 'Arquitecto de Soluciones E-Commerce', lead: 'QUALIFIED', star: false, repId: meliCtoId, dept: 'Tecnología & Ingeniería', sen: 'SPECIALIST' },
+
+    // Other Enterprises
+    { id: crypto.randomUUID(), compIdx: 2, fn: 'David', ln: 'Silva', em: 'david.silva@nubank.com', ph: '+55-11-9888-7766', title: 'Head of Enterprise Procurement', lead: 'CUSTOMER', star: false, repId: null, dept: 'Finanzas & Compras', sen: 'DIRECTOR' },
+    { id: crypto.randomUUID(), compIdx: 3, fn: 'Camila', ln: 'Ortega', em: 'camila.ortega@rappi.com', ph: '+57-310-999-8877', title: 'VP of Commercial Strategy', lead: 'QUALIFIED', star: true, repId: null, dept: 'Ventas & Expansión Comercial', sen: 'VP' },
+    { id: crypto.randomUUID(), compIdx: 4, fn: 'Alejandro', ln: 'Morales', em: 'a.morales@cloudscale.io', ph: '+1-415-555-0199', title: 'Chief Executive Officer (CEO)', lead: 'NEW', star: false, repId: null, dept: 'Dirección General & Estrategia', sen: 'C_LEVEL' },
+    { id: crypto.randomUUID(), compIdx: 5, fn: 'Lucía', ln: 'Fernandez', em: 'lucia.f@biohealth.org', ph: '+52-55-8888-3322', title: 'Directora de Operaciones', lead: 'CONTACTED', star: false, repId: null, dept: 'Operaciones & Logística', sen: 'DIRECTOR' },
   ]
+
   const contactIds: string[] = []
   for (let i = 0; i < contactsData.length; i++) {
     const c = contactsData[i]
-    const id = crypto.randomUUID()
     await db.insert(contacts).values({
-      id,
+      id: c.id,
       tenantId,
-      companyId: companyIds[i % companyIds.length],
+      companyId: companyIds[c.compIdx % companyIds.length],
       firstName: c.fn,
       lastName: c.ln,
       email: c.em,
@@ -144,14 +159,19 @@ export async function seedCoreData(db: ReturnType<typeof getDb>, tenantId: strin
       leadStatus: c.lead as any,
       loyaltyPoints: (i + 1) * 350,
       isStarred: c.star,
+      metadata: {
+        reportsToId: c.repId,
+        department: c.dept,
+        seniorityLevel: c.sen,
+      },
       createdAt: now,
       updatedAt: now,
     }).onConflictDoNothing()
-    contactIds.push(id)
+    contactIds.push(c.id)
 
     // Tag contact
     await db.insert(contactTags).values({
-      contactId: id,
+      contactId: c.id,
       tagId: tagIds[i % tagIds.length],
       tenantId,
     }).onConflictDoNothing()
