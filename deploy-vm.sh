@@ -98,6 +98,10 @@ if [ "$BUILD_ON_REMOTE" = true ]; then
 
     echo \"🔨 2. Compilando paquetes y servicios (Turborepo + Next.js)...\"
     pnpm build
+    if [ -d \"frontend\" ]; then
+      echo \"🎨 Compilando frontend Next.js...\"
+      cd frontend && pnpm build && cd ..
+    fi
 
     echo \"🔄 3. Recargando procesos con PM2...\"
     if command -v pm2 &> /dev/null; then
