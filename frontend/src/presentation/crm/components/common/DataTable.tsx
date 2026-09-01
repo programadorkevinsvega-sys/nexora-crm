@@ -46,16 +46,16 @@ function DataTable<T>({
   }
 
   return (
-    <div className={cn("overflow-hidden rounded-[12px] shadow-[rgb(35,37,42)_0px_0px_0px_1px_inset]", className)}>
+    <div className={cn("overflow-hidden rounded-[12px] border border-border bg-card shadow-xs", className)}>
       <div className="overflow-x-auto">
         <table className="w-full border-collapse">
           <thead>
-            <tr className="bg-[#0f1011] border-b border-[#23252a]">
+            <tr className="bg-muted/50 border-b border-border">
               {columns.map((col) => (
                 <th
                   key={col.key}
                   className={cn(
-                    "px-4 py-2.5 text-[11px] font-[510] uppercase tracking-[0.06em] text-[#62666d] select-none",
+                    "px-4 py-2.5 text-[11px] font-[510] uppercase tracking-[0.06em] text-muted-foreground select-none",
                     alignClass(col.align),
                     col.className,
                   )}
@@ -68,22 +68,22 @@ function DataTable<T>({
           <tbody>
             {loading && data.length === 0 ? (
               Array.from({ length: 5 }).map((_, i) => (
-                <tr key={i} className="animate-pulse border-b border-[#23252a]">
+                <tr key={i} className="animate-pulse border-b border-border">
                   {columns.map((col) => (
                     <td key={col.key} className="px-4 py-3">
-                      <Skeleton className="h-4 w-full bg-[rgba(255,255,255,0.04)]" />
+                      <Skeleton className="h-4 w-full" />
                     </td>
                   ))}
                 </tr>
               ))
             ) : data.length === 0 ? (
               <tr>
-                <td colSpan={columns.length} className="px-4 py-16 text-center text-[#8a8f98]">
+                <td colSpan={columns.length} className="px-4 py-16 text-center text-muted-foreground">
                   <div className="flex flex-col items-center justify-center gap-2">
-                    <div className="p-3 rounded-full text-[#383b3f]">
+                    <div className="p-3 rounded-full text-muted-foreground/60">
                       <Inbox className="w-6 h-6" />
                     </div>
-                    <p className="text-[13px] font-[400] text-[#62666d]">{emptyMessage}</p>
+                    <p className="text-[13px] font-[400] text-muted-foreground">{emptyMessage}</p>
                   </div>
                 </td>
               </tr>
@@ -93,15 +93,15 @@ function DataTable<T>({
                   key={(row as Record<string, unknown>).id as string ?? rowIndex}
                   onClick={() => onRowClick?.(row)}
                   className={cn(
-                    "border-b border-[#23252a] transition-colors duration-100",
-                    onRowClick && "cursor-pointer hover:bg-[rgba(255,255,255,0.02)]",
+                    "border-b border-border transition-colors duration-100",
+                    onRowClick && "cursor-pointer hover:bg-muted/40",
                   )}
                 >
                   {columns.map((col) => (
                     <td
                       key={col.key}
                       className={cn(
-                        "px-4 py-3 text-[13px] text-[#d0d6e0]",
+                        "px-4 py-3 text-[13px] text-foreground",
                         alignClass(col.align),
                         col.className,
                       )}
@@ -116,7 +116,7 @@ function DataTable<T>({
         </table>
       </div>
       {nextCursor && onLoadMore && (
-        <div className="flex justify-center p-3 border-t border-[#23252a]">
+        <div className="flex justify-center p-3 border-t border-border bg-muted/20">
           <Button
             variant="secondary"
             size="sm"

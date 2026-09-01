@@ -10,19 +10,19 @@ export const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-[#e4f222] hover:bg-[#edf755] text-[#08090a] rounded-[6px] shadow-[rgba(0,0,0,0.01)_0px_5px_2px_0px,rgba(0,0,0,0.04)_0px_3px_2px_0px,rgba(0,0,0,0.07)_0px_1px_1px_0px,rgba(0,0,0,0.08)_0px_0px_1px_0px]",
+          "bg-primary hover:opacity-90 text-primary-foreground rounded-[6px] shadow-xs",
         secondary:
-          "bg-transparent hover:bg-[#23252a] text-[#d0d6e0] rounded-[6px] border border-[#23252a] hover:border-[#383b3f]",
+          "bg-card hover:bg-muted text-foreground rounded-[6px] border border-border hover:border-border/80",
         ghost:
-          "bg-transparent text-[#8a8f98] hover:text-[#d0d6e0] hover:bg-[rgba(255,255,255,0.04)] rounded-[6px]",
+          "bg-transparent text-muted-foreground hover:text-foreground hover:bg-muted/60 rounded-[6px]",
         danger:
-          "bg-transparent hover:bg-[rgba(235,87,87,0.08)] text-[#eb5757] border border-[#23252a] hover:border-[rgba(235,87,87,0.3)] rounded-[6px]",
+          "bg-transparent hover:bg-destructive/10 text-destructive border border-border hover:border-destructive/30 rounded-[6px]",
         outline:
-          "border border-[#23252a] bg-transparent text-[#d0d6e0] hover:bg-[rgba(255,255,255,0.03)] hover:border-[#383b3f] rounded-[6px]",
+          "border border-border bg-transparent text-foreground hover:bg-muted rounded-[6px]",
         success:
-          "bg-[#27a644] hover:bg-[#2db84e] text-white rounded-[6px] shadow-[rgba(0,0,0,0.4)_0px_2px_4px_0px]",
+          "bg-emerald-600 hover:bg-emerald-500 text-white rounded-[6px] shadow-xs",
         glass:
-          "bg-[rgba(255,255,255,0.03)] hover:bg-[rgba(255,255,255,0.06)] text-[#d0d6e0] border border-[#23252a] rounded-[6px]",
+          "bg-muted/40 hover:bg-muted/70 text-foreground border border-border rounded-[6px]",
       },
       size: {
         sm: "h-7 px-3 text-[12px] [&_svg]:size-3",

@@ -83,21 +83,21 @@ export function CrmSidebar() {
 
   return (
     <aside
-      className={`flex flex-col bg-[#08090a] border-r border-[#23252a] transition-all duration-200 z-30 select-none ${
+      className={`flex flex-col bg-background border-r border-border transition-all duration-200 z-30 select-none ${
         sidebarCollapsed ? "w-14" : "w-60"
       }`}
     >
       {/* Brand */}
-      <div className="flex h-12 items-center justify-between px-3 border-b border-[#23252a]">
+      <div className="flex h-12 items-center justify-between px-3 border-b border-border">
         {!sidebarCollapsed && (
           <div className="flex items-center gap-2">
-            <div className="h-[7px] w-[7px] rounded-[1px] bg-[#e4f222]" />
-            <span className="text-[13px] font-[510] tracking-[-0.011em] text-[#ffffff]">NEXORA</span>
+            <div className="h-[7px] w-[7px] rounded-[1px] bg-primary" />
+            <span className="text-[13px] font-[510] tracking-[-0.011em] text-foreground">NEXORA</span>
           </div>
         )}
         <button
           onClick={toggleSidebar}
-          className="flex h-6 w-6 items-center justify-center rounded-[6px] text-[#62666d] hover:text-[#d0d6e0] hover:bg-[rgba(255,255,255,0.04)] transition-colors"
+          className="flex h-6 w-6 items-center justify-center rounded-[6px] text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
           title={sidebarCollapsed ? "Expandir menú" : "Colapsar menú"}
         >
           {sidebarCollapsed ? <PanelLeft size={14} /> : <PanelLeftClose size={14} />}
@@ -109,7 +109,7 @@ export function CrmSidebar() {
         {navSections.map((section) => (
           <div key={section.title} className="mb-1">
             {!sidebarCollapsed && (
-              <p className="px-3 pt-3 pb-1 text-[10px] font-[510] uppercase tracking-[0.06em] text-[#62666d] select-none">
+              <p className="px-3 pt-3 pb-1 text-[10px] font-[510] uppercase tracking-[0.06em] text-muted-foreground select-none">
                 {section.title}
               </p>
             )}
@@ -124,8 +124,8 @@ export function CrmSidebar() {
                       title={sidebarCollapsed ? item.label : undefined}
                       className={`flex items-center justify-between rounded-[6px] px-2.5 py-1.5 text-[13px] font-[400] transition-all ${
                         isActive
-                          ? "bg-[rgba(255,255,255,0.06)] text-[#d0d6e0] shadow-[rgb(35,37,42)_0px_0px_0px_1px_inset]"
-                          : "text-[#8a8f98] hover:text-[#d0d6e0] hover:bg-[rgba(255,255,255,0.04)]"
+                          ? "bg-accent text-accent-foreground border border-border shadow-xs"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                       } ${sidebarCollapsed ? "justify-center px-0" : ""}`}
                     >
                       <div className="flex items-center gap-2">
@@ -135,8 +135,8 @@ export function CrmSidebar() {
                       {!sidebarCollapsed && item.badge && (
                         <span className={`text-[10px] font-[510] font-mono px-1.5 rounded-[3px] ${
                           item.badge === "IA"
-                            ? "bg-[rgba(139,92,246,0.12)] text-[#8b5cf6]"
-                            : "bg-[rgba(228,242,34,0.12)] text-[#e4f222]"
+                            ? "bg-purple-500/10 text-purple-500 border border-purple-500/20"
+                            : "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
                         }`}>
                           {item.badge}
                         </span>

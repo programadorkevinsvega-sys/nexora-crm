@@ -10,11 +10,11 @@ function Card({ className, hover = false, elevated = false, children, ...props }
   return (
     <div
       className={cn(
-        "rounded-[12px] p-6",
+        "rounded-[12px] p-6 transition-colors duration-150",
         elevated
-          ? "bg-[#161718] shadow-[rgb(35,37,42)_0px_0px_0px_1px_inset]"
-          : "bg-[#0f1011] shadow-[rgb(35,37,42)_0px_0px_0px_1px_inset]",
-        hover && "transition-all duration-150 hover:bg-[#161718] cursor-pointer",
+          ? "bg-secondary text-secondary-foreground border border-border shadow-xs"
+          : "bg-card text-card-foreground border border-border shadow-xs",
+        hover && "hover:bg-accent hover:border-border/80 cursor-pointer",
         className,
       )}
       {...props}

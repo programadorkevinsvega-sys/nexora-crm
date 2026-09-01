@@ -9,14 +9,14 @@ export function ThemeToggle({ className }: { className?: string }) {
   return (
     <button
       onClick={toggleTheme}
-      className={`flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:text-amber-300 hover:bg-white/[0.06] border border-white/[0.08] transition-all cursor-pointer select-none ${className || ""}`}
+      className={`flex h-7 w-7 items-center justify-center rounded-[6px] text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer select-none ${className || ""}`}
       title={theme === "dark" ? "Cambiar a Modo Claro" : "Cambiar a Modo Oscuro"}
       aria-label="Cambiar tema"
     >
       {theme === "dark" ? (
-        <Sun className="w-4 h-4 text-amber-400 transition-transform rotate-0 scale-100" />
+        <Sun size={14} className="text-amber-400" />
       ) : (
-        <Moon className="w-4 h-4 text-blue-500 transition-transform rotate-0 scale-100" />
+        <Moon size={14} className="text-indigo-500" />
       )}
     </button>
   )

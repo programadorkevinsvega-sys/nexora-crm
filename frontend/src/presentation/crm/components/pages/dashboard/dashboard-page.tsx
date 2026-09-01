@@ -23,22 +23,22 @@ interface StatCardProps {
 
 function StatCard({ icon: Icon, label, value, trend, loading, href }: StatCardProps) {
   const content = (
-    <div className="bg-[#0f1011] rounded-[12px] p-5 shadow-[rgb(35,37,42)_0px_0px_0px_1px_inset] hover:bg-[#161718] transition-colors group">
+    <div className="bg-card rounded-[12px] p-5 border border-border hover:bg-accent transition-colors group shadow-xs">
       <div className="flex items-center justify-between mb-4">
-        <div className="flex h-7 w-7 items-center justify-center rounded-[6px] bg-[rgba(255,255,255,0.04)] border border-[#23252a]">
-          <Icon size={14} className="text-[#8a8f98] group-hover:text-[#d0d6e0] transition-colors" />
+        <div className="flex h-7 w-7 items-center justify-center rounded-[6px] bg-muted border border-border">
+          <Icon size={14} className="text-muted-foreground group-hover:text-foreground transition-colors" />
         </div>
         {trend && (
-          <span className="text-[11px] font-[510] font-mono text-[#27a644] bg-[rgba(39,166,68,0.1)] px-1.5 py-0.5 rounded-[4px]">
+          <span className="text-[11px] font-[510] font-mono text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded-[4px]">
             {trend}
           </span>
         )}
       </div>
-      <p className="text-[12px] text-[#62666d] mb-1">{label}</p>
+      <p className="text-[12px] text-muted-foreground mb-1">{label}</p>
       {loading ? (
-        <Skeleton className="h-7 w-16 bg-[rgba(255,255,255,0.04)]" />
+        <Skeleton className="h-7 w-16" />
       ) : (
-        <p className="text-[24px] font-[510] text-[#ffffff]" style={{ letterSpacing: "-0.288px" }}>{value}</p>
+        <p className="text-[24px] font-[510] text-foreground" style={{ letterSpacing: "-0.288px" }}>{value}</p>
       )}
     </div>
   )
@@ -88,18 +88,18 @@ export function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Page title */}
-      <div className="flex items-center justify-between border-b border-[#23252a] pb-5">
+      <div className="flex items-center justify-between border-b border-border pb-5">
         <div>
-          <h1 className="text-[20px] font-[510] text-[#ffffff]" style={{ letterSpacing: "-0.24px" }}>
+          <h1 className="text-[20px] font-[510] text-foreground" style={{ letterSpacing: "-0.24px" }}>
             Panel de Control
           </h1>
-          <p className="text-[13px] text-[#62666d] mt-0.5">Resumen ejecutivo de tu operación comercial</p>
+          <p className="text-[13px] text-muted-foreground mt-0.5">Resumen ejecutivo de tu operación comercial</p>
         </div>
         <div className="flex items-center gap-2">
-          <Link href="/contacts" className="flex items-center gap-1.5 px-3 h-7 text-[13px] font-[400] text-[#8a8f98] hover:text-[#d0d6e0] border border-[#23252a] hover:bg-[rgba(255,255,255,0.04)] rounded-[6px] transition-colors">
+          <Link href="/contacts" className="flex items-center gap-1.5 px-3 h-7 text-[13px] font-[400] text-muted-foreground hover:text-foreground border border-border hover:bg-muted rounded-[6px] transition-colors">
             <Plus size={13} /> Contacto
           </Link>
-          <Link href="/pipelines/deals/new" className="flex items-center gap-1.5 px-3 h-7 text-[13px] font-[510] text-[#08090a] bg-[#e4f222] hover:bg-[#edf755] rounded-[6px] transition-colors tracking-[-0.011em]">
+          <Link href="/pipelines/deals/new" className="flex items-center gap-1.5 px-3 h-7 text-[13px] font-[510] text-primary-foreground bg-primary hover:opacity-90 rounded-[6px] transition-colors tracking-[-0.011em]">
             <Plus size={13} /> Oportunidad
           </Link>
         </div>
@@ -115,31 +115,31 @@ export function DashboardPage() {
 
       {/* Activity + Shortcuts */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-[#0f1011] rounded-[12px] p-6 shadow-[rgb(35,37,42)_0px_0px_0px_1px_inset]">
+        <div className="lg:col-span-2 bg-card rounded-[12px] p-6 border border-border shadow-xs">
           <div className="flex items-center justify-between mb-5">
-            <h2 className="text-[14px] font-[510] text-[#d0d6e0]">Actividad Reciente</h2>
-            <span className="text-[11px] text-[#62666d] font-mono">En vivo</span>
+            <h2 className="text-[14px] font-[510] text-foreground">Actividad Reciente</h2>
+            <span className="text-[11px] text-muted-foreground font-mono">En vivo</span>
           </div>
           {recentActivity.length === 0 && !ticketsQuery.isLoading ? (
-            <p className="text-[13px] text-[#62666d] py-10 text-center">No hay actividad reciente registrada</p>
+            <p className="text-[13px] text-muted-foreground py-10 text-center">No hay actividad reciente registrada</p>
           ) : (
             <ActivityTimeline items={recentActivity} loading={ticketsQuery.isLoading} />
           )}
         </div>
 
-        <div className="bg-[#0f1011] rounded-[12px] p-6 shadow-[rgb(35,37,42)_0px_0px_0px_1px_inset] space-y-3">
-          <h3 className="text-[14px] font-[510] text-[#d0d6e0] mb-4">Accesos Directos</h3>
+        <div className="bg-card rounded-[12px] p-6 border border-border shadow-xs space-y-3">
+          <h3 className="text-[14px] font-[510] text-foreground mb-4">Accesos Directos</h3>
           {[
             { href: "/analytics/forecast", icon: TrendingUp, label: "Forecasting 3M / 6M" },
             { href: "/calls", icon: Phone, label: "Llamadas VoIP" },
             { href: "/quotes", icon: FileText, label: "Cotizaciones CPQ" },
           ].map(({ href, icon: Icon, label }) => (
-            <Link key={href} href={href} className="flex items-center justify-between p-3 rounded-[6px] hover:bg-[rgba(255,255,255,0.04)] transition-colors group border border-transparent hover:border-[#23252a]">
+            <Link key={href} href={href} className="flex items-center justify-between p-3 rounded-[6px] hover:bg-muted/60 transition-colors group border border-transparent hover:border-border">
               <div className="flex items-center gap-2.5">
-                <Icon size={14} className="text-[#62666d] group-hover:text-[#8a8f98] transition-colors" />
-                <span className="text-[13px] text-[#8a8f98] group-hover:text-[#d0d6e0] transition-colors">{label}</span>
+                <Icon size={14} className="text-muted-foreground group-hover:text-foreground transition-colors" />
+                <span className="text-[13px] text-muted-foreground group-hover:text-foreground transition-colors">{label}</span>
               </div>
-              <ArrowUpRight size={12} className="text-[#62666d] group-hover:text-[#d0d6e0] transition-colors" />
+              <ArrowUpRight size={12} className="text-muted-foreground group-hover:text-foreground transition-colors" />
             </Link>
           ))}
         </div>
