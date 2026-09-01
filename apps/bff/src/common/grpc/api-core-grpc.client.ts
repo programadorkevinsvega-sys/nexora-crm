@@ -384,7 +384,7 @@ export class ApiCoreGrpcClient implements OnModuleInit {
     this.knowledgeBase = this.client.getService<KnowledgeBaseGrpc>('KnowledgeBaseService')
     this.ai = this.client.getService<AiGrpc>('AiService')
     this.developer = this.client.getService<DeveloperGrpc>('DeveloperService')
-    const safeGetService = <T>(serviceName: string): T => {
+    const safeGetService = <T extends {}>(serviceName: string): T => {
       try {
         return this.client.getService<T>(serviceName)
       } catch {
