@@ -57,28 +57,33 @@ export class CacheService implements OnModuleInit, OnModuleDestroy {
 
   async getOrSet<T>(key: string, fetch: () => Promise<T>, ttlMs: number = 30000): Promise<T> {
     const redis = this.getReadyRedis()
-    if (!redis) {
-      return fetch()
-    }
-
-    try {
-      const cached = await redis.get(key)
-      if (cached) {
-        try {
-          return JSON.parse(cached) as T
-        } catch {
-          this.logger.warn(`Invalid cache payload for key "${key}", refreshing value`)
-          await redis.del(key)
+    if (redis) {
+      try {
+        const cached = await redis.get(key)
+        if (cached) {
+          try {
+            return JSON.parse(cached) as T
+          } catch {
+            this.logger.warn(`Invalid cache payload for key "${key}", refreshing value`)
+            await redis.del(key)
+          }
         }
+      } catch (error) {
+        this.reportRedisUnavailable('Redis unavailable during getOrSet read', error)
       }
-
-      const data = await fetch()
-      await redis.setex(key, Math.ceil(ttlMs / 1000), JSON.stringify(data))
-      return data
-    } catch (error) {
-      this.reportRedisUnavailable('Redis unavailable during getOrSet', error)
-      return fetch()
     }
+
+    const data = await fetch()
+
+    if (redis && this.redisReady) {
+      try {
+        await redis.setex(key, Math.ceil(ttlMs / 1000), JSON.stringify(data))
+      } catch (error) {
+        this.reportRedisUnavailable('Redis unavailable during getOrSet write', error)
+      }
+    }
+
+    return data
   }
 
   async getRaw(key: string): Promise<string | null> {

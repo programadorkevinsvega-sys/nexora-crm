@@ -1,4 +1,13 @@
-import { Injectable, Inject, OnModuleInit } from '@nestjs/common'
+import {
+  Injectable,
+  Inject,
+  OnModuleInit,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+  UnauthorizedException,
+  ForbiddenException,
+} from '@nestjs/common'
 import { ClientGrpc } from '@nestjs/microservices'
 import { Observable, lastValueFrom } from 'rxjs'
 import type { Company, Tag } from '@crm/contracts'
@@ -390,6 +399,31 @@ export class ApiCoreGrpcClient implements OnModuleInit {
     this.metaLeads = this.client.getService<MetaLeadsGrpc>('MetaLeadsService')
   }
 
+  private async unwrap<T>(obs: Observable<T>): Promise<T> {
+    try {
+      return await lastValueFrom(obs)
+    } catch (err: any) {
+      const msg = err?.details || err?.message || ''
+      const lower = msg.toLowerCase()
+      if (err?.code === 5 || lower.includes('not found')) {
+        throw new NotFoundException(msg.replace(/^\d+\s+[A-Z_]+:\s*/, ''))
+      }
+      if (err?.code === 6 || lower.includes('already exists')) {
+        throw new ConflictException(msg.replace(/^\d+\s+[A-Z_]+:\s*/, ''))
+      }
+      if (err?.code === 16 || lower.includes('unauthorized')) {
+        throw new UnauthorizedException(msg.replace(/^\d+\s+[A-Z_]+:\s*/, ''))
+      }
+      if (err?.code === 7 || lower.includes('forbidden')) {
+        throw new ForbiddenException(msg.replace(/^\d+\s+[A-Z_]+:\s*/, ''))
+      }
+      if (err?.code === 3 || lower.includes('invalid') || lower.includes('bad request')) {
+        throw new BadRequestException(msg.replace(/^\d+\s+[A-Z_]+:\s*/, ''))
+      }
+      throw err
+    }
+  }
+
   // ─── Companies ──────────────────────────────────────────
 
   async createCompany(dto: {
@@ -403,12 +437,12 @@ export class ApiCoreGrpcClient implements OnModuleInit {
     description?: string | null
     parentCompanyId?: string | null
   }): Promise<Company> {
-    const res = await lastValueFrom(this.companies.createCompany(dto))
+    const res = await this.unwrap(this.companies.createCompany(dto))
     return JSON.parse(res.json)
   }
 
   async getCompany(tenantId: string, id: string): Promise<Company> {
-    const res = await lastValueFrom(this.companies.getCompany({ tenantId, id }))
+    const res = await this.unwrap(this.companies.getCompany({ tenantId, id }))
     return JSON.parse(res.json)
   }
 
