@@ -1,3 +1,20 @@
+export interface CreateConversationProps {
+  tenantId: string
+  mailboxId: string
+  subject: string
+  customerEmail: string
+  customerId?: string
+  assigneeUserId?: string
+  status?: string
+  priority?: string
+  sourceChannel?: string
+  previewText?: string
+  estimatedHours?: number
+  dueDate?: Date
+  isInternal?: boolean
+  requiresApproval?: boolean
+}
+
 export class HelpdeskConversation {
   constructor(
     readonly id: string,
@@ -27,22 +44,7 @@ export class HelpdeskConversation {
     readonly updatedAt: Date,
   ) {}
 
-  static create(props: {
-    tenantId: string
-    mailboxId: string
-    subject: string
-    customerEmail: string
-    customerId?: string
-    assigneeUserId?: string
-    status?: string
-    priority?: string
-    sourceChannel?: string
-    previewText?: string
-    estimatedHours?: number
-    dueDate?: Date
-    isInternal?: boolean
-    requiresApproval?: boolean
-  }): HelpdeskConversation {
+  static create(props: CreateConversationProps): HelpdeskConversation {
     return new HelpdeskConversation(
       crypto.randomUUID(),
       props.tenantId,
@@ -72,94 +74,51 @@ export class HelpdeskConversation {
     )
   }
 
-  assign(userId: string): HelpdeskConversation {
+  private clone(overrides: Partial<Record<keyof HelpdeskConversation, any>>): HelpdeskConversation {
     return new HelpdeskConversation(
-      this.id,
-      this.tenantId,
-      this.mailboxId,
-      this.ticketNumber,
-      this.subject,
-      this.customerEmail,
-      this.customerId,
-      userId,
-      this.status,
-      this.priority,
-      this.sourceChannel,
-      this.previewText,
-      this.hasAttachments,
-      this.lastReplyAt,
-      this.lastReplyFrom,
-      this.closedAt,
-      this.estimatedHours,
-      this.workedHours,
-      this.dueDate,
-      this.firstResponseAt,
-      this.resolvedAt,
-      this.isInternal,
-      this.requiresApproval,
+      overrides.id ?? this.id,
+      overrides.tenantId ?? this.tenantId,
+      overrides.mailboxId ?? this.mailboxId,
+      overrides.ticketNumber !== undefined ? overrides.ticketNumber : this.ticketNumber,
+      overrides.subject ?? this.subject,
+      overrides.customerEmail ?? this.customerEmail,
+      overrides.customerId !== undefined ? overrides.customerId : this.customerId,
+      overrides.assigneeUserId !== undefined ? overrides.assigneeUserId : this.assigneeUserId,
+      overrides.status ?? this.status,
+      overrides.priority ?? this.priority,
+      overrides.sourceChannel ?? this.sourceChannel,
+      overrides.previewText !== undefined ? overrides.previewText : this.previewText,
+      overrides.hasAttachments !== undefined ? overrides.hasAttachments : this.hasAttachments,
+      overrides.lastReplyAt !== undefined ? overrides.lastReplyAt : this.lastReplyAt,
+      overrides.lastReplyFrom !== undefined ? overrides.lastReplyFrom : this.lastReplyFrom,
+      overrides.closedAt !== undefined ? overrides.closedAt : this.closedAt,
+      overrides.estimatedHours !== undefined ? overrides.estimatedHours : this.estimatedHours,
+      overrides.workedHours !== undefined ? overrides.workedHours : this.workedHours,
+      overrides.dueDate !== undefined ? overrides.dueDate : this.dueDate,
+      overrides.firstResponseAt !== undefined ? overrides.firstResponseAt : this.firstResponseAt,
+      overrides.resolvedAt !== undefined ? overrides.resolvedAt : this.resolvedAt,
+      overrides.isInternal !== undefined ? overrides.isInternal : this.isInternal,
+      overrides.requiresApproval !== undefined ? overrides.requiresApproval : this.requiresApproval,
       this.createdAt,
       new Date(),
     )
+  }
+
+  assign(userId: string): HelpdeskConversation {
+    return this.clone({ assigneeUserId: userId })
   }
 
   changeStatus(status: string): HelpdeskConversation {
-    return new HelpdeskConversation(
-      this.id,
-      this.tenantId,
-      this.mailboxId,
-      this.ticketNumber,
-      this.subject,
-      this.customerEmail,
-      this.customerId,
-      this.assigneeUserId,
+    return this.clone({
       status,
-      this.priority,
-      this.sourceChannel,
-      this.previewText,
-      this.hasAttachments,
-      this.lastReplyAt,
-      this.lastReplyFrom,
-      status === 'CLOSED' ? new Date() : this.closedAt,
-      this.estimatedHours,
-      this.workedHours,
-      this.dueDate,
-      this.firstResponseAt ?? (status === 'WAITING_ON_CUSTOMER' ? new Date() : this.firstResponseAt),
-      status === 'RESOLVED' ? new Date() : this.resolvedAt,
-      this.isInternal,
-      this.requiresApproval,
-      this.createdAt,
-      new Date(),
-    )
+      closedAt: status === 'CLOSED' ? new Date() : this.closedAt,
+      firstResponseAt: this.firstResponseAt ?? (status === 'WAITING_ON_CUSTOMER' ? new Date() : this.firstResponseAt),
+      resolvedAt: status === 'RESOLVED' ? new Date() : this.resolvedAt,
+    })
   }
 
   resolve(): HelpdeskConversation {
-    return new HelpdeskConversation(
-      this.id,
-      this.tenantId,
-      this.mailboxId,
-      this.ticketNumber,
-      this.subject,
-      this.customerEmail,
-      this.customerId,
-      this.assigneeUserId,
-      'RESOLVED',
-      this.priority,
-      this.sourceChannel,
-      this.previewText,
-      this.hasAttachments,
-      this.lastReplyAt,
-      this.lastReplyFrom,
-      null,
-      this.estimatedHours,
-      this.workedHours,
-      this.dueDate,
-      this.firstResponseAt,
-      new Date(),
-      this.isInternal,
-      this.requiresApproval,
-      this.createdAt,
-      new Date(),
-    )
+    return this.clone({ status: 'RESOLVED', closedAt: null, resolvedAt: new Date() })
   }
 
   addThread(props: {
@@ -168,62 +127,15 @@ export class HelpdeskConversation {
     lastReplyAt?: Date
     lastReplyFrom?: string
   }): HelpdeskConversation {
-    return new HelpdeskConversation(
-      this.id,
-      this.tenantId,
-      this.mailboxId,
-      this.ticketNumber,
-      this.subject,
-      this.customerEmail,
-      this.customerId,
-      this.assigneeUserId,
-      this.status,
-      this.priority,
-      this.sourceChannel,
-      props.previewText ?? this.previewText,
-      props.hasAttachments ?? this.hasAttachments,
-      props.lastReplyAt ?? this.lastReplyAt,
-      props.lastReplyFrom ?? this.lastReplyFrom,
-      this.closedAt,
-      this.estimatedHours,
-      this.workedHours,
-      this.dueDate,
-      this.firstResponseAt,
-      this.resolvedAt,
-      this.isInternal,
-      this.requiresApproval,
-      this.createdAt,
-      new Date(),
-    )
+    return this.clone({
+      previewText: props.previewText ?? this.previewText,
+      hasAttachments: props.hasAttachments ?? this.hasAttachments,
+      lastReplyAt: props.lastReplyAt ?? this.lastReplyAt,
+      lastReplyFrom: props.lastReplyFrom ?? this.lastReplyFrom,
+    })
   }
 
   updateWorkedHours(hours: number): HelpdeskConversation {
-    return new HelpdeskConversation(
-      this.id,
-      this.tenantId,
-      this.mailboxId,
-      this.ticketNumber,
-      this.subject,
-      this.customerEmail,
-      this.customerId,
-      this.assigneeUserId,
-      this.status,
-      this.priority,
-      this.sourceChannel,
-      this.previewText,
-      this.hasAttachments,
-      this.lastReplyAt,
-      this.lastReplyFrom,
-      this.closedAt,
-      this.estimatedHours,
-      hours,
-      this.dueDate,
-      this.firstResponseAt,
-      this.resolvedAt,
-      this.isInternal,
-      this.requiresApproval,
-      this.createdAt,
-      new Date(),
-    )
+    return this.clone({ workedHours: hours })
   }
 }

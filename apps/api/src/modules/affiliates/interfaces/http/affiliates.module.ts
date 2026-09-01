@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common'
 import { AffiliatesController } from './affiliates.controller'
-import { AffiliatesGrpcController } from '../grpc/affiliates-grpc.controller'
+import { AffiliatesProgramsGrpcController } from '../grpc/affiliates-programs-grpc.controller'
+import { AffiliatesCommissionsPayoutsGrpcController } from '../grpc/affiliates-commissions-payouts-grpc.controller'
 import {
   CreateProgramHandler,
   UpdateProgramHandler,
@@ -25,7 +26,7 @@ import { DrizzleCommissionRepository } from '../../infrastructure/drizzle-commis
 import { OutboxService } from '../../../../common/outbox/outbox.service'
 
 @Module({
-  controllers: [AffiliatesController, AffiliatesGrpcController],
+  controllers: [AffiliatesController, AffiliatesProgramsGrpcController, AffiliatesCommissionsPayoutsGrpcController],
   providers: [
     CreateProgramHandler,
     UpdateProgramHandler,

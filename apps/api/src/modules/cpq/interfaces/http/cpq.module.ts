@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common'
 import { CpqController } from './cpq.controller'
-import { CpqGrpcController } from '../grpc/cpq-grpc.controller'
+import { CpqProductsGrpcController } from '../grpc/cpq-products-grpc.controller'
+import { CpqApprovalsSignaturesGrpcController } from '../grpc/cpq-approvals-signatures-grpc.controller'
 import {
   CreateProductHandler,
   UpdateProductHandler,
@@ -38,7 +39,7 @@ import { DrizzleProductTemplateRepository } from '../../infrastructure/drizzle-p
 import { OutboxService } from '../../../../common/outbox/outbox.service'
 
 @Module({
-  controllers: [CpqController, CpqGrpcController],
+  controllers: [CpqController, CpqProductsGrpcController, CpqApprovalsSignaturesGrpcController],
   providers: [
     CreateProductHandler,
     UpdateProductHandler,

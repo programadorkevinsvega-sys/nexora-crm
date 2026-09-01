@@ -69,7 +69,7 @@ export function ReportPivotSummary({ data, columns }: ReportPivotSummaryProps) {
             </div>
             <div className="truncate">
               <div className="text-[11px] font-semibold text-muted-foreground uppercase truncate">
-                {col.aggregate.toUpperCase()} • {col.label}
+                {(col.aggregate || "TOTAL").toUpperCase()} • {col.label}
               </div>
               <div className="text-lg font-bold text-foreground font-mono truncate">{formattedResult}</div>
             </div>

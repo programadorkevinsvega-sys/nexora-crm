@@ -1,16 +1,16 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Injectable, NotFoundException } from '@nestjs/common'
 import { ApiCoreGrpcClient } from '../../common/grpc/api-core-grpc.client'
 import type {
   MetaIntegration, MetaLeadAdLog, MetaConfigUpdate, SimulateMetaLead,
-  MetaLeadForm, ConnectMetaPageInput
+  MetaLeadForm, ConnectMetaPageInput,
 } from '@crm/contracts'
+import { MetaGraphApiHelper } from './meta-graph-api.helper'
 
 const DEFAULT_TENANT_ID = '00000000-0000-0000-0000-000000000001'
 
 @Injectable()
 export class MetaLeadsBffService {
-  private readonly logger = new Logger(MetaLeadsBffService.name)
-
   constructor(private readonly api: ApiCoreGrpcClient) {}
 
   async getStatus(tenantId?: string): Promise<MetaIntegration> {
@@ -55,40 +55,8 @@ export class MetaLeadsBffService {
     })
   }
 
-  async fetchMetaPagesAndAccounts(accessToken: string): Promise<{
-    pages: Array<{ id: string; name: string; access_token?: string; category?: string }>
-    adAccounts: Array<{ id: string; name: string }>
-  }> {
-    try {
-      const pagesRes = await fetch(
-        `https://graph.facebook.com/v20.0/me/accounts?access_token=${encodeURIComponent(accessToken)}&fields=id,name,access_token,category`
-      )
-      const pagesData = await pagesRes.json()
-      const pages = Array.isArray(pagesData.data)
-        ? pagesData.data.map((p: any) => ({
-            id: p.id,
-            name: p.name,
-            access_token: p.access_token,
-            category: p.category,
-          }))
-        : []
-
-      const adsRes = await fetch(
-        `https://graph.facebook.com/v20.0/me/adaccounts?access_token=${encodeURIComponent(accessToken)}&fields=id,name,account_id`
-      )
-      const adsData = await adsRes.json()
-      const adAccounts = Array.isArray(adsData.data)
-        ? adsData.data.map((a: any) => ({
-            id: a.id || a.account_id,
-            name: a.name || `Cuenta Ads ${a.id}`,
-          }))
-        : []
-
-      return { pages, adAccounts }
-    } catch (err: any) {
-      this.logger.error(`Error querying Meta Graph API: ${err.message}`)
-      return { pages: [], adAccounts: [] }
-    }
+  async fetchMetaPagesAndAccounts(accessToken: string) {
+    return MetaGraphApiHelper.fetchPagesAndAccounts(accessToken)
   }
 
   async connectPage(dto: ConnectMetaPageInput, tenantId?: string): Promise<MetaIntegration> {
@@ -96,23 +64,7 @@ export class MetaLeadsBffService {
     let forms: MetaLeadForm[] = []
 
     if (dto.pageAccessToken && dto.pageId) {
-      try {
-        const formsRes = await fetch(
-          `https://graph.facebook.com/v20.0/${dto.pageId}/leadgen_forms?access_token=${encodeURIComponent(dto.pageAccessToken)}&fields=id,name,status,leads_count`
-        )
-        const formsData = await formsRes.json()
-        if (Array.isArray(formsData.data)) {
-          forms = formsData.data.map((f: any) => ({
-            formId: f.id,
-            formName: f.name,
-            status: f.status || 'ACTIVE',
-            leadsCount: f.leads_count || 0,
-            defaultLeadStatus: 'NEW',
-          }))
-        }
-      } catch (err: any) {
-        this.logger.warn(`Could not fetch leadgen forms immediately: ${err.message}`)
-      }
+      forms = await MetaGraphApiHelper.fetchLeadGenForms(dto.pageId, dto.pageAccessToken)
     }
 
     return this.api.connectMetaPage({
@@ -139,28 +91,17 @@ export class MetaLeadsBffService {
     let forms: MetaLeadForm[] = (integration.leadGenForms as MetaLeadForm[]) || []
 
     if (integration.selectedPageId && (integration as any).pageAccessToken) {
-      try {
-        const formsRes = await fetch(
-          `https://graph.facebook.com/v20.0/${integration.selectedPageId}/leadgen_forms?access_token=${encodeURIComponent((integration as any).pageAccessToken)}&fields=id,name,status,leads_count`
-        )
-        const formsData = await formsRes.json()
-        if (Array.isArray(formsData.data)) {
-          forms = formsData.data.map((f: any) => ({
-            formId: f.id,
-            formName: f.name,
-            status: f.status || 'ACTIVE',
-            leadsCount: f.leads_count || 0,
-            defaultLeadStatus: 'NEW',
-          }))
-
-          await this.api.updateMetaConfig({
-            tenantId: tid,
-            leadGenForms: forms,
-            lastSyncAt: new Date(),
-          })
-        }
-      } catch (err: any) {
-        this.logger.warn(`Failed to sync forms from Graph API: ${err.message}`)
+      const fetched = await MetaGraphApiHelper.fetchLeadGenForms(
+        integration.selectedPageId,
+        (integration as any).pageAccessToken,
+      )
+      if (fetched.length > 0) {
+        forms = fetched
+        await this.api.updateMetaConfig({
+          tenantId: tid,
+          leadGenForms: forms,
+          lastSyncAt: new Date(),
+        })
       }
     }
 

@@ -35,15 +35,15 @@ export function LoyaltyProfileCard({ contactId }: LoyaltyProfileCardProps) {
         </div>
         <div>
           <p className="text-caption text-ash">Lifetime Value</p>
-          <p className="text-body text-paper">${profile.totalLifetimeValue.toLocaleString()}</p>
+          <p className="text-body text-paper">${(profile.totalLifetimeValue ?? 0).toLocaleString()}</p>
         </div>
         <div>
           <p className="text-caption text-ash">Purchases</p>
-          <p className="text-body text-paper">{profile.totalPurchasesCount}</p>
+          <p className="text-body text-paper">{profile.totalPurchasesCount ?? 0}</p>
         </div>
         <div>
           <p className="text-caption text-ash">Avg Order</p>
-          <p className="text-body text-paper">${profile.averageOrderValue.toLocaleString()}</p>
+          <p className="text-body text-paper">${(profile.averageOrderValue ?? 0).toLocaleString()}</p>
         </div>
       </div>
     </Card>

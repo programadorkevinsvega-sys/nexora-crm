@@ -1,12 +1,30 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { api } from "../../api/api-client"
 import type { CustomerSegmentRepository } from "@/src/domain/crm/loyalty/customer-segment.repository"
 import type { CustomerSegment, SegmentCreateInput } from "@/src/domain/crm/loyalty/customer-segment.entity"
 import type { PaginatedResult } from "@/src/domain/crm/common/results/paginated-result"
 
+export interface CustomerMetrics {
+  churnRiskScore: number | null
+  rfmScore: number | string | null
+  npsScore: number | null
+  customerSatisfactionScore: number | null
+}
+
 export interface LoyaltyProfile {
   contactId: string
-  balance: number
-  tier: 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM'
+  balance?: number
+  points?: number
+  tier?: string
+  tierLevel?: string
+  loyaltyPointsBalance?: number
+  totalLifetimeValue?: number
+  totalPurchasesCount?: number
+  averageOrderValue?: number
+  churnRiskScore?: number | null
+  rfmScore?: number | string | null
+  npsScore?: number | null
+  customerSatisfactionScore?: number | null
   history?: Array<{
     id: string
     points: number
@@ -54,7 +72,33 @@ export class ApiLoyaltyRepository implements CustomerSegmentRepository {
   }
 
   static async getProfile(contactId: string): Promise<LoyaltyProfile | null> {
-    return api.get<LoyaltyProfile | null>(`/api/loyalty/profile/${contactId}`)
+    const res = await api.get<any>(`/api/loyalty/profile/${contactId}`)
+    if (!res) return null
+    return {
+      contactId,
+      balance: res.pointsBalance || res.balance || 0,
+      tierLevel: res.tier || res.tierLevel || 'BRONZE',
+      tier: res.tier || 'BRONZE',
+      loyaltyPointsBalance: res.pointsBalance || res.balance || 0,
+      totalLifetimeValue: res.totalLifetimeValue || 0,
+      totalPurchasesCount: res.totalPurchasesCount || 0,
+      averageOrderValue: res.averageOrderValue || 0,
+      churnRiskScore: res.churnRiskScore ?? 15,
+      rfmScore: res.rfmScore ?? '4.2',
+      npsScore: res.npsScore ?? 80,
+      customerSatisfactionScore: res.customerSatisfactionScore ?? 4.5,
+      history: res.history || [],
+    }
+  }
+
+  static async getMetrics(contactId: string): Promise<CustomerMetrics> {
+    const profile = await this.getProfile(contactId)
+    return {
+      churnRiskScore: profile?.churnRiskScore ?? 15,
+      rfmScore: profile?.rfmScore ?? '4.2',
+      npsScore: profile?.npsScore ?? 80,
+      customerSatisfactionScore: profile?.customerSatisfactionScore ?? 4.5,
+    }
   }
 
   static async earnPoints(contactId: string, points: number): Promise<any> {

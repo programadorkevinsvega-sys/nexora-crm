@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common'
 import { PipelinesController } from './pipelines.controller'
-import { PipelinesGrpcController } from '../grpc/pipelines-grpc.controller'
+import { PipelinesStagesGrpcController } from '../grpc/pipelines-stages-grpc.controller'
+import { DealsGrpcController } from '../grpc/deals-grpc.controller'
 import {
   CreatePipelineHandler, UpdatePipelineHandler, DeletePipelineHandler,
   CreateStageHandler, ReorderStagesHandler,
@@ -19,7 +20,7 @@ import { DrizzleDealRepository } from '../../infrastructure/drizzle-deal.reposit
 import { OutboxService } from '../../../../common/outbox/outbox.service'
 
 @Module({
-  controllers: [PipelinesController, PipelinesGrpcController],
+  controllers: [PipelinesController, PipelinesStagesGrpcController, DealsGrpcController],
   providers: [
     CreatePipelineHandler,
     UpdatePipelineHandler,

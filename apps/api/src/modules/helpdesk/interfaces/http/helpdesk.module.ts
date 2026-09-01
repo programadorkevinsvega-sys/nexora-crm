@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common'
-import { HelpdeskController } from './helpdesk.controller'
-import { HelpdeskGrpcController } from '../grpc/helpdesk-grpc.controller'
+import { HelpdeskConversationsController } from './helpdesk-conversations.controller'
+import { HelpdeskMailboxesController } from './helpdesk-mailboxes.controller'
+import { HelpdeskConversationsGrpcController } from '../grpc/helpdesk-conversations-grpc.controller'
+import { HelpdeskAgentsMailboxesGrpcController } from '../grpc/helpdesk-agents-mailboxes-grpc.controller'
 import {
   CreateConversationHandler,
   AssignConversationHandler,
@@ -28,7 +30,12 @@ import { DrizzleMailboxRepository } from '../../infrastructure/drizzle-mailbox.r
 import { OutboxService } from '../../../../common/outbox/outbox.service'
 
 @Module({
-  controllers: [HelpdeskController, HelpdeskGrpcController],
+  controllers: [
+    HelpdeskConversationsController,
+    HelpdeskMailboxesController,
+    HelpdeskConversationsGrpcController,
+    HelpdeskAgentsMailboxesGrpcController,
+  ],
   providers: [
     CreateConversationHandler,
     AssignConversationHandler,

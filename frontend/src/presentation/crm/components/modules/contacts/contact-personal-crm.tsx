@@ -1,7 +1,6 @@
 "use client"
 
 import { useQuery } from "@tanstack/react-query"
-import { Card } from "@/src/presentation/crm/components/ui/Card"
 import { Skeleton } from "@/src/presentation/crm/components/ui/Skeleton"
 import { EntityCard } from "@/src/presentation/crm/components/common/EntityCard"
 import { ApiPersonalCrmRepository } from "@/src/infrastructure/crm/repositories/personal-crm/api-personal-crm.repository"
@@ -13,31 +12,31 @@ export interface ContactPersonalCrmProps {
 export function ContactPersonalCrm({ contactId }: ContactPersonalCrmProps) {
   const { data: lifeEvents, isLoading: loadingEvents } = useQuery({
     queryKey: ["personal-crm-life-events", contactId],
-    queryFn: () => ApiPersonalCrmRepository.listLifeEvents({ contactId }),
+    queryFn: () => ApiPersonalCrmRepository.listLifeEvents(contactId),
     enabled: !!contactId,
   })
 
   const { data: gifts, isLoading: loadingGifts } = useQuery({
     queryKey: ["personal-crm-gifts", contactId],
-    queryFn: () => ApiPersonalCrmRepository.listGifts({ contactId }),
+    queryFn: () => ApiPersonalCrmRepository.listGifts(contactId),
     enabled: !!contactId,
   })
 
   const { data: debts, isLoading: loadingDebts } = useQuery({
     queryKey: ["personal-crm-debts", contactId],
-    queryFn: () => ApiPersonalCrmRepository.listDebts({ contactId }),
+    queryFn: () => ApiPersonalCrmRepository.listDebts(contactId),
     enabled: !!contactId,
   })
 
   const { data: reminders, isLoading: loadingReminders } = useQuery({
     queryKey: ["personal-crm-reminders", contactId],
-    queryFn: () => ApiPersonalCrmRepository.listReminders({ contactId }),
+    queryFn: () => ApiPersonalCrmRepository.listReminders(contactId),
     enabled: !!contactId,
   })
 
   const { data: pets, isLoading: loadingPets } = useQuery({
     queryKey: ["personal-crm-pets", contactId],
-    queryFn: () => ApiPersonalCrmRepository.listPets({ contactId }),
+    queryFn: () => ApiPersonalCrmRepository.listPets(contactId),
     enabled: !!contactId,
   })
 
@@ -52,8 +51,10 @@ export function ContactPersonalCrm({ contactId }: ContactPersonalCrmProps) {
           <div className="space-y-2">
             {lifeEvents.data.map((event) => (
               <div key={event.id} className="flex items-center justify-between py-1">
-                <span className="text-body text-paper">{event.title}</span>
-                <span className="text-caption text-ash">{new Date(event.happenedAt).toLocaleDateString()}</span>
+                <span className="text-body text-paper">{event.name}</span>
+                <span className="text-caption text-ash">
+                  {event.happenedAt ? new Date(event.happenedAt).toLocaleDateString() : event.eventType}
+                </span>
               </div>
             ))}
           </div>
@@ -68,8 +69,8 @@ export function ContactPersonalCrm({ contactId }: ContactPersonalCrmProps) {
             {gifts.data.map((gift) => (
               <div key={gift.id} className="flex items-center justify-between py-1">
                 <span className="text-body text-paper">{gift.name}</span>
-                {gift.value != null && (
-                  <span className="text-caption text-ash">${gift.value}</span>
+                {gift.estimatedValue != null && (
+                  <span className="text-caption text-ash">${gift.estimatedValue}</span>
                 )}
               </div>
             ))}
@@ -85,11 +86,11 @@ export function ContactPersonalCrm({ contactId }: ContactPersonalCrmProps) {
             {debts.data.map((debt) => (
               <div key={debt.id} className="flex items-center justify-between py-1">
                 <div className="flex items-center gap-2">
-                  <span className={`text-body ${debt.isSettled ? "text-ash line-through" : "text-paper"}`}>
-                    {debt.type === "LENT" ? "Lent" : "Borrowed"} ${debt.amount}
+                  <span className={`text-body ${debt.status === "PAID" ? "text-ash line-through" : "text-paper"}`}>
+                    {debt.direction === "OWES_ME" ? "Owes me" : "I owe"} ${debt.amount}
                   </span>
                 </div>
-                {debt.description && <span className="text-caption text-ash">{debt.description}</span>}
+                {debt.reason && <span className="text-caption text-ash">{debt.reason}</span>}
               </div>
             ))}
           </div>
@@ -103,10 +104,12 @@ export function ContactPersonalCrm({ contactId }: ContactPersonalCrmProps) {
           <div className="space-y-2">
             {reminders.data.map((reminder) => (
               <div key={reminder.id} className="flex items-center justify-between py-1">
-                <span className={`text-body ${reminder.isDone ? "text-ash line-through" : "text-paper"}`}>
+                <span className={`text-body ${!reminder.isActive ? "text-ash line-through" : "text-paper"}`}>
                   {reminder.title}
                 </span>
-                <span className="text-caption text-ash">{new Date(reminder.remindAt).toLocaleDateString()}</span>
+                <span className="text-caption text-ash">
+                  {reminder.nextDueDate ? new Date(reminder.nextDueDate).toLocaleDateString() : reminder.frequencyType}
+                </span>
               </div>
             ))}
           </div>
@@ -121,7 +124,7 @@ export function ContactPersonalCrm({ contactId }: ContactPersonalCrmProps) {
             {pets.data.map((pet) => (
               <div key={pet.id} className="flex items-center justify-between py-1">
                 <span className="text-body text-paper">{pet.name}</span>
-                <span className="text-caption text-ash">{pet.species}{pet.breed ? ` - ${pet.breed}` : ""}</span>
+                <span className="text-caption text-ash">{pet.petCategory}{pet.breed ? ` - ${pet.breed}` : ""}</span>
               </div>
             ))}
           </div>

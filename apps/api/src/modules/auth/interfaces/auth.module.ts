@@ -1,6 +1,7 @@
 import { Module, Logger } from '@nestjs/common'
 import { JwtModule } from '@nestjs/jwt'
-import { AuthGrpcController } from './grpc/auth-grpc.controller'
+import { AuthLoginGrpcController } from './grpc/auth-login-grpc.controller'
+import { AuthMfaSecurityGrpcController } from './grpc/auth-mfa-security-grpc.controller'
 import { AuthHttpController } from './http/auth-http.controller'
 import { RegisterHandler } from '../application/commands/register.handler'
 import {
@@ -31,7 +32,7 @@ import { GrpcUserLookupService } from '../infrastructure/grpc-user-lookup.servic
       },
     }),
   ],
-  controllers: [AuthGrpcController, AuthHttpController],
+  controllers: [AuthLoginGrpcController, AuthMfaSecurityGrpcController, AuthHttpController],
   providers: [
     RegisterHandler,
     LoginHandler,

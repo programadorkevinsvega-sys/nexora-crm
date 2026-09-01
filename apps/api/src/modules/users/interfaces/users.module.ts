@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common'
-import { UsersGrpcController } from './grpc/users-grpc.controller'
+import { UsersCoreGrpcController } from './grpc/users-core-grpc.controller'
+import { UsersProfileDevicesGrpcController } from './grpc/users-profile-devices-grpc.controller'
 import {
   CreateUserHandler, UpdateUserHandler, DeleteUserHandler,
   UpdateNaturalPersonProfileHandler, UpdateLegalEntityProfileHandler,
@@ -14,7 +15,7 @@ import { UserRepository } from '../domain/repositories/user.repository'
 import { DrizzleUserRepository } from '../infrastructure/drizzle-user.repository'
 
 @Module({
-  controllers: [UsersGrpcController],
+  controllers: [UsersCoreGrpcController, UsersProfileDevicesGrpcController],
   providers: [
     CreateUserHandler,
     UpdateUserHandler,

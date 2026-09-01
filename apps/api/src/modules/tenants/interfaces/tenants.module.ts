@@ -1,5 +1,8 @@
 import { Module } from '@nestjs/common'
-import { TenantsGrpcController } from './grpc/tenants-grpc.controller'
+import { TenantsCoreGrpcController } from './grpc/tenants-core-grpc.controller'
+import { TenantsFeaturesGrpcController } from './grpc/tenants-features-grpc.controller'
+import { TenantsTaxLangCurrGrpcController } from './grpc/tenants-tax-lang-curr-grpc.controller'
+import { TenantsKeysWebhooksRatesGrpcController } from './grpc/tenants-keys-webhooks-rates-grpc.controller'
 import {
   CreateTenantHandler, UpdateTenantHandler, DeleteTenantHandler,
   CreateBranchHandler, UpdateBranchHandler, DeleteBranchHandler,
@@ -28,7 +31,12 @@ import {
 } from '../application/config.handlers'
 
 @Module({
-  controllers: [TenantsGrpcController],
+  controllers: [
+    TenantsCoreGrpcController,
+    TenantsFeaturesGrpcController,
+    TenantsTaxLangCurrGrpcController,
+    TenantsKeysWebhooksRatesGrpcController,
+  ],
   providers: [
     GetTenantHandler, GetBranchHandler,
     CreateTenantHandler, UpdateTenantHandler, DeleteTenantHandler,

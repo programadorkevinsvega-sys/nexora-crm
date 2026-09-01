@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common'
 import { PersonalCrmController } from './personal-crm.controller'
-import { PersonalCrmGrpcController } from '../grpc/personal-crm-grpc.controller'
+import { PersonalCrmEventsGiftsGrpcController } from '../grpc/personal-crm-events-gifts-grpc.controller'
+import { PersonalCrmRemindersPetsGrpcController } from '../grpc/personal-crm-reminders-pets-grpc.controller'
 import {
   CreateLifeEventHandler,
   CreateGiftHandler,
@@ -22,7 +23,7 @@ import { DrizzlePersonalCrmRepository } from '../../infrastructure/drizzle-perso
 import { OutboxService } from '../../../../common/outbox/outbox.service'
 
 @Module({
-  controllers: [PersonalCrmController, PersonalCrmGrpcController],
+  controllers: [PersonalCrmController, PersonalCrmEventsGiftsGrpcController, PersonalCrmRemindersPetsGrpcController],
   providers: [
     CreateLifeEventHandler,
     CreateGiftHandler,

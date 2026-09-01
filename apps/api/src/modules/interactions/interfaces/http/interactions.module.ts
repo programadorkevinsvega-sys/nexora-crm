@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common'
 import { InteractionsController } from './interactions.controller'
-import { InteractionsGrpcController } from '../../interfaces/grpc/interactions-grpc.controller'
+import { NotesGrpcController } from '../../interfaces/grpc/notes-grpc.controller'
+import { TasksCallsGrpcController } from '../../interfaces/grpc/tasks-calls-grpc.controller'
 import {
   CreateNoteHandler, UpdateNoteHandler, DeleteNoteHandler,
   CreateTaskHandler, UpdateTaskHandler, DeleteTaskHandler,
@@ -20,7 +21,7 @@ import { DrizzleCallRepository } from '../../infrastructure/drizzle-call.reposit
 import { OutboxService } from '../../../../common/outbox/outbox.service'
 
 @Module({
-  controllers: [InteractionsController, InteractionsGrpcController],
+  controllers: [InteractionsController, NotesGrpcController, TasksCallsGrpcController],
   providers: [
     CreateNoteHandler,
     UpdateNoteHandler,
