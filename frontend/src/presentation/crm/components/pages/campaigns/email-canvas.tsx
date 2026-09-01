@@ -3,7 +3,7 @@
 import React from "react"
 import { EmailBlock } from "./email-template-types"
 import { EmailBlockRenderer } from "./email-block-renderer"
-import { Layers } from "lucide-react"
+import { Layers, Plus } from "lucide-react"
 
 interface Props {
   blocks: EmailBlock[]
@@ -18,19 +18,25 @@ export function EmailCanvas({ blocks, selectedId, onSelect, onReorder, onAddBloc
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault()
-    e.dataTransfer.dropEffect = "move"
+    e.dataTransfer.dropEffect = "copy"
   }
 
   const handleDropCanvas = (e: React.DragEvent) => {
     e.preventDefault()
-    const data = e.dataTransfer.getData("application/json")
-    if (data) {
+    const textData = e.dataTransfer.getData("text/plain")
+    const jsonData = e.dataTransfer.getData("application/json")
+    
+    if (jsonData) {
       try {
-        const parsed = JSON.parse(data)
+        const parsed = JSON.parse(jsonData)
         if (parsed.action === "add" && parsed.type) {
           onAddBlock(parsed.type)
+          return
         }
       } catch (_) {}
+    }
+    if (textData && ["text", "image", "button", "spacer", "divider"].includes(textData)) {
+      onAddBlock(textData)
     }
   }
 
@@ -50,27 +56,27 @@ export function EmailCanvas({ blocks, selectedId, onSelect, onReorder, onAddBloc
 
   return (
     <div
-      className="flex-1 bg-zinc-900 overflow-y-auto p-6 flex flex-col items-center justify-start min-h-[600px]"
+      className="flex-1 bg-muted/20 overflow-y-auto p-6 flex flex-col items-center justify-start h-full"
       onDragOver={handleDragOver}
       onDrop={handleDropCanvas}
     >
-      <div className="w-full max-w-[620px] bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl overflow-hidden min-h-[500px]">
+      <div className="w-full max-w-[620px] bg-card border border-border rounded-xl shadow-lg overflow-hidden flex flex-col shrink-0 my-auto sm:my-4">
         {/* Email Header Preview Bar */}
-        <div className="bg-zinc-900 border-b border-zinc-800 px-4 py-2 flex items-center justify-between text-[11px] text-zinc-400">
-          <span className="flex items-center gap-1.5 font-mono">
-            <Layers size={13} className="text-cyan-400" /> Vista Previa del Correo (600px)
+        <div className="bg-muted/50 border-b border-border px-4 py-2 flex items-center justify-between text-[11px] text-muted-foreground select-none">
+          <span className="flex items-center gap-1.5 font-mono font-medium">
+            <Layers size={13} className="text-primary" /> Vista Previa del Correo (600px)
           </span>
-          <span className="text-[10px] text-zinc-500">HTML Responsive</span>
+          <span className="text-[10px] text-muted-foreground/70">HTML Responsive</span>
         </div>
 
         {/* Blocks Zone */}
-        <div className="p-4 space-y-3 min-h-[420px]">
+        <div className="p-4 space-y-3 min-h-[360px]">
           {blocks.length === 0 ? (
-            <div className="h-64 border-2 border-dashed border-zinc-800 rounded-lg flex flex-col items-center justify-center text-zinc-500 text-xs p-6 text-center">
-              <Layers size={28} className="text-zinc-600 mb-2" />
-              <p className="font-semibold text-zinc-400">El lienzo de correo está vacío</p>
-              <p className="text-[11px] text-zinc-600 mt-1">
-                Arrastra bloques desde el panel izquierdo o haz clic en ellos para agregarlos.
+            <div className="h-64 border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center text-muted-foreground text-xs p-6 text-center">
+              <Layers size={28} className="text-muted-foreground/50 mb-2" />
+              <p className="font-semibold text-foreground">El lienzo de correo está vacío</p>
+              <p className="text-[11px] text-muted-foreground mt-1">
+                Haz clic en cualquier bloque del panel izquierdo para agregarlo a este correo.
               </p>
             </div>
           ) : (
@@ -89,9 +95,9 @@ export function EmailCanvas({ blocks, selectedId, onSelect, onReorder, onAddBloc
         </div>
 
         {/* Email Footer Preview Bar */}
-        <div className="bg-zinc-900/60 border-t border-zinc-800/80 px-4 py-3 text-center text-[10px] text-zinc-500 space-y-1">
+        <div className="bg-muted/30 border-t border-border px-4 py-3 text-center text-[10px] text-muted-foreground space-y-1 select-none">
           <p>Has recibido este correo porque estás registrado en Nexora CRM.</p>
-          <div className="flex justify-center gap-3 text-zinc-400">
+          <div className="flex justify-center gap-3 text-muted-foreground">
             <span className="underline cursor-pointer">Darse de baja</span>
             <span>•</span>
             <span className="underline cursor-pointer">Preferencias de email</span>

@@ -7,7 +7,7 @@ import { EmailBlockPalette } from "./email-block-palette"
 import { EmailCanvas } from "./email-canvas"
 import { EmailBlockInspector } from "./email-block-inspector"
 import { renderTemplateToHtml } from "./email-template-renderer"
-import { ArrowLeft, Save, Send, Download, Sparkles, CheckCircle2 } from "lucide-react"
+import { ArrowLeft, Save, Download, CheckCircle2 } from "lucide-react"
 
 const DEFAULT_BLOCKS: EmailBlock[] = [
   {
@@ -51,8 +51,8 @@ export function EmailTemplateEditorPage() {
       id: `b-${Date.now()}`,
       type,
       content: type === "text" ? "Escribe tu texto aquí..." : type === "button" ? "Haz Clic Aquí" : undefined,
-      url: type === "button" ? "https://..." : type === "image" ? "https://..." : undefined,
-      style: { color: "#e4e4e7", textAlign: "left" },
+      url: type === "button" ? "https://..." : type === "image" ? "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&auto=format&fit=crop&q=80" : undefined,
+      style: { color: "#ffffff", textAlign: "left" },
     }
     setBlocks((prev) => [...prev, newBlock])
     setSelectedId(newBlock.id)
@@ -106,13 +106,14 @@ export function EmailTemplateEditorPage() {
   const selectedBlock = blocks.find((b) => b.id === selectedId) || null
 
   return (
-    <div className="flex flex-col h-[calc(100vh-5rem)] bg-zinc-950 text-zinc-100 -m-6">
+    <div className="flex flex-col h-[calc(100vh-6rem)] bg-background text-foreground rounded-xl border border-border overflow-hidden shadow-xs">
       {/* Top Bar */}
-      <div className="h-14 border-b border-zinc-800 bg-zinc-900/90 px-4 flex items-center justify-between gap-4 shrink-0">
+      <div className="h-14 border-b border-border bg-card px-4 flex items-center justify-between gap-4 shrink-0 z-10">
         <div className="flex items-center gap-3">
           <button
+            type="button"
             onClick={() => router.push("/campaigns")}
-            className="p-1.5 rounded-lg border border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-zinc-200 transition-colors"
+            className="p-1.5 rounded-lg border border-border bg-muted text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft size={16} />
           </button>
@@ -121,15 +122,15 @@ export function EmailTemplateEditorPage() {
               type="text"
               value={templateName}
               onChange={(e) => setTemplateName(e.target.value)}
-              className="bg-transparent font-bold text-sm text-zinc-100 hover:bg-zinc-800/50 px-2 py-0.5 rounded focus:bg-zinc-950 border border-transparent focus:border-zinc-700 outline-none"
+              className="bg-transparent font-semibold text-sm text-foreground hover:bg-muted/50 px-2 py-0.5 rounded focus:bg-background border border-transparent focus:border-border outline-none"
             />
-            <div className="flex items-center gap-1.5 px-2 text-[11px] text-zinc-400">
+            <div className="flex items-center gap-1.5 px-2 text-[11px] text-muted-foreground">
               <span>Asunto:</span>
               <input
                 type="text"
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
-                className="bg-transparent text-cyan-300 hover:bg-zinc-800/50 px-1 rounded focus:bg-zinc-950 border border-transparent focus:border-zinc-700 outline-none w-72"
+                className="bg-transparent text-primary hover:bg-muted/50 px-1 rounded focus:bg-background border border-transparent focus:border-border outline-none w-72"
               />
             </div>
           </div>
@@ -137,19 +138,21 @@ export function EmailTemplateEditorPage() {
 
         <div className="flex items-center gap-2">
           {savedSuccess && (
-            <span className="flex items-center gap-1 text-emerald-400 text-xs font-medium mr-2">
+            <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 text-xs font-medium mr-2">
               <CheckCircle2 size={14} /> Guardado
             </span>
           )}
           <button
+            type="button"
             onClick={handleExportHtml}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-700 bg-zinc-800 text-xs hover:bg-zinc-700 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-muted text-foreground text-xs hover:bg-muted/80 transition-colors"
           >
             <Download size={13} /> Exportar HTML
           </button>
           <button
+            type="button"
             onClick={handleSave}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-medium text-xs shadow-md transition-colors"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-primary text-primary-foreground font-semibold text-xs shadow-xs transition-colors"
           >
             <Save size={13} /> Guardar Plantilla
           </button>
@@ -157,8 +160,8 @@ export function EmailTemplateEditorPage() {
       </div>
 
       {/* Main 3-Column Designer */}
-      <div className="flex flex-1 overflow-hidden">
-        <EmailBlockPalette />
+      <div className="flex flex-1 overflow-hidden h-[calc(100%-3.5rem)]">
+        <EmailBlockPalette onAddBlock={handleAddBlock} />
         <EmailCanvas
           blocks={blocks}
           selectedId={selectedId}
