@@ -16,8 +16,18 @@ message CohortMetricsResponse {
   string json = 1;
 }
 
+message ForecastMetricsResponse {
+  string json = 1;
+}
+
+message ForecastRequest {
+  string tenant_id = 1;
+  optional string horizon = 2;
+}
+
 service AnalyticsService {
   rpc GetRevenueMetrics(crm.common.TenantRequest) returns (RevenueMetricsResponse);
   rpc GetFunnelMetrics(crm.common.TenantRequest) returns (FunnelMetricsResponse);
   rpc GetCohortMetrics(crm.common.TenantRequest) returns (CohortMetricsResponse);
+  rpc GetForecast(ForecastRequest) returns (ForecastMetricsResponse);
 }

@@ -55,11 +55,11 @@ export function CustomerPortalPage() {
       setOverview(data)
 
       const [tList, qList] = await Promise.all([
-        api.get<any>("/api/support/tickets").catch(() => []),
-        api.get<any>("/api/cpq/quotes").catch(() => []),
+        api.get<any>("/api/tickets?limit=20").catch(() => ({ data: [] })),
+        api.get<any>("/api/quotes?limit=20").catch(() => ({ data: [] })),
       ])
-      setMyTickets(Array.isArray(tList) ? tList : [])
-      setMyQuotes(Array.isArray(qList) ? qList : [])
+      setMyTickets(Array.isArray(tList) ? tList : (tList?.data || []))
+      setMyQuotes(Array.isArray(qList) ? qList : (qList?.data || []))
     } catch (err) {
       console.error("Failed to load portal overview:", err)
     } finally {
@@ -75,7 +75,7 @@ export function CustomerPortalPage() {
     if (!ticketSubject.trim() || !ticketDesc.trim()) return
     try {
       setSavingTicket(true)
-      await api.post("/api/support/tickets", {
+      await api.post("/api/tickets", {
         contactId: overview?.contactId,
         subject: ticketSubject.trim(),
         description: ticketDesc.trim(),
