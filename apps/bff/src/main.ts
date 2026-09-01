@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { AppModule } from './app.module'
+import { GrpcToHttpExceptionFilter } from './common/filters/grpc-exception.filter'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
@@ -18,6 +19,7 @@ async function bootstrap() {
   }
 
   app.enableCors({ origin: allowedOrigins, credentials: true })
+  app.useGlobalFilters(new GrpcToHttpExceptionFilter())
 
   app.use((req: any, _res: any, next: any) => {
     if (req.query?.tenantId && req.query.tenantId !== 'undefined' && req.query.tenantId !== 'null') {
@@ -46,4 +48,3 @@ async function bootstrap() {
   console.log(`Swagger documentation available at http://localhost:${port}/api/docs`)
 }
 bootstrap()
-
