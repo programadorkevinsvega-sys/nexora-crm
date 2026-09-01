@@ -3,6 +3,7 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices'
 import { resolve } from 'path'
 import { existsSync } from 'fs'
 import { AppModule } from './app.module'
+import { DomainErrorFilter } from './common/filters/domain-error.filter'
 
 function loadRootEnv(): void {
   const envPath = resolve(__dirname, '../../../.env')
@@ -35,6 +36,7 @@ function protoPath(): string {
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
   app.enableShutdownHooks()
+  app.useGlobalFilters(new DomainErrorFilter())
 
   const grpcPort = process.env.API_CORE_GRPC_PORT || '50059'
   const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:3000,http://localhost:3006'
