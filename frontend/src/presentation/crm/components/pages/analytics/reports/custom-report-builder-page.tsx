@@ -140,11 +140,8 @@ export function CustomReportBuilderPage() {
         }
       />
 
-      {/* Real Data Status Badge */}
-      <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-xs text-emerald-400 font-medium">
-        <Database className="h-4 w-4 shrink-0 text-emerald-400" />
-        <span>Sincronización en Tiempo Real • Datos auditados y actualizados al instante con cifrado de extremo a extremo.</span>
-      </div>
+
+
 
       {/* Data Source Selector Tabs */}
       <div className="flex flex-wrap gap-2 p-1.5 bg-card rounded-xl border border-border/80 shadow-sm">
