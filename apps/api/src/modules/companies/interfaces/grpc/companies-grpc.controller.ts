@@ -1,5 +1,6 @@
-import { Controller } from '@nestjs/common'
+import { Controller, UseFilters } from '@nestjs/common'
 import { GrpcMethod } from '@nestjs/microservices'
+import { GrpcDomainErrorFilter } from '../../../../common/filters/grpc-domain-error.filter'
 import { CreateCompanyHandler, UpdateCompanyHandler, DeleteCompanyHandler } from '../../application/commands/company.handlers'
 import { GetCompanyHandler, ListCompaniesHandler } from '../../application/queries/company.handlers'
 import { CreateCompanyCommand, UpdateCompanyCommand, DeleteCompanyCommand } from '../../application/commands/company.commands'
@@ -7,6 +8,7 @@ import { GetCompanyQuery, ListCompaniesQuery } from '../../application/queries/c
 import { CompanyMapper } from '../../infrastructure/company.mapper'
 
 @Controller()
+@UseFilters(GrpcDomainErrorFilter)
 export class CompaniesGrpcController {
   constructor(
     private readonly createHandler: CreateCompanyHandler,

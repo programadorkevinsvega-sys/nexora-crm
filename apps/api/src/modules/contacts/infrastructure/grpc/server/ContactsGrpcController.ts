@@ -1,5 +1,6 @@
-import { Controller } from '@nestjs/common'
+import { Controller, UseFilters } from '@nestjs/common'
 import { GrpcMethod } from '@nestjs/microservices'
+import { GrpcDomainErrorFilter } from '../../../../../common/filters/grpc-domain-error.filter'
 import { CreateContactUseCase } from '../../../application/use-cases/CreateContactUseCase'
 import { UpdateContactUseCase } from '../../../application/use-cases/UpdateContactUseCase'
 import { DeleteContactUseCase } from '../../../application/use-cases/DeleteContactUseCase'
@@ -8,6 +9,7 @@ import { ListContactsUseCase } from '../../../application/use-cases/ListContacts
 import { ContactsProtoMapper } from '../dto/ContactsProtoMapper'
 
 @Controller()
+@UseFilters(GrpcDomainErrorFilter)
 export class ContactsGrpcController {
   constructor(
     private readonly createUseCase: CreateContactUseCase,
