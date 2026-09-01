@@ -74,7 +74,7 @@ const navSections: NavSection[] = [
   {
     title: "Core",
     items: [
-      { label: "Dashboard", href: "/", icon: LayoutDashboard },
+      { label: "Dashboard", href: "/crm", icon: LayoutDashboard },
       { label: "Inbox", href: "/inbox", icon: InboxIcon },
       { label: "Social Inbox", href: "/social-inbox", icon: MessageSquare },
       { label: "Companies", href: "/companies", icon: Building2 },
@@ -159,7 +159,7 @@ function Sidebar() {
     >
       <div className="flex h-14 items-center justify-between px-4">
         {!sidebarCollapsed && (
-          <span className="text-sm font-semibold tracking-wide text-foreground">REKKI CRM</span>
+          <span className="text-sm font-semibold tracking-wide text-foreground">NEXORA CRM</span>
         )}
         <button
           onClick={toggleSidebar}
@@ -181,8 +181,8 @@ function Sidebar() {
               {section.items.map((item) => {
                 const Icon = item.icon
                 const isActive =
-                  item.href === "/"
-                    ? pathname === "/"
+                  item.href === "/crm"
+                    ? pathname === "/crm"
                     : pathname.startsWith(item.href)
 
                 return (
