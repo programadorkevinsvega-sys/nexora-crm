@@ -87,9 +87,10 @@ if [ "$BUILD_ON_REMOTE" = true ]; then
     set -e
     cd ${REMOTE_DIR}
 
-    # Cargar rutas de nvm / pnpm / node
+    # Cargar rutas de volta / pnpm / nvm / node
+    export VOLTA_HOME=\"\$HOME/.volta\"
     export PNPM_HOME=\"\$HOME/.local/share/pnpm\"
-    export PATH=\"\$PNPM_HOME:\$PATH\"
+    export PATH=\"\$VOLTA_HOME/bin:\$PNPM_HOME:\$PATH\"
     [ -s \"\$HOME/.nvm/nvm.sh\" ] && . \"\$HOME/.nvm/nvm.sh\"
 
     echo \"📥 1. Instalando dependencias con pnpm...\"
