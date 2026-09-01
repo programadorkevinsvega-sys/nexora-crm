@@ -33,4 +33,12 @@ message ListResponse {
   repeated string json_items = 1;
 }
 
+message JsonRequest {
+  string json_input = 1;
+}
+
+message JsonResponse {
+  string json = 1;
+}
+
 message Empty {}
