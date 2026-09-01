@@ -19,12 +19,12 @@ const queryClient = new QueryClient({
 
 function CrmShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#080a0f] text-slate-100 antialiased">
+    <div className="flex h-screen w-screen overflow-hidden bg-[#08090a] text-[#d0d6e0] antialiased">
       <CrmSidebar />
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex flex-1 flex-col overflow-hidden min-w-0">
         <CrmHeader />
-        <main className="flex-1 overflow-auto p-4 sm:p-6 bg-gradient-to-b from-[#0a0d14] to-[#080a0f]">
-          <div className="max-w-7xl mx-auto w-full space-y-6">{children}</div>
+        <main className="flex-1 overflow-auto bg-[#08090a] p-6">
+          <div className="max-w-[1200px] mx-auto w-full space-y-6">{children}</div>
         </main>
       </div>
     </div>
