@@ -5,7 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  /* Linear Design Tokens */
+  /* Linear Design Color Tokens */
   --color-void: #08090a;
   --color-carbon: #0f1011;
   --color-obsidian: #161718;
@@ -26,35 +26,6 @@
   /* Fonts */
   --font-sans: var(--font-inter), 'Inter Variable', ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: var(--font-mono-jb), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-
-  /* Spacing */
-  --spacing-4: 4px;
-  --spacing-8: 8px;
-  --spacing-12: 12px;
-  --spacing-16: 16px;
-  --spacing-20: 20px;
-  --spacing-24: 24px;
-  --spacing-28: 28px;
-  --spacing-32: 32px;
-  --spacing-36: 36px;
-  --spacing-40: 40px;
-  --spacing-48: 48px;
-  --spacing-56: 56px;
-  --spacing-64: 64px;
-  --spacing-80: 80px;
-  --spacing-96: 96px;
-  --spacing-128: 128px;
-
-  /* Radius */
-  --radius-sm: 2px;
-  --radius-md: 6px;
-  --radius-xl: 12px;
-  --radius-full: 9999px;
-  --radius-cards: 12px;
-  --radius-pills: 9999px;
-  --radius-badges: 4px;
-  --radius-inputs: 6px;
-  --radius-buttons: 6px;
 
   /* Shadows (Linear system — hairline borders, not ambient shadows) */
   --shadow-sm: rgba(0, 0, 0, 0.4) 0px 2px 4px 0px;
