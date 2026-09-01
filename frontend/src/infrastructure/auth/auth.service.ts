@@ -74,8 +74,17 @@ export const AuthService = {
     return data
   },
 
-  async register(name: string, email: string, password: string, company: string): Promise<any> {
-    return authPost<any>("/api/auth/register", { name, email, password, company })
+  async register(name: string, email: string, password: string, company: string): Promise<LoginResponse> {
+    const data = await authPost<LoginResponse>("/api/auth/register", { name, email, password, company })
+    if (data?.token) {
+      sessionStorage.setItem("crm_token", data.token)
+      sessionStorage.setItem("crm_tenant_id", data.tenantId)
+      sessionStorage.setItem("crm_user_id", data.userId)
+      if (data.userName) sessionStorage.setItem("crm_user_name", data.userName)
+      if (data.userEmail) sessionStorage.setItem("crm_user_email", data.userEmail)
+      if (data.companyName) sessionStorage.setItem("crm_company_name", data.companyName)
+    }
+    return data
   },
 }
 
