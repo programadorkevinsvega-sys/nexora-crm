@@ -66,6 +66,7 @@ async function bootstrap() {
         'crm.notifications', 'crm.audit', 'crm.storage', 'crm.scheduler',
         'crm.automation', 'crm.lead_scoring', 'crm.cpq', 'crm.customer_360', 'crm.inbox',
         'crm.analytics', 'crm.knowledge_base', 'crm.ai', 'crm.developer',
+        'crm.social_inbox', 'crm.web_forms', 'crm.meta_leads',
       ],
       protoPath: [
         resolve(protoPath(), 'common.proto'),
@@ -99,6 +100,9 @@ async function bootstrap() {
         resolve(protoPath(), 'knowledge-base.proto'),
         resolve(protoPath(), 'ai.proto'),
         resolve(protoPath(), 'developer.proto'),
+        resolve(protoPath(), 'social-inbox.proto'),
+        resolve(protoPath(), 'web-forms.proto'),
+        resolve(protoPath(), 'meta-leads.proto'),
       ],
       url: `0.0.0.0:${grpcPort}`,
     },
