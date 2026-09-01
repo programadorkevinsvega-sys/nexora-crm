@@ -45,7 +45,7 @@ export class AuthLoginGrpcController {
   @GrpcMethod('AuthService', 'Login')
   async login(data: any) {
     const input = validateOrThrow(LoginSchema, {
-      tenantId: data.tenantId,
+      tenantId: data.tenantId || '00000000-0000-0000-0000-000000000001',
       email: data.email,
       password: data.password,
       ipAddress: data.ipAddress,

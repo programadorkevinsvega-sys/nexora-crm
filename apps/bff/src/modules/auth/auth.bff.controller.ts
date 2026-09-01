@@ -70,9 +70,10 @@ export class AuthBffController implements OnModuleInit {
     const userAgent = Array.isArray(userAgentHeader) ? userAgentHeader[0] : userAgentHeader
 
     try {
+      const tenantId = body.tenantId || (request.headers['x-tenant-id'] as string) || '00000000-0000-0000-0000-000000000001'
       const result = await lastValueFrom(
         this.grpcService.login({
-          tenantId: body.tenantId,
+          tenantId,
           email: body.email,
           password: body.password,
           ipAddress: body.ipAddress ?? ip,
@@ -91,11 +92,12 @@ export class AuthBffController implements OnModuleInit {
   }
 
   @Post('refresh')
-  async refresh(@Body() body: any) {
+  async refresh(@Body() body: any, @Req() request: Request) {
     try {
+      const tenantId = body.tenantId || (request.headers['x-tenant-id'] as string) || '00000000-0000-0000-0000-000000000001'
       const result = await lastValueFrom(
         this.grpcService.refreshToken({
-          tenantId: body.tenantId,
+          tenantId,
           refreshToken: body.refreshToken,
         })
       )
