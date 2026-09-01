@@ -4,29 +4,29 @@ import { cn } from "@/src/shared/utils/cn"
 
 const STATUS_STYLES: Record<string, string> = {
   // Success states
-  active: "bg-[rgba(39,166,68,0.12)] text-[#27a644] border border-[rgba(39,166,68,0.25)]",
-  completed: "bg-[rgba(39,166,68,0.12)] text-[#27a644] border border-[rgba(39,166,68,0.25)]",
-  won: "bg-[rgba(39,166,68,0.12)] text-[#27a644] border border-[rgba(39,166,68,0.25)]",
-  open: "bg-[rgba(39,166,68,0.12)] text-[#27a644] border border-[rgba(39,166,68,0.25)]",
-  resolved: "bg-[rgba(39,166,68,0.12)] text-[#27a644] border border-[rgba(39,166,68,0.25)]",
-  paid: "bg-[rgba(39,166,68,0.12)] text-[#27a644] border border-[rgba(39,166,68,0.25)]",
-  published: "bg-[rgba(39,166,68,0.12)] text-[#27a644] border border-[rgba(39,166,68,0.25)]",
-  enabled: "bg-[rgba(39,166,68,0.12)] text-[#27a644] border border-[rgba(39,166,68,0.25)]",
+  active: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/25",
+  completed: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/25",
+  won: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/25",
+  open: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/25",
+  resolved: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/25",
+  paid: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/25",
+  published: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/25",
+  enabled: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/25",
   // Pending/progress states
-  pending: "bg-[rgba(2,184,204,0.10)] text-[#02b8cc] border border-[rgba(2,184,204,0.20)]",
-  in_progress: "bg-[rgba(2,184,204,0.10)] text-[#02b8cc] border border-[rgba(2,184,204,0.20)]",
-  partial: "bg-[rgba(234,179,8,0.12)] text-[#ca8a04] border border-[rgba(234,179,8,0.25)]",
-  scheduled: "bg-[rgba(139,92,246,0.12)] text-[#8b5cf6] border border-[rgba(139,92,246,0.25)]",
+  pending: "bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 border border-cyan-500/20",
+  in_progress: "bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 border border-cyan-500/20",
+  partial: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/25",
+  scheduled: "bg-purple-500/10 text-purple-700 dark:text-purple-400 border border-purple-500/25",
   // Cancelled/error states
-  cancelled: "bg-[rgba(235,87,87,0.10)] text-[#eb5757] border border-[rgba(235,87,87,0.20)]",
-  lost: "bg-[rgba(235,87,87,0.10)] text-[#eb5757] border border-[rgba(235,87,87,0.20)]",
-  closed: "bg-[rgba(235,87,87,0.10)] text-[#eb5757] border border-[rgba(235,87,87,0.20)]",
-  failed: "bg-[rgba(235,87,87,0.10)] text-[#eb5757] border border-[rgba(235,87,87,0.20)]",
-  expired: "bg-[rgba(235,87,87,0.10)] text-[#eb5757] border border-[rgba(235,87,87,0.20)]",
+  cancelled: "bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20",
+  lost: "bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20",
+  closed: "bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20",
+  failed: "bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20",
+  expired: "bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20",
   // Neutral states
-  draft: "bg-[rgba(255,255,255,0.04)] text-[#8a8f98] border border-[#23252a]",
-  archived: "bg-[rgba(255,255,255,0.04)] text-[#8a8f98] border border-[#23252a]",
-  disabled: "bg-[rgba(255,255,255,0.04)] text-[#8a8f98] border border-[#23252a]",
+  draft: "bg-muted text-muted-foreground border border-border",
+  archived: "bg-muted text-muted-foreground border border-border",
+  disabled: "bg-muted text-muted-foreground border border-border",
 }
 
 export interface StatusBadgeProps {
@@ -37,7 +37,7 @@ export interface StatusBadgeProps {
 function StatusBadge({ status, className }: StatusBadgeProps) {
   const normalized = typeof status === "string" ? status.trim() : ""
   const key = normalized.toLowerCase()
-  const style = STATUS_STYLES[key] ?? "bg-[rgba(255,255,255,0.05)] text-[#8a8f98]"
+  const style = STATUS_STYLES[key] ?? "bg-muted text-muted-foreground border border-border"
   const label = normalized ? normalized.replace(/_/g, " ") : "Desconocido"
 
   return (

@@ -102,44 +102,44 @@ export function ContactListPage() {
       />
 
       {/* Visibility & Territory Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-zinc-900/60 p-3 rounded-xl border border-zinc-800 text-xs">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-card p-3 rounded-xl border border-border text-xs text-foreground">
         <div className="flex items-center gap-2">
-          <Shield size={15} className={isAgent ? "text-amber-400" : isManager ? "text-purple-400" : "text-cyan-400"} />
-          <span className="font-semibold text-zinc-200">Jerarquía Territorial:</span>
+          <Shield size={15} className={isAgent ? "text-amber-500" : isManager ? "text-purple-500" : "text-cyan-500"} />
+          <span className="font-semibold text-foreground">Jerarquía Territorial:</span>
           {isAgent && (
-            <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 font-mono text-[11px] border border-amber-500/20">
+            <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-500 font-mono text-[11px] border border-amber-500/20">
               🔒 Modo Vendedor (Solo contactos asignados a tu cartera)
             </span>
           )}
           {isManager && (
-            <span className="px-2 py-0.5 rounded bg-purple-500/10 text-purple-300 font-mono text-[11px] border border-purple-500/20">
+            <span className="px-2 py-0.5 rounded bg-purple-500/10 text-purple-500 font-mono text-[11px] border border-purple-500/20">
               👥 Modo Gerente (Territorio & Miembros de Equipo)
             </span>
           )}
           {!isAgent && !isManager && (
-            <span className="px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 font-mono text-[11px] border border-cyan-500/20">
+            <span className="px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-500 font-mono text-[11px] border border-cyan-500/20">
               🌐 Modo Administrador (Acceso Global a la Organización)
             </span>
           )}
         </div>
 
         {!isAgent && (
-          <div className="flex items-center gap-1 bg-zinc-950 p-1 rounded-lg border border-zinc-800 self-end sm:self-auto">
+          <div className="flex items-center gap-1 bg-muted p-1 rounded-lg border border-border self-end sm:self-auto">
             <button
               onClick={() => { setScope("all"); reset() }}
-              className={`px-2.5 py-1 rounded flex items-center gap-1.5 transition-colors ${scope === "all" ? "bg-cyan-500/20 text-cyan-400 font-semibold" : "text-zinc-400 hover:text-zinc-200"}`}
+              className={`px-2.5 py-1 rounded flex items-center gap-1.5 transition-colors ${scope === "all" ? "bg-cyan-500/20 text-cyan-500 font-semibold" : "text-muted-foreground hover:text-foreground"}`}
             >
               <Globe size={12} /> Todo el CRM
             </button>
             <button
               onClick={() => { setScope("team"); reset() }}
-              className={`px-2.5 py-1 rounded flex items-center gap-1.5 transition-colors ${scope === "team" ? "bg-purple-500/20 text-purple-400 font-semibold" : "text-zinc-400 hover:text-zinc-200"}`}
+              className={`px-2.5 py-1 rounded flex items-center gap-1.5 transition-colors ${scope === "team" ? "bg-purple-500/20 text-purple-500 font-semibold" : "text-muted-foreground hover:text-foreground"}`}
             >
               <Users size={12} /> Mi Equipo
             </button>
             <button
               onClick={() => { setScope("mine"); reset() }}
-              className={`px-2.5 py-1 rounded flex items-center gap-1.5 transition-colors ${scope === "mine" ? "bg-amber-500/20 text-amber-400 font-semibold" : "text-zinc-400 hover:text-zinc-200"}`}
+              className={`px-2.5 py-1 rounded flex items-center gap-1.5 transition-colors ${scope === "mine" ? "bg-amber-500/20 text-amber-500 font-semibold" : "text-muted-foreground hover:text-foreground"}`}
             >
               <User size={12} /> Solo Míos
             </button>

@@ -5,17 +5,17 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  /* Linear Design Color Tokens */
-  --color-void: #08090a;
-  --color-carbon: #0f1011;
-  --color-obsidian: #161718;
-  --color-graphite: #23252a;
-  --color-smoke: #383b3f;
-  --color-ash: #62666d;
-  --color-fog: #8a8f98;
-  --color-mist: #d0d6e0;
-  --color-bone: #e5e5e6;
-  --color-paper: #ffffff;
+  /* Linear Design Dynamic Color Tokens */
+  --color-void: var(--background);
+  --color-carbon: var(--card);
+  --color-obsidian: var(--obsidian);
+  --color-graphite: var(--graphite);
+  --color-smoke: var(--smoke);
+  --color-ash: var(--ash);
+  --color-fog: var(--fog);
+  --color-mist: var(--mist);
+  --color-bone: var(--bone);
+  --color-paper: var(--paper);
   --color-acid-lime: #e4f222;
   --color-pulse-green: #27a644;
   --color-coral-red: #eb5757;
@@ -28,10 +28,9 @@
   --font-mono: var(--font-mono-jb), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   /* Shadows (Linear system — hairline borders, not ambient shadows) */
-  --shadow-sm: rgba(0, 0, 0, 0.4) 0px 2px 4px 0px;
+  --shadow-sm: rgba(0, 0, 0, 0.05) 0px 1px 2px 0px;
   --shadow-subtle: rgb(35, 37, 42) 0px 0px 0px 1px inset;
   --shadow-xl: rgba(8, 9, 10, 0.6) 0px 4px 32px 0px;
-  --shadow-subtle-4: rgba(255, 255, 255, 0.03) 0px 0px 0px 1px inset, rgba(255, 255, 255, 0.04) 0px 1px 0px 0px inset, rgba(0, 0, 0, 0.6) 0px 0px 0px 1px, rgba(0, 0, 0, 0.1) 0px 4px 4px 0px;
 
   /* shadcn token mapping */
   --color-background: var(--background);
@@ -54,7 +53,7 @@
   --color-ring: var(--ring);
 }
 
-:root {
+:root, .dark, html.dark {
   color-scheme: dark;
   --background: #08090a;
   --foreground: #d0d6e0;
@@ -75,9 +74,19 @@
   --input: #161718;
   --ring: #e4f222;
   --radius: 0.375rem;
+
+  /* Linear color palette tokens for Dark mode */
+  --paper: #ffffff;
+  --bone: #e5e5e6;
+  --mist: #d0d6e0;
+  --fog: #8a8f98;
+  --ash: #62666d;
+  --smoke: #383b3f;
+  --graphite: #23252a;
+  --obsidian: #161718;
 }
 
-html.light, :root.light {
+.light, html.light, :root.light {
   color-scheme: light;
   --background: #f8fafc;
   --foreground: #0f172a;
@@ -85,18 +94,28 @@ html.light, :root.light {
   --card-foreground: #0f172a;
   --popover: #ffffff;
   --popover-foreground: #0f172a;
-  --primary: #e4f222;
-  --primary-foreground: #0f172a;
+  --primary: #0f172a;
+  --primary-foreground: #ffffff;
   --secondary: #f1f5f9;
   --secondary-foreground: #0f172a;
-  --muted: #e2e8f0;
+  --muted: #f1f5f9;
   --muted-foreground: #64748b;
-  --accent: #e2e8f0;
+  --accent: #f1f5f9;
   --accent-foreground: #0f172a;
   --destructive: #dc2626;
-  --border: rgba(0, 0, 0, 0.08);
+  --border: #e2e8f0;
   --input: #ffffff;
-  --ring: #e4f222;
+  --ring: #0f172a;
+
+  /* Linear color palette tokens for Light mode */
+  --paper: #0f172a;
+  --bone: #1e293b;
+  --mist: #1e293b;
+  --fog: #475569;
+  --ash: #64748b;
+  --smoke: #cbd5e1;
+  --graphite: #e2e8f0;
+  --obsidian: #f1f5f9;
 }
 
 @layer base {
@@ -115,40 +134,25 @@ html.light, :root.light {
 /* Custom scrollbars */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #23252a; border-radius: 9999px; }
-::-webkit-scrollbar-thumb:hover { background: #383b3f; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted-foreground); }
 
 /* Linear precision utilities */
 .linear-card {
-  background: #0f1011;
+  background: var(--card);
+  color: var(--card-foreground);
   border-radius: 12px;
-  box-shadow: rgb(35, 37, 42) 0px 0px 0px 1px inset;
+  border: 1px solid var(--border);
 }
 .linear-card-elevated {
-  background: #161718;
+  background: var(--secondary);
+  color: var(--secondary-foreground);
   border-radius: 12px;
-  box-shadow: rgb(35, 37, 42) 0px 0px 0px 1px inset;
+  border: 1px solid var(--border);
 }
 .linear-surface {
-  background: #161718;
+  background: var(--popover);
+  color: var(--popover-foreground);
   border-radius: 6px;
-  box-shadow: rgba(0, 0, 0, 0.2) 0px 0px 0px 1px;
-}
-.heading-display {
-  font-size: 64px;
-  font-weight: 510;
-  line-height: 1;
-  letter-spacing: -1.408px;
-}
-.heading-section {
-  font-size: 48px;
-  font-weight: 510;
-  line-height: 1;
-  letter-spacing: -1.056px;
-}
-.heading-sub {
-  font-size: 32px;
-  font-weight: 400;
-  line-height: 1.13;
-  letter-spacing: -0.704px;
+  border: 1px solid var(--border);
 }
