@@ -4,6 +4,7 @@ import { type ReactNode } from "react"
 import { cn } from "@/src/shared/utils/cn"
 import { Button } from "@/src/presentation/crm/components/ui/Button"
 import { Skeleton } from "@/src/presentation/crm/components/ui/Skeleton"
+import { Inbox } from "lucide-react"
 
 export interface ColumnDef<T> {
   key: string
@@ -33,7 +34,7 @@ function DataTable<T>({
   loading,
   loadingMore,
   onRowClick,
-  emptyMessage = "No data found",
+  emptyMessage = "No se encontraron registros",
   className,
 }: DataTableProps<T>) {
   const alignClass = (align?: string) => {
@@ -45,16 +46,16 @@ function DataTable<T>({
   }
 
   return (
-    <div className={cn("overflow-hidden rounded-[var(--radius-cards)] rekki-inset bg-graphite", className)}>
+    <div className={cn("overflow-hidden rounded-xl border border-white/[0.08] bg-[#0f141f]/80 backdrop-blur-md shadow-xl shadow-black/20", className)}>
       <div className="overflow-x-auto">
         <table className="w-full border-collapse">
           <thead>
-            <tr className="border-b border-steel">
+            <tr className="border-b border-white/[0.08] bg-white/[0.02]">
               {columns.map((col) => (
                 <th
                   key={col.key}
                   className={cn(
-                    "px-4 py-3 text-caption font-medium text-ash",
+                    "px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400 select-none",
                     alignClass(col.align),
                     col.className,
                   )}
@@ -64,13 +65,13 @@ function DataTable<T>({
               ))}
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-white/[0.05]">
             {loading && data.length === 0 ? (
               Array.from({ length: 5 }).map((_, i) => (
-                <tr key={i} className="border-b border-steel/50">
+                <tr key={i} className="animate-pulse">
                   {columns.map((col) => (
-                    <td key={col.key} className="px-4 py-3">
-                      <Skeleton className="h-4 w-full" />
+                    <td key={col.key} className="px-4 py-3.5">
+                      <Skeleton className="h-4 w-full bg-white/[0.05]" />
                     </td>
                   ))}
                 </tr>
@@ -79,9 +80,14 @@ function DataTable<T>({
               <tr>
                 <td
                   colSpan={columns.length}
-                  className="px-4 py-8 text-center text-body text-ash"
+                  className="px-4 py-16 text-center text-slate-400"
                 >
-                  {emptyMessage}
+                  <div className="flex flex-col items-center justify-center gap-2">
+                    <div className="p-3 rounded-full bg-white/[0.04] text-slate-500">
+                      <Inbox className="w-6 h-6" />
+                    </div>
+                    <p className="text-sm font-medium text-slate-300">{emptyMessage}</p>
+                  </div>
                 </td>
               </tr>
             ) : (
@@ -90,15 +96,15 @@ function DataTable<T>({
                   key={(row as Record<string, unknown>).id as string ?? rowIndex}
                   onClick={() => onRowClick?.(row)}
                   className={cn(
-                    "border-b border-steel/50 transition-colors",
-                    onRowClick && "cursor-pointer hover:bg-iron/50",
+                    "transition-all duration-150 group",
+                    onRowClick && "cursor-pointer hover:bg-blue-500/[0.06]",
                   )}
                 >
                   {columns.map((col) => (
                     <td
                       key={col.key}
                       className={cn(
-                        "px-4 py-3 text-body text-paper",
+                        "px-4 py-3.5 text-xs text-slate-200 group-hover:text-white transition-colors",
                         alignClass(col.align),
                         col.className,
                       )}
@@ -113,13 +119,14 @@ function DataTable<T>({
         </table>
       </div>
       {nextCursor && onLoadMore && (
-        <div className="flex justify-center p-4 border-t border-steel">
+        <div className="flex justify-center p-3.5 border-t border-white/[0.08] bg-white/[0.01]">
           <Button
-            variant="ghost"
+            variant="secondary"
+            size="sm"
             onClick={onLoadMore}
             disabled={loadingMore}
           >
-            {loadingMore ? "Loading..." : "Load more"}
+            {loadingMore ? "Cargando..." : "Cargar más"}
           </Button>
         </div>
       )}

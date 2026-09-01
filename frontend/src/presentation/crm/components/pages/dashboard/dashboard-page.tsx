@@ -1,7 +1,8 @@
 "use client"
 
 import { useQuery } from "@tanstack/react-query"
-import { Building2, Users, TrendingUp, TicketCheck } from "lucide-react"
+import Link from "next/link"
+import { Building2, Users, TrendingUp, TicketCheck, ArrowUpRight, Plus, Sparkles, Phone, FileText } from "lucide-react"
 import { Skeleton } from "@/src/presentation/crm/components/ui/Skeleton"
 import { Card } from "@/src/presentation/crm/components/ui/Card"
 import { ActivityTimeline } from "@/src/presentation/crm/components/common/ActivityTimeline"
@@ -16,25 +17,44 @@ interface StatCardProps {
   icon: React.ReactNode
   label: string
   value: string | number
+  trend?: string
+  color: "blue" | "emerald" | "amber" | "purple"
   loading?: boolean
+  href?: string
 }
 
-function StatCard({ icon, label, value, loading }: StatCardProps) {
-  return (
-    <Card className="flex items-center gap-4 p-4">
-      <div className="flex h-12 w-12 items-center justify-center rounded-[var(--radius-cards)] bg-iron text-signal-blue">
-        {icon}
-      </div>
-      <div className="space-y-1">
-        <p className="text-caption text-ash">{label}</p>
-        {loading ? (
-          <Skeleton className="h-6 w-16" />
-        ) : (
-          <p className="text-heading font-sans font-bold text-paper">{value}</p>
+function StatCard({ icon, label, value, trend, color, loading, href }: StatCardProps) {
+  const colorStyles = {
+    blue: "from-blue-500/10 to-blue-500/5 text-blue-400 border-blue-500/20",
+    emerald: "from-emerald-500/10 to-emerald-500/5 text-emerald-400 border-emerald-500/20",
+    amber: "from-amber-500/10 to-amber-500/5 text-amber-400 border-amber-500/20",
+    purple: "from-purple-500/10 to-purple-500/5 text-purple-400 border-purple-500/20",
+  }[color]
+
+  const Content = (
+    <div className="relative p-5 rounded-2xl bg-[#0f1420]/80 border border-white/[0.08] backdrop-blur-md shadow-lg shadow-black/20 hover:border-white/[0.16] transition-all group overflow-hidden">
+      <div className="flex items-center justify-between">
+        <div className={`p-2.5 rounded-xl bg-gradient-to-br ${colorStyles} border shrink-0`}>
+          {icon}
+        </div>
+        {trend && (
+          <span className="flex items-center text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+            {trend} <ArrowUpRight className="w-3 h-3 ml-0.5" />
+          </span>
         )}
       </div>
-    </Card>
+      <div className="mt-4 space-y-1">
+        <p className="text-xs font-medium text-slate-400">{label}</p>
+        {loading ? (
+          <Skeleton className="h-7 w-20 bg-white/[0.06]" />
+        ) : (
+          <p className="text-2xl font-bold tracking-tight text-white">{value}</p>
+        )}
+      </div>
+    </div>
   )
+
+  return href ? <Link href={href}>{Content}</Link> : Content
 }
 
 export function DashboardPage() {
@@ -76,16 +96,16 @@ export function DashboardPage() {
     ...(companiesQuery.data?.data ?? []).map((c: any) => ({
       id: `company-${c.id}`,
       type: "system" as const,
-      content: `Company "${c.name}" was created`,
+      content: `Empresa "${c.name}" creada`,
       date: new Date(c.createdAt).toLocaleDateString(),
-      author: "System",
+      author: "Sistema",
     })),
     ...(ticketsQuery.data?.data ?? []).map((t: any) => ({
       id: `ticket-${t.id}`,
       type: "note" as const,
-      content: `Ticket "${t.subject}" opened`,
+      content: `Ticket "${t.subject}" recibido`,
       date: new Date(t.createdAt).toLocaleDateString(),
-      author: "System",
+      author: "Soporte",
     })),
   ]
 
@@ -93,46 +113,114 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-heading font-sans font-bold text-paper">Dashboard</h1>
-        <p className="text-body text-ash mt-1">Overview of your CRM</p>
+      {/* Header with quick stats greeting */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-white/[0.06]">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+            Panel de Control <Sparkles className="w-5 h-5 text-blue-400" />
+          </h1>
+          <p className="text-xs text-slate-400 mt-1">Resumen ejecutivo en tiempo real de tu CRM</p>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Link
+            href="/contacts"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-white/[0.04] hover:bg-white/[0.08] text-slate-200 border border-white/[0.08] transition-all"
+          >
+            <Plus className="w-3.5 h-3.5 text-blue-400" /> Nuevo Contacto
+          </Link>
+          <Link
+            href="/pipelines/deals/new"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-600/20 border border-blue-400/30 transition-all"
+          >
+            <Plus className="w-3.5 h-3.5" /> Nueva Oportunidad
+          </Link>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* KPI Cards Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          icon={<Building2 className="h-6 w-6" />}
-          label="Total Companies"
+          icon={<Building2 className="h-5 w-5" />}
+          label="Empresas Registradas"
           value={totalCompanies}
+          trend="+12%"
+          color="blue"
+          href="/companies"
           loading={companiesQuery.isLoading}
         />
         <StatCard
-          icon={<Users className="h-6 w-6" />}
-          label="Total Contacts"
+          icon={<Users className="h-5 w-5" />}
+          label="Contactos & Leads"
           value={totalContacts}
+          trend="+8%"
+          color="emerald"
+          href="/contacts"
           loading={contactsQuery.isLoading}
         />
         <StatCard
-          icon={<TrendingUp className="h-6 w-6" />}
-          label="Open Deals"
+          icon={<TrendingUp className="h-5 w-5" />}
+          label="Deals en Negociación"
           value={totalOpenDeals}
+          trend="+24%"
+          color="amber"
+          href="/pipelines"
           loading={dealsQuery.isLoading}
         />
         <StatCard
-          icon={<TicketCheck className="h-6 w-6" />}
-          label="Open Tickets"
+          icon={<TicketCheck className="h-5 w-5" />}
+          label="Tickets Abiertos"
           value={totalOpenTickets}
+          color="purple"
+          href="/support/tickets"
           loading={ticketsQuery.isLoading}
         />
       </div>
 
-      <Card className="p-4">
-        <h2 className="text-heading-sm font-sans font-semibold text-paper mb-4">Recent Activity</h2>
-        {recentActivity.length === 0 && !ticketsQuery.isLoading ? (
-          <p className="text-body text-ash py-8 text-center">No recent activity</p>
-        ) : (
-          <ActivityTimeline items={recentActivity} loading={ticketsQuery.isLoading} />
-        )}
-      </Card>
+      {/* Main Grid: Activity & Insights */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <Card className="border border-white/[0.08] bg-[#0f1420]/80 backdrop-blur-md p-6">
+            <h2 className="text-sm font-semibold text-slate-100 mb-4 tracking-tight flex items-center justify-between">
+              <span>Actividad y Eventos Recientes</span>
+              <span className="text-[11px] font-normal text-slate-400">Tiempo real</span>
+            </h2>
+            {recentActivity.length === 0 && !ticketsQuery.isLoading ? (
+              <p className="text-xs text-slate-400 py-12 text-center">No hay actividad reciente registrada</p>
+            ) : (
+              <ActivityTimeline items={recentActivity} loading={ticketsQuery.isLoading} />
+            )}
+          </Card>
+        </div>
+
+        <div>
+          <Card className="border border-white/[0.08] bg-[#0f1420]/80 backdrop-blur-md p-6 space-y-4">
+            <h3 className="text-sm font-semibold text-slate-100 tracking-tight">Accesos Directos</h3>
+            <div className="space-y-2">
+              <Link href="/analytics/forecast" className="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] transition-all group">
+                <div className="flex items-center gap-2.5">
+                  <TrendingUp className="w-4 h-4 text-emerald-400" />
+                  <span className="text-xs font-medium text-slate-200">Forecasting 3M/6M</span>
+                </div>
+                <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-white transition-colors" />
+              </Link>
+              <Link href="/calls" className="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] transition-all group">
+                <div className="flex items-center gap-2.5">
+                  <Phone className="w-4 h-4 text-blue-400" />
+                  <span className="text-xs font-medium text-slate-200">Llamadas VoIP & Audio</span>
+                </div>
+                <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-white transition-colors" />
+              </Link>
+              <Link href="/quotes" className="flex items-center justify-between p-3 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] transition-all group">
+                <div className="flex items-center gap-2.5">
+                  <FileText className="w-4 h-4 text-amber-400" />
+                  <span className="text-xs font-medium text-slate-200">Generador de Cotizaciones</span>
+                </div>
+                <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-white transition-colors" />
+              </Link>
+            </div>
+          </Card>
+        </div>
+      </div>
     </div>
   )
 }

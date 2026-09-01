@@ -15,15 +15,15 @@ const VARIANT_MAP: Record<string, BadgeProps["variant"]> = {
   pending: "warning",
   in_progress: "info",
   partial: "warning",
-  draft: "default",
-  scheduled: "info",
+  draft: "secondary",
+  scheduled: "purple",
 
   cancelled: "danger",
   lost: "danger",
   closed: "danger",
   failed: "danger",
-  archived: "danger",
-  disabled: "danger",
+  archived: "secondary",
+  disabled: "secondary",
   expired: "danger",
 }
 
@@ -31,16 +31,17 @@ export interface StatusBadgeProps {
   status?: string | null
   variant?: BadgeProps["variant"]
   className?: string
+  dot?: boolean
 }
 
-function StatusBadge({ status, variant, className }: StatusBadgeProps) {
+function StatusBadge({ status, variant, className, dot = true }: StatusBadgeProps) {
   const normalizedStatus = typeof status === "string" ? status.trim() : ""
   const statusKey = normalizedStatus.toLowerCase()
   const resolvedVariant = variant || VARIANT_MAP[statusKey] || "default"
-  const label = normalizedStatus ? normalizedStatus.replace(/_/g, " ") : "Unknown"
+  const label = normalizedStatus ? normalizedStatus.replace(/_/g, " ") : "Desconocido"
 
   return (
-    <Badge variant={resolvedVariant} className={className}>
+    <Badge variant={resolvedVariant} size="sm" dot={dot} className={className}>
       {label}
     </Badge>
   )

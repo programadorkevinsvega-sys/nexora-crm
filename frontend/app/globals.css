@@ -5,38 +5,38 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  /* REKKI palette */
-  --color-signal-blue: #0063e1;
-  --color-obsidian: #000000;
-  --color-carbon: #040910;
-  --color-graphite: #0d0d0d;
-  --color-iron: #1f1f1f;
-  --color-steel: #2b2c2e;
-  --color-ash: #858585;
-  --color-smoke: #979797;
-  --color-fog: #8c8c8c;
-  --color-paper: #ffffff;
+  /* Nexora Premium Design Tokens */
+  --color-signal-blue: #3b82f6;
+  --color-obsidian: #080a0f;
+  --color-carbon: #0d1117;
+  --color-graphite: #131822;
+  --color-iron: #1a2232;
+  --color-steel: #242f45;
+  --color-ash: #94a3b8;
+  --color-smoke: #64748b;
+  --color-fog: #475569;
+  --color-paper: #f8fafc;
 
   /* Fonts */
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: var(--font-mono-jb), ui-monospace, monospace;
 
   /* Type scale */
   --text-caption: 12px;
-  --text-body: 16px;
-  --text-subheading: 18px;
-  --text-heading-sm: 20px;
-  --text-heading: 24px;
-  --text-heading-lg: 56px;
-  --text-display: 86px;
+  --text-body: 14px;
+  --text-subheading: 16px;
+  --text-heading-sm: 18px;
+  --text-heading: 22px;
+  --text-heading-lg: 32px;
+  --text-display: 48px;
 
   /* Radius */
-  --radius-nav: 2px;
-  --radius-cards: 16px;
-  --radius-images: 24px;
+  --radius-nav: 6px;
+  --radius-cards: 12px;
+  --radius-images: 16px;
   --radius-inputs: 8px;
-  --radius-buttons: 59px;
-  --radius-largecards: 30px;
+  --radius-buttons: 8px;
+  --radius-largecards: 20px;
 
   /* shadcn token mapping (dark) */
   --color-background: var(--background);
@@ -61,25 +61,25 @@
 
 :root:root {
   color-scheme: dark;
-  --background: #000000;
-  --foreground: #ffffff;
-  --card: #0d0d0d;
-  --card-foreground: #ffffff;
-  --popover: #0d0d0d;
-  --popover-foreground: #ffffff;
-  --primary: #0063e1;
+  --background: #080a0f;
+  --foreground: #f8fafc;
+  --card: #101520;
+  --card-foreground: #f8fafc;
+  --popover: #101520;
+  --popover-foreground: #f8fafc;
+  --primary: #3b82f6;
   --primary-foreground: #ffffff;
-  --secondary: #1f1f1f;
-  --secondary-foreground: #ffffff;
-  --muted: #0d0d0d;
-  --muted-foreground: #858585;
-  --accent: #1f1f1f;
+  --secondary: #182030;
+  --secondary-foreground: #f8fafc;
+  --muted: #131822;
+  --muted-foreground: #94a3b8;
+  --accent: #1e283d;
   --accent-foreground: #ffffff;
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: rgba(255, 255, 255, 0.12);
-  --input: #1f1f1f;
-  --ring: #0063e1;
-  --radius: 0.625rem;
+  --destructive: #ef4444;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: #182030;
+  --ring: #3b82f6;
+  --radius: 0.5rem;
 }
 
 @layer base {
@@ -89,18 +89,48 @@
   body {
     @apply bg-background text-foreground;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 }
 
-/* REKKI utility helpers */
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Premium utility helpers */
 .rekki-inset {
-  box-shadow: rgba(255, 255, 255, 0.12) 0px 0px 0px 1px inset;
+  box-shadow: rgba(255, 255, 255, 0.07) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0.4) 0px 4px 12px;
+}
+.glass-panel {
+  background: rgba(16, 21, 32, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.glow-primary {
+  box-shadow: 0 0 24px -4px rgba(59, 130, 246, 0.3);
+}
+.glow-success {
+  box-shadow: 0 0 24px -4px rgba(16, 185, 129, 0.3);
 }
 .display-tight {
-  letter-spacing: -0.064em;
-  line-height: 1;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
 }
 .heading-tight {
-  letter-spacing: -0.04em;
-  line-height: 1.15;
+  letter-spacing: -0.025em;
+  line-height: 1.25;
 }

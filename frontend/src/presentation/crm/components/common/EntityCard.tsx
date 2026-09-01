@@ -8,6 +8,7 @@ export interface EntityCardProps {
   actions?: ReactNode
   children?: ReactNode
   className?: string
+  icon?: ReactNode
 }
 
 function EntityCard({
@@ -16,27 +17,31 @@ function EntityCard({
   actions,
   children,
   className,
+  icon,
 }: EntityCardProps) {
   return (
-    <Card className={cn("space-y-4", className)}>
-      {(title || actions) && (
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-1">
-            {title && (
-              <h3 className="text-heading-sm font-sans font-semibold text-paper">
-                {title}
-              </h3>
-            )}
-            {subtitle && (
-              <p className="text-body text-ash">{subtitle}</p>
-            )}
+    <Card className={cn("space-y-4 border border-white/[0.08] bg-[#0f1420]/70 backdrop-blur-md p-5", className)}>
+      {(title || actions || icon) && (
+        <div className="flex items-start justify-between gap-4 pb-3 border-b border-white/[0.06]">
+          <div className="flex items-center gap-2.5">
+            {icon && <div className="p-1.5 rounded-lg bg-white/[0.05] text-blue-400 shrink-0">{icon}</div>}
+            <div className="space-y-0.5">
+              {title && (
+                <h3 className="text-sm font-semibold text-slate-100 tracking-tight">
+                  {title}
+                </h3>
+              )}
+              {subtitle && (
+                <p className="text-xs text-slate-400">{subtitle}</p>
+              )}
+            </div>
           </div>
           {actions && (
             <div className="flex items-center gap-2 shrink-0">{actions}</div>
           )}
         </div>
       )}
-      {children && <div>{children}</div>}
+      {children && <div className="text-xs leading-relaxed text-slate-200">{children}</div>}
     </Card>
   )
 }
