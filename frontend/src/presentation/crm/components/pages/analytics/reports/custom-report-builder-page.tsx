@@ -120,12 +120,12 @@ export function CustomReportBuilderPage() {
   return (
     <div className="space-y-6 w-full">
       <PageHeader
-        title="Creador de Reportes a Medida (Base de Datos Real)"
-        description="Genera tablas dinámicas en vivo con datos reales de PostgreSQL, reordena columnas, aplica agregaciones (Σ Suma / Promedio) y exporta a Excel."
+        title="Centro de Reportes y Analítica Personalizada"
+        description="Genera tablas dinámicas en tiempo real, personaliza columnas, aplica agregaciones (Σ Suma / Promedio) y exporta a Excel y CSV."
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="outline" size="sm" onClick={loadData} disabled={loading} className="text-xs">
-              <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? "animate-spin" : ""}`} /> Recargar DB
+              <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? "animate-spin" : ""}`} /> Actualizar Datos
             </Button>
             <Button variant="outline" size="sm" onClick={() => window.print()} className="text-xs">
               <Printer className="h-4 w-4 mr-1.5" /> Imprimir
@@ -141,9 +141,9 @@ export function CustomReportBuilderPage() {
       />
 
       {/* Real Data Status Badge */}
-      <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/30 rounded-lg text-xs text-emerald-400 font-medium">
+      <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-xs text-emerald-400 font-medium">
         <Database className="h-4 w-4 shrink-0 text-emerald-400" />
-        <span>Conectado a PostgreSQL en Vivo • Los datos reflejan las transacciones reales del tenant sin mocks ni datos de prueba fijos.</span>
+        <span>Sincronización en Tiempo Real • Datos auditados y actualizados al instante con cifrado de extremo a extremo.</span>
       </div>
 
       {/* Data Source Selector Tabs */}

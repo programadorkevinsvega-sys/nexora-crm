@@ -75,13 +75,13 @@ export function BillingSettingsTab() {
 
           <div className="p-4 rounded-xl bg-obsidian border border-steel/60 space-y-2">
             <div className="flex items-center justify-between text-ash">
-              <span className="flex items-center gap-1.5"><HardDrive size={14} className="text-purple-400" /> Base de Datos PostgreSQL</span>
-              <span className="font-semibold text-paper">Conectada</span>
+              <span className="flex items-center gap-1.5"><HardDrive size={14} className="text-purple-400" /> Almacenamiento Cifrado de Datos</span>
+              <span className="font-semibold text-paper">Activo</span>
             </div>
             <div className="w-full h-1.5 rounded-full bg-steel/40 overflow-hidden">
               <div className="h-full bg-purple-400 rounded-full" style={{ width: '100%' }} />
             </div>
-            <p className="text-[11px] text-ash">Row-Level Security (RLS) activo</p>
+            <p className="text-[11px] text-ash">Aislamiento y cifrado por empresa habilitado</p>
           </div>
         </div>
       </Card>

@@ -59,7 +59,7 @@
   --color-ring: var(--ring);
 }
 
-:root:root {
+:root {
   color-scheme: dark;
   --background: #080a0f;
   --foreground: #f8fafc;
@@ -80,6 +80,28 @@
   --input: #182030;
   --ring: #3b82f6;
   --radius: 0.5rem;
+}
+
+html.light, :root.light {
+  color-scheme: light;
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --muted: #e2e8f0;
+  --muted-foreground: #64748b;
+  --accent: #e2e8f0;
+  --accent-foreground: #0f172a;
+  --destructive: #dc2626;
+  --border: rgba(0, 0, 0, 0.08);
+  --input: #ffffff;
+  --ring: #2563eb;
 }
 
 @layer base {

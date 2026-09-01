@@ -7,71 +7,67 @@ import {
   Mail,
   PhoneCall,
   BrainCircuit,
-  TrendingUp,
-  FileCheck2,
-  Users2,
-  ShieldAlert,
   Zap,
 } from "lucide-react"
 
 export function LandingBentoGrid() {
   const features = [
     {
-      title: "Pipelines Kanban & Deals B2B",
-      desc: "Gestión visual de oportunidades con etapas personalizadas, cálculo automático de probabilidad y visión 360° de contactos y empresas.",
+      title: "Pipelines Visuales & Gestión de Deals",
+      desc: "Seguimiento en tiempo real de oportunidades comerciales, cálculo automático de probabilidad ponderada y vista unificada de cuentas B2B.",
       icon: Kanban,
-      color: "from-cyan-500 to-blue-600",
-      badge: "Ventas Core",
+      color: "from-blue-600 to-indigo-600",
+      badge: "Ventas B2B",
     },
     {
-      title: "WhatsApp Cloud API & Social Inbox",
-      desc: "Bandeja de entrada omnicanal para WhatsApp, Facebook Messenger e Instagram DM con auto-respuestas inteligentes con IA y captura directa de leads.",
+      title: "WhatsApp Cloud API & Bandeja Social",
+      desc: "Atiende conversaciones de WhatsApp, Instagram y Facebook en un solo buzón unificado con asignación automática a agentes y respuestas con IA.",
       icon: MessageSquare,
-      color: "from-emerald-500 to-teal-600",
-      badge: "Omnicanal",
+      color: "from-emerald-600 to-teal-600",
+      badge: "Omnicanalidad",
     },
     {
-      title: "CPQ & Firma Electrónica HMAC",
-      desc: "Catálogo de productos, cotizaciones multi-moneda con cálculo de impuestos y contratos legales con firma digital OTP con validez probatoria.",
+      title: "Cotizaciones CPQ & Firma Electrónica",
+      desc: "Genera propuestas comerciales con cálculo dinámico de descuentos e impuestos, y envía contratos para firma digital con validez legal probatoria.",
       icon: FileSignature,
-      color: "from-blue-500 to-indigo-600",
-      badge: "Legal & CPQ",
+      color: "from-blue-500 to-cyan-600",
+      badge: "CPQ & Legal",
     },
     {
-      title: "Email Marketing & Visual Designer",
-      desc: "Diseñador drag-and-drop de plantillas de correo responsive, envíos masivos por SMTP y píxel invisible para rastreo de tasas de apertura en tiempo real.",
+      title: "Marketing Masivo & Diseñador Visual",
+      desc: "Crea correos electrónicos atractivos con editor visual Drag-and-Drop, envíos masivos con seguimiento de aperturas y clics en tiempo real.",
       icon: Mail,
-      color: "from-purple-500 to-pink-600",
+      color: "from-purple-600 to-pink-600",
       badge: "Marketing",
     },
     {
       title: "Telefonía VoIP Click-to-Call",
-      desc: "Llama a tus clientes directamente desde el navegador con un clic usando Twilio Programmable Voice, con grabación automática vinculada al contacto.",
+      desc: "Realiza y recibe llamadas directamente desde el navegador web sin teléfonos físicos, con grabación y registro automático en el historial del cliente.",
       icon: PhoneCall,
-      color: "from-amber-500 to-orange-600",
+      color: "from-amber-600 to-orange-600",
       badge: "Telefonía",
     },
     {
-      title: "Forecasting IA & Base RAG",
-      desc: "Proyección trimestral de ingresos por Machine Learning, detección de riesgo de fuga (Churn) y asistente de IA entrenado en tus propios PDFs de Cloudflare R2.",
+      title: "Forecasting Predictivo & Copiloto IA",
+      desc: "Anticipa el cierre de ingresos a 3 y 6 meses con modelos predictivos, y consulta a tu asistente de IA entrenado en tu propia base documental.",
       icon: BrainCircuit,
-      color: "from-rose-500 to-red-600",
+      color: "from-rose-600 to-red-600",
       badge: "Inteligencia Artificial",
     },
   ]
 
   return (
-    <section id="features" className="py-24 bg-slate-950 relative">
+    <section id="features" className="py-24 bg-[#080a0f] relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-xs font-bold text-cyan-400 uppercase tracking-widest">
-            Capacidades de Vanguardia
+          <h2 className="text-xs font-bold text-blue-400 uppercase tracking-widest">
+            Ecosistema de Soluciones
           </h2>
           <p className="mt-3 text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-            Diseñado para Reemplazar Todo tu Software Antiguo
+            Todo lo que Necesitas para Crecer en una Sola Plataforma
           </p>
-          <p className="mt-4 text-base text-slate-400">
-            Cada módulo ha sido construido con arquitectura limpia independiente, comunicados por gRPC de baja latencia para máximo rendimiento.
+          <p className="mt-4 text-sm text-slate-400">
+            Elimina silos de información conectando ventas, atención al cliente, marketing y facturación con sincronización instantánea.
           </p>
         </div>
 
@@ -81,26 +77,26 @@ export function LandingBentoGrid() {
             return (
               <div
                 key={feat.title}
-                className="group relative p-7 rounded-2xl bg-slate-900/60 border border-slate-800/80 hover:border-slate-700 hover:bg-slate-900 transition-all duration-300 flex flex-col justify-between"
+                className="group relative p-7 rounded-2xl bg-[#0f1420]/80 border border-white/[0.08] hover:border-white/[0.16] hover:bg-[#121826] transition-all duration-300 flex flex-col justify-between shadow-lg shadow-black/20"
               >
                 <div>
                   <div className="flex items-center justify-between mb-5">
-                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feat.color} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
-                      <Icon className="w-6 h-6 text-white" />
+                    <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${feat.color} flex items-center justify-center shadow-md group-hover:scale-110 transition-transform`}>
+                      <Icon className="w-5 h-5 text-white" />
                     </div>
-                    <span className="text-[11px] font-semibold tracking-wide text-slate-300 px-2.5 py-1 rounded-md bg-slate-800 border border-slate-700">
+                    <span className="text-[10px] font-semibold tracking-wide text-slate-300 px-2.5 py-1 rounded-full bg-white/[0.05] border border-white/[0.08]">
                       {feat.badge}
                     </span>
                   </div>
-                  <h3 className="text-lg font-bold text-white group-hover:text-cyan-300 transition-colors">
+                  <h3 className="text-base font-bold text-white group-hover:text-blue-400 transition-colors">
                     {feat.title}
                   </h3>
-                  <p className="mt-2 text-sm text-slate-400 leading-relaxed">
+                  <p className="mt-2 text-xs text-slate-400 leading-relaxed">
                     {feat.desc}
                   </p>
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-slate-800/60 flex items-center gap-1.5 text-xs font-semibold text-cyan-400 group-hover:text-cyan-300">
+                <div className="mt-6 pt-4 border-t border-white/[0.06] flex items-center gap-1.5 text-xs font-semibold text-blue-400">
                   <Zap className="w-3.5 h-3.5" />
                   <span>Incluido en la Suite</span>
                 </div>

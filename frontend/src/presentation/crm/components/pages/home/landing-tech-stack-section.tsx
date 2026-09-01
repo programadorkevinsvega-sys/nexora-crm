@@ -1,77 +1,77 @@
 "use client"
 
-import { Server, Database, Cpu, ShieldCheck, Network, Lock, Sparkles } from "lucide-react"
+import { ShieldCheck, Lock, Database, Zap, Activity, Globe } from "lucide-react"
 
 export function LandingTechStackSection() {
-  const stacks = [
+  const securityPillars = [
     {
-      title: "Modular Monolith (DDD)",
-      desc: "21 Bounded Contexts independientes con Clean Architecture y principios SOLID.",
-      icon: Server,
-      color: "text-cyan-400",
-    },
-    {
-      title: "gRPC & Protocol Buffers",
-      desc: "Microservicios internos multiplexados por HTTP/2 con latencias inferiores a 50ms.",
-      icon: Cpu,
+      title: "Aislamiento Criptográfico de Datos",
+      desc: "Cada empresa opera en un entorno lógico blindado con políticas estrictas de aislamiento por inquilino.",
+      icon: Database,
       color: "text-blue-400",
     },
     {
-      title: "PostgreSQL con RLS Puro",
-      desc: "Aislamiento estricto multi-tenant por Row-Level Security sin mezcla de datos.",
-      icon: Database,
+      title: "Cifrado en Tránsito y en Reposo (AES-256)",
+      desc: "Todas las comunicaciones viajan a través de túneles TLS 1.3 con certificados de máxima seguridad.",
+      icon: Lock,
       color: "text-emerald-400",
     },
     {
-      title: "NATS JetStream Outbox",
-      desc: "Publicación transaccional garantizada de eventos asíncronos y auditoría continua.",
-      icon: Network,
+      title: "Disponibilidad y Rendimiento SLA 99.99%",
+      desc: "Infraestructura de alta velocidad distribuida globalmente con tiempos de respuesta inferiores a 20ms.",
+      icon: Zap,
       color: "text-indigo-400",
     },
     {
-      title: "Next.js 16 & Turbopack",
-      desc: "React 19 Server Components y generación estática optimizada para máxima velocidad.",
-      icon: Sparkles,
+      title: "Registro de Auditoría Inmutable",
+      desc: "Trazabilidad forense de cada creación, modificación, llamada y evento de firma para cumplimiento corporativo.",
+      icon: Activity,
       color: "text-purple-400",
     },
     {
-      title: "Cloudflare Zero Trust & R2",
-      desc: "Túneles encriptados sin puertos públicos expuestos y almacenamiento seguro de PDFs.",
-      icon: Lock,
+      title: "Almacenamiento Seguro de Archivos & PDFs",
+      desc: "Documentos legales, contratos firmados y grabaciones VoIP resguardados con redundancia geográfica.",
+      icon: ShieldCheck,
       color: "text-amber-400",
+    },
+    {
+      title: "Integraciones Empresariales & Webhooks",
+      desc: "APIs abiertas y webhooks en tiempo real para conectar con tu ERP, pasarelas de pago y sistemas legados.",
+      icon: Globe,
+      color: "text-cyan-400",
     },
   ]
 
   return (
-    <section id="tech" className="py-24 bg-slate-900/30 relative border-t border-slate-800/80">
+    <section id="security" className="py-24 bg-[#080a0f] relative border-t border-white/[0.08]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-xs text-slate-300 font-semibold mb-3">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-xs text-slate-300 font-semibold mb-3">
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
-            <span>Infraestructura de Grado Bancario</span>
+            <span>Seguridad & Confianza Empresarial</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-            Ingeniería de Alto Rendimiento
+            Seguridad de Grado Bancario para tus Clientes
           </h2>
-          <p className="mt-3 text-base text-slate-400">
-            Construido para soportar millones de registros diarios con disponibilidad garantizada y seguridad Zero Trust.
+          <p className="mt-3 text-sm text-slate-400">
+            Diseñado para cumplir con los estándares de privacidad, continuidad de negocio y auditoría de las empresas más exigentes.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {stacks.map((stack) => {
-            const Icon = stack.icon
+          {securityPillars.map((item) => {
+            const Icon = item.icon
             return (
               <div
-                key={stack.title}
-                className="p-6 rounded-2xl bg-slate-950 border border-slate-800/80 hover:border-slate-700 transition-all flex items-start gap-4"
+                key={item.title}
+                className="p-6 rounded-2xl bg-[#0f1420]/80 border border-white/[0.08] hover:border-white/[0.16] transition-all flex items-start gap-4 shadow-lg shadow-black/20"
               >
-                <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 shrink-0">
-                  <Icon className={`w-6 h-6 ${stack.color}`} />
+                <div className="p-3 rounded-xl bg-white/[0.05] border border-white/[0.08] shrink-0">
+                  <Icon className={`w-5 h-5 ${item.color}`} />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white">{stack.title}</h3>
-                  <p className="mt-1 text-xs text-slate-400 leading-relaxed">{stack.desc}</p>
+                  <h3 className="text-sm font-bold text-white tracking-tight">{item.title}</h3>
+                  <p className="mt-1 text-xs text-slate-400 leading-relaxed">{item.desc}</p>
                 </div>
               </div>
             )

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Search, Bell, ChevronDown, Plus, Sparkles, LogOut, CheckCircle2 } from "lucide-react"
 import { useSession } from "@src/infrastructure/auth/auth-provider"
 import { AuthService } from "@src/infrastructure/auth/auth.service"
+import { ThemeToggle } from "@/src/presentation/crm/components/common/theme-toggle"
 
 export function CrmHeader() {
   const { session, clear } = useSession()
@@ -97,11 +98,14 @@ export function CrmHeader() {
         {/* AI Copilot shortcut button */}
         <button
           onClick={() => router.push("/ai")}
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 border border-purple-500/20 transition-colors"
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 border border-purple-500/20 transition-colors cursor-pointer"
           title="Abrir Copiloto IA"
         >
           <Sparkles size={15} />
         </button>
+
+        {/* Light / Dark Mode Toggle */}
+        <ThemeToggle />
 
         {/* Notifications */}
         <div className="relative">

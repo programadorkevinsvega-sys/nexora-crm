@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { Inter, JetBrains_Mono } from "next/font/google"
 import "./globals.css"
+import { ThemeProvider } from "@/src/application/crm/context/theme-context"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -15,14 +16,16 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "REKKI CRM",
-  description: "REKKI CRM — Ultra ERP",
+  title: "Nexora CRM — Suite Empresarial Omnicanal con IA, Ventas CPQ y Helpdesk",
+  description: "Plataforma empresarial integral para ventas B2B, marketing masivo, WhatsApp Cloud, cotizaciones CPQ, firma digital y atención al cliente omnicanal.",
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable} dark`}>
-      <body className="font-sans antialiased">{children}</body>
+    <html lang="es" className={`${inter.variable} ${jetbrainsMono.variable} dark`} suppressHydrationWarning>
+      <body className="font-sans antialiased bg-background text-foreground transition-colors duration-200">
+        <ThemeProvider>{children}</ThemeProvider>
+      </body>
     </html>
   )
 }
