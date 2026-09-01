@@ -1,0 +1,33 @@
+syntax = "proto3";
+package crm.meta_leads;
+import "common.proto";
+
+message MetaResponse {
+  string json = 1;
+}
+
+message GetMetaStatusRequest {
+  string tenant_id = 1;
+}
+
+message DisconnectMetaRequest {
+  string tenant_id = 1;
+}
+
+message ListMetaLogsRequest {
+  string tenant_id = 1;
+  optional int32 limit = 2;
+}
+
+message ListMetaLogsResponse {
+  repeated string json_items = 1;
+}
+
+service MetaLeadsService {
+  rpc GetStatus(GetMetaStatusRequest) returns (MetaResponse);
+  rpc ConnectPage(crm.common.JsonRequest) returns (MetaResponse);
+  rpc UpdateConfig(crm.common.JsonRequest) returns (MetaResponse);
+  rpc Disconnect(DisconnectMetaRequest) returns (crm.common.Empty);
+  rpc ListLogs(ListMetaLogsRequest) returns (ListMetaLogsResponse);
+  rpc SaveLog(crm.common.JsonRequest) returns (MetaResponse);
+}

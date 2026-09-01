@@ -46,6 +46,7 @@ function protoPath(): string {
                 'crm.affiliates', 'crm.personal_crm', 'crm.loyalty', 'crm.tags',
                 'crm.automation', 'crm.lead_scoring', 'crm.cpq', 'crm.customer_360', 'crm.inbox',
                 'crm.analytics', 'crm.knowledge_base', 'crm.ai', 'crm.developer', 'crm.audit',
+                'crm.social_inbox', 'crm.web_forms', 'crm.meta_leads',
               ],
               protoPath: [
                 resolve(protoPath(), 'common.proto'),
@@ -72,6 +73,9 @@ function protoPath(): string {
                 resolve(protoPath(), 'ai.proto'),
                 resolve(protoPath(), 'developer.proto'),
                 resolve(protoPath(), 'audit.proto'),
+                resolve(protoPath(), 'social-inbox.proto'),
+                resolve(protoPath(), 'web-forms.proto'),
+                resolve(protoPath(), 'meta-leads.proto'),
               ],
               url: apiCoreGrpcUrl,
             },

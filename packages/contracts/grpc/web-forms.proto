@@ -1,0 +1,45 @@
+syntax = "proto3";
+package crm.web_forms;
+import "common.proto";
+
+message WebFormResponse {
+  string json = 1;
+}
+
+message ListWebFormsRequest {
+  string tenant_id = 1;
+}
+
+message ListWebFormsResponse {
+  repeated string json_items = 1;
+}
+
+message GetWebFormByIdRequest {
+  string tenant_id = 1;
+  string id = 2;
+}
+
+message GetPublicFormRequest {
+  string id_or_slug = 1;
+}
+
+message DeleteWebFormRequest {
+  string tenant_id = 1;
+  string id = 2;
+}
+
+message ListSubmissionsRequest {
+  string tenant_id = 1;
+  string form_id = 2;
+}
+
+service WebFormsService {
+  rpc ListForms(ListWebFormsRequest) returns (ListWebFormsResponse);
+  rpc GetFormById(GetWebFormByIdRequest) returns (WebFormResponse);
+  rpc GetPublicForm(GetPublicFormRequest) returns (WebFormResponse);
+  rpc CreateForm(crm.common.JsonRequest) returns (WebFormResponse);
+  rpc UpdateForm(crm.common.JsonRequest) returns (WebFormResponse);
+  rpc DeleteForm(DeleteWebFormRequest) returns (crm.common.Empty);
+  rpc SubmitWebForm(crm.common.JsonRequest) returns (WebFormResponse);
+  rpc ListSubmissions(ListSubmissionsRequest) returns (ListWebFormsResponse);
+}

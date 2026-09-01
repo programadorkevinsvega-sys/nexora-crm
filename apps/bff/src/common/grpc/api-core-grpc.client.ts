@@ -384,16 +384,10 @@ export class ApiCoreGrpcClient implements OnModuleInit {
     this.knowledgeBase = this.client.getService<KnowledgeBaseGrpc>('KnowledgeBaseService')
     this.ai = this.client.getService<AiGrpc>('AiService')
     this.developer = this.client.getService<DeveloperGrpc>('DeveloperService')
-    const safeGetService = <T extends {}>(serviceName: string): T => {
-      try {
-        return this.client.getService<T>(serviceName)
-      } catch {
-        return {} as T
-      }
-    }
-    this.socialInbox = safeGetService<SocialInboxGrpc>('SocialInboxService')
-    this.webForms = safeGetService<WebFormsGrpc>('WebFormsService')
-    this.metaLeads = safeGetService<MetaLeadsGrpc>('MetaLeadsService')
+    this.audit = this.client.getService<AuditGrpc>('AuditService')
+    this.socialInbox = this.client.getService<SocialInboxGrpc>('SocialInboxService')
+    this.webForms = this.client.getService<WebFormsGrpc>('WebFormsService')
+    this.metaLeads = this.client.getService<MetaLeadsGrpc>('MetaLeadsService')
   }
 
   // ─── Companies ──────────────────────────────────────────
