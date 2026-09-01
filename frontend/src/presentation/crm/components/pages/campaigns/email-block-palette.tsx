@@ -15,24 +15,24 @@ export function EmailBlockPalette() {
   };
 
   return (
-    <div className="w-64 border-r border-gray-200 bg-white p-4 overflow-y-auto">
-      <h3 className="text-lg font-semibold mb-4 text-gray-800">Blocks</h3>
-      <div className="space-y-3">
+    <div className="w-64 border-r border-border bg-card p-4 overflow-y-auto">
+      <h3 className="text-sm font-semibold mb-4 text-foreground">Blocks</h3>
+      <div className="space-y-2.5">
         {BLOCK_TYPES.map((block) => (
           <div
             key={block.type}
             draggable
             onDragStart={(e) => handleDragStart(e, block.type)}
-            className="flex items-center p-3 border border-gray-200 rounded-md cursor-move bg-gray-50 hover:bg-blue-50 transition-colors"
+            className="flex items-center p-2.5 border border-border rounded-lg cursor-move bg-background hover:border-primary/50 transition-colors group"
           >
-            <div className="w-8 h-8 flex items-center justify-center bg-white border border-gray-200 rounded mr-3 text-sm font-bold text-gray-500">
+            <div className="w-8 h-8 flex items-center justify-center bg-muted border border-border rounded-md mr-3 text-xs font-bold text-foreground">
               {block.icon}
             </div>
-            <span className="text-sm font-medium text-gray-700">{block.label}</span>
+            <span className="text-xs font-medium text-foreground">{block.label}</span>
           </div>
         ))}
       </div>
-      <div className="mt-8 text-xs text-gray-500">
+      <div className="mt-8 text-[11px] text-muted-foreground">
         Drag blocks onto the canvas to build your email template.
       </div>
     </div>

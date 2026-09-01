@@ -156,11 +156,11 @@ export function WorkflowCanvas({ workflow, steps, onChangeSteps }: WorkflowCanva
   }
 
   return (
-    <div className="relative w-full h-[calc(100vh-11rem)] min-h-[640px] bg-[#05070e] border-2 border-border/80 rounded-2xl overflow-hidden shadow-2xl flex flex-col select-none">
+    <div className="relative w-full h-[calc(100vh-11rem)] min-h-[640px] bg-background border border-border rounded-xl overflow-hidden shadow-xs flex flex-col select-none">
       {/* Top Controls Toolbar */}
-      <div className="h-14 border-b border-border/80 bg-card/75 backdrop-blur-md px-5 flex items-center justify-between z-20">
+      <div className="h-14 border-b border-border bg-card px-5 flex items-center justify-between z-20">
         <div className="flex items-center gap-3">
-          <Badge variant="default" className="bg-cyan-500/10 text-cyan-400 border-cyan-500/30 text-xs px-3 py-1 font-semibold">
+          <Badge variant="default" className="text-xs px-3 py-1 font-semibold">
             🎨 Lienzo Visual 2D (Estilo n8n & Make)
           </Badge>
           <span className="text-xs text-muted-foreground font-mono">
@@ -169,7 +169,7 @@ export function WorkflowCanvas({ workflow, steps, onChangeSteps }: WorkflowCanva
         </div>
 
         <div className="flex items-center gap-2">
-          <Button size="sm" variant="outline" className="text-xs h-8 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10" onClick={handleSimulate} disabled={simulatingStep !== null || nodes.length === 0}>
+          <Button size="sm" variant="outline" className="text-xs h-8 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10" onClick={handleSimulate} disabled={simulatingStep !== null || nodes.length === 0}>
             <Play className="h-3.5 w-3.5 mr-1" />
             {simulatingStep !== null ? `Ejecutando Paso ${simulatingStep + 1}...` : "Simular Flujo"}
           </Button>
@@ -178,7 +178,7 @@ export function WorkflowCanvas({ workflow, steps, onChangeSteps }: WorkflowCanva
             <Plus className="h-3.5 w-3.5 mr-1" /> Agregar Bloque
           </Button>
 
-          <div className="flex items-center bg-background/80 border rounded-lg p-0.5">
+          <div className="flex items-center bg-card border border-border rounded-lg p-0.5">
             <button onClick={() => setZoom(Math.max(50, zoom - 10))} className="p-1 hover:bg-muted rounded text-xs text-muted-foreground"><ZoomOut className="h-3.5 w-3.5" /></button>
             <span className="text-[11px] font-mono px-1.5 text-muted-foreground">{zoom}%</span>
             <button onClick={() => setZoom(Math.min(150, zoom + 10))} className="p-1 hover:bg-muted rounded text-xs text-muted-foreground"><ZoomIn className="h-3.5 w-3.5" /></button>
@@ -192,7 +192,7 @@ export function WorkflowCanvas({ workflow, steps, onChangeSteps }: WorkflowCanva
           ref={containerRef}
           onMouseMove={handleCanvasMouseMove}
           onMouseUp={handleCanvasMouseUp}
-          className="relative flex-1 w-full h-full overflow-auto bg-[radial-gradient(#1e293b_1.5px,transparent_1.5px)] [background-size:28px_28px]"
+          className="relative flex-1 w-full h-full overflow-auto bg-muted/20 bg-[radial-gradient(var(--border)_1.5px,transparent_1.5px)] [background-size:28px_28px]"
         >
           <div style={{ transform: `scale(${zoom / 100})`, transformOrigin: "0 0", minWidth: 2600, minHeight: 1800 }} className="relative w-full h-full">
             {/* SVG Bézier Cables Layer */}

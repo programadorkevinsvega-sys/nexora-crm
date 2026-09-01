@@ -23,39 +23,39 @@ export function IntegrationCard({
   subtitle,
   description,
   icon,
-  iconColorClass = "text-blue-400 bg-blue-500/10 border-blue-500/20",
+  iconColorClass = "text-blue-500 bg-blue-500/10 border-blue-500/20",
   isConfigured,
   onConfigure,
   configureLabel,
   externalLink,
 }: IntegrationCardProps) {
   return (
-    <Card className="p-5 flex flex-col justify-between space-y-4 hover:border-zinc-700 transition">
+    <Card className="p-5 flex flex-col justify-between space-y-4 hover:border-border/80 transition">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className={`w-10 h-10 rounded-xl border flex items-center justify-center ${iconColorClass}`}>
             {icon}
           </div>
           <div>
-            <h4 className="text-sm font-semibold text-zinc-100">{title}</h4>
-            <span className="text-[10px] text-zinc-400 uppercase font-semibold">{subtitle}</span>
+            <h4 className="text-sm font-semibold text-foreground">{title}</h4>
+            <span className="text-[10px] text-muted-foreground uppercase font-semibold">{subtitle}</span>
           </div>
         </div>
 
         {isConfigured ? (
-          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
             <CheckCircle2 size={11} /> Conectado
           </span>
         ) : (
-          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-800 text-zinc-400 border border-zinc-700">
+          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-muted text-muted-foreground border border-border">
             Sin Configurar
           </span>
         )}
       </div>
 
-      <p className="text-xs text-zinc-400 line-clamp-2">{description}</p>
+      <p className="text-xs text-muted-foreground line-clamp-2">{description}</p>
 
-      <div className="pt-2 border-t border-zinc-800/80 flex justify-end">
+      <div className="pt-2 border-t border-border flex justify-end">
         {externalLink ? (
           <Link href={externalLink}>
             <Button size="sm" className="text-xs gap-1.5 h-7">

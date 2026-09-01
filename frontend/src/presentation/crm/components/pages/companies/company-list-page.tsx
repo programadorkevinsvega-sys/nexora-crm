@@ -40,7 +40,7 @@ export function CompanyListPage() {
   const { mutate: deleteCompany } = useDeleteCompany()
 
   const columns: ColumnDef<Company>[] = [
-    { key: "name", header: "Empresa", render: (row) => <span className="font-semibold text-zinc-100">{row.name}</span> },
+    { key: "name", header: "Empresa", render: (row) => <span className="font-semibold text-foreground">{row.name}</span> },
     { key: "taxId", header: "Tax ID / NIT", render: (row) => <span>{row.taxId || "—"}</span> },
     { key: "industry", header: "Industria", render: (row) => <span>{row.industry || "General"}</span> },
     {

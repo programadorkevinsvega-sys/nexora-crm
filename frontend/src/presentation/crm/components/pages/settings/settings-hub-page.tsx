@@ -57,7 +57,7 @@ export function SettingsHubPage() {
       {/* Main Layout: Sidebar Nav + Active Content */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Navigation Column */}
-        <nav className="lg:col-span-3 rounded-xl border border-steel bg-graphite p-2 space-y-1">
+        <nav className="lg:col-span-3 rounded-xl border border-border bg-card p-2 space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon
             const isActive = activeSection === item.id
@@ -67,14 +67,14 @@ export function SettingsHubPage() {
                 onClick={() => setActiveSection(item.id)}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${
                   isActive
-                    ? 'bg-signal-blue text-white font-semibold shadow-sm'
-                    : 'text-ash hover:text-paper hover:bg-steel/30 font-medium'
+                    ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted font-medium'
                 }`}
               >
-                <Icon size={16} className={isActive ? 'text-white' : 'text-signal-blue'} />
+                <Icon size={16} className={isActive ? 'text-primary-foreground' : 'text-primary'} />
                 <div className="overflow-hidden">
                   <div className="text-xs truncate">{item.label}</div>
-                  <div className={`text-[10px] truncate ${isActive ? 'text-white/80' : 'text-ash'}`}>
+                  <div className={`text-[10px] truncate ${isActive ? 'opacity-80' : 'text-muted-foreground'}`}>
                     {item.desc}
                   </div>
                 </div>

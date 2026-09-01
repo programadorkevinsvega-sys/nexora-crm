@@ -37,8 +37,9 @@ export function FormListPage() {
         ]}
         actions={
           <Button
+            variant="default"
             onClick={() => router.push("/forms/new")}
-            className="gap-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/20"
+            className="gap-2"
           >
             <Plus className="h-4 w-4" />
             Crear Formulario
@@ -47,17 +48,17 @@ export function FormListPage() {
       />
 
       {formList.length === 0 ? (
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 p-12 text-center space-y-4">
-          <div className="mx-auto w-14 h-14 rounded-2xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 flex items-center justify-center">
-            <FileText className="h-7 w-7" />
+        <div className="rounded-xl border border-border bg-card p-12 text-center space-y-4">
+          <div className="mx-auto w-12 h-12 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center">
+            <FileText className="h-6 w-6" />
           </div>
           <div className="space-y-1">
-            <h3 className="text-base font-semibold text-zinc-100">No tienes formularios creados</h3>
-            <p className="text-xs text-zinc-400 max-w-sm mx-auto">
+            <h3 className="text-base font-semibold text-foreground">No tienes formularios creados</h3>
+            <p className="text-xs text-muted-foreground max-w-sm mx-auto">
               Crea tu primer formulario web para capturar clientes potenciales directo a la base de datos de tu CRM sin programar.
             </p>
           </div>
-          <Button onClick={() => router.push("/forms/new")} className="gap-2 bg-cyan-600 hover:bg-cyan-500 text-white">
+          <Button variant="default" onClick={() => router.push("/forms/new")} className="gap-2">
             <Plus className="h-4 w-4" />
             Crear Primer Formulario
           </Button>
@@ -69,50 +70,50 @@ export function FormListPage() {
             return (
               <div
                 key={form.id}
-                className="rounded-2xl border border-zinc-800 bg-zinc-900/70 p-5 shadow-lg flex flex-col justify-between hover:border-cyan-500/40 hover:shadow-cyan-500/10 transition group"
+                className="rounded-xl border border-border bg-card p-5 shadow-xs flex flex-col justify-between hover:border-border/80 transition group"
               >
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2.5">
-                      <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                      <div className="p-2 rounded-lg bg-primary/10 text-primary border border-primary/20">
                         <FileText className="h-4 w-4" />
                       </div>
                       <div>
-                        <h4 className="text-sm font-semibold text-zinc-100 group-hover:text-cyan-300 transition">
+                        <h4 className="text-sm font-semibold text-foreground">
                           {form.name}
                         </h4>
-                        <span className="text-[11px] font-mono text-zinc-400">
+                        <span className="text-[11px] font-mono text-muted-foreground">
                           /f/{form.slug}
                         </span>
                       </div>
                     </div>
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full border uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full border uppercase tracking-wider bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20">
                       {form.isActive ? "Activo" : "Inactivo"}
                     </span>
                   </div>
 
-                  <p className="text-xs text-zinc-300 line-clamp-2">
+                  <p className="text-xs text-muted-foreground line-clamp-2">
                     {form.title} — {form.description || "Sin descripción"}
                   </p>
 
-                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-zinc-800/80 text-xs text-zinc-400">
+                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border text-xs text-muted-foreground">
                     <div>
-                      <span className="text-[10px] uppercase text-zinc-500 block">Campos</span>
-                      <span className="font-semibold text-zinc-200">{fieldCount} campos</span>
+                      <span className="text-[10px] uppercase text-muted-foreground/70 block">Campos</span>
+                      <span className="font-semibold text-foreground">{fieldCount} campos</span>
                     </div>
                     <div>
-                      <span className="text-[10px] uppercase text-zinc-500 block">Envíos (Leads)</span>
-                      <span className="font-semibold text-cyan-400">{form.submissionsCount || 0} recibidos</span>
+                      <span className="text-[10px] uppercase text-muted-foreground/70 block">Envíos (Leads)</span>
+                      <span className="font-semibold text-emerald-600 dark:text-emerald-400">{form.submissionsCount || 0} recibidos</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-5 pt-3 border-t border-zinc-800/80 flex items-center justify-between gap-2">
+                <div className="mt-5 pt-3 border-t border-border flex items-center justify-between gap-2">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setSelectedEmbedForm(form)}
-                    className="gap-1.5 text-xs text-purple-300 hover:text-purple-200 border-purple-800/40 hover:bg-purple-950/30"
+                    className="gap-1.5 text-xs"
                   >
                     <Code className="h-3.5 w-3.5" />
                     Embeber

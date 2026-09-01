@@ -64,17 +64,17 @@ export function IntegrationsSettingsTab() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-zinc-800 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-4">
         <div>
-          <h3 className="text-lg font-bold text-zinc-100">Hub Central de Integraciones & Conectores</h3>
-          <p className="text-xs text-zinc-400">
+          <h3 className="text-lg font-bold text-foreground">Hub Central de Integraciones & Conectores</h3>
+          <p className="text-xs text-muted-foreground">
             Conecta canales de mensajería, publicidad en redes, pasarelas de pago y automatizaciones
           </p>
         </div>
         <button
           onClick={loadStatuses}
           disabled={loading}
-          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-zinc-800 bg-zinc-900 text-xs text-zinc-300 hover:text-zinc-100 hover:border-cyan-500 transition-colors self-start shadow-sm"
+          className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-border bg-card text-xs text-foreground hover:bg-muted transition-colors self-start shadow-xs"
         >
           <RefreshCw size={13} className={loading ? "animate-spin" : ""} /> Actualizar Estado
         </button>
@@ -82,7 +82,7 @@ export function IntegrationsSettingsTab() {
 
       {/* Sección 1: Mensajería & Omnicanalidad */}
       <div className="space-y-3">
-        <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400 font-mono">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
           1. Canales de Mensajería & Omnicanalidad
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
@@ -121,7 +121,7 @@ export function IntegrationsSettingsTab() {
 
       {/* Sección 2: Publicidad & Redes Sociales */}
       <div className="space-y-3">
-        <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400 font-mono">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
           2. Redes Sociales & Captura de Prospectos (Inbound Leads)
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
@@ -170,7 +170,7 @@ export function IntegrationsSettingsTab() {
 
       {/* Sección 3: Email Transaccional */}
       <div className="space-y-3">
-        <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400 font-mono">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
           3. Email Transaccional & Servidores SMTP
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
@@ -199,7 +199,7 @@ export function IntegrationsSettingsTab() {
 
       {/* Sección 4: Pagos & Pasarelas */}
       <div className="space-y-3">
-        <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400 font-mono">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
           4. Pagos, Facturación & Cobros
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
@@ -228,7 +228,7 @@ export function IntegrationsSettingsTab() {
 
       {/* Sección 5: Productividad & Automatización */}
       <div className="space-y-3">
-        <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400 font-mono">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
           5. Productividad, Automatización & AI
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
@@ -287,7 +287,7 @@ export function IntegrationsSettingsTab() {
 
       {/* Sección 6: Almacenamiento en la Nube */}
       <div className="space-y-3">
-        <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400 font-mono">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground font-mono">
           6. Almacenamiento en la Nube (Base de Conocimiento, PDFs, Imágenes)
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
