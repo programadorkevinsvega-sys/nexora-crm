@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const BFF_BASE_URL = process.env.NEXT_PUBLIC_BFF_URL ?? 'http://localhost:3006/api'
+const BFF_BASE_URL = process.env.INTERNAL_BFF_URL ?? process.env.NEXT_PUBLIC_BFF_URL ?? 'http://127.0.0.1:3006/api'
 const DEFAULT_TENANT_ID = process.env.CRM_DEFAULT_TENANT_ID ?? '00000000-0000-0000-0000-000000000001'
 
 interface AuthLoginResponse {

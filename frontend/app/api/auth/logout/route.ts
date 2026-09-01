@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const BFF_BASE_URL = process.env.NEXT_PUBLIC_BFF_URL ?? 'http://localhost:3006/api'
+const BFF_BASE_URL = process.env.INTERNAL_BFF_URL ?? process.env.NEXT_PUBLIC_BFF_URL ?? 'http://127.0.0.1:3006/api'
 
 function clearCookie(response: NextResponse, name: string) {
   response.cookies.set(name, '', {
