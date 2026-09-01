@@ -3,14 +3,18 @@ import { cn } from "@/src/shared/utils/cn"
 
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
   hover?: boolean
+  elevated?: boolean
 }
 
-function Card({ className, hover = false, children, ...props }: CardProps) {
+function Card({ className, hover = false, elevated = false, children, ...props }: CardProps) {
   return (
     <div
       className={cn(
-        "rounded-xl bg-[#101520] border border-white/[0.07] p-5 shadow-lg shadow-black/20",
-        hover && "transition-all duration-200 hover:border-white/[0.14] hover:shadow-black/40 hover:-translate-y-0.5",
+        "rounded-[12px] p-6",
+        elevated
+          ? "bg-[#161718] shadow-[rgb(35,37,42)_0px_0px_0px_1px_inset]"
+          : "bg-[#0f1011] shadow-[rgb(35,37,42)_0px_0px_0px_1px_inset]",
+        hover && "transition-all duration-150 hover:bg-[#161718] cursor-pointer",
         className,
       )}
       {...props}

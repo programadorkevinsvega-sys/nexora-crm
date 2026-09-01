@@ -23,14 +23,14 @@ function SearchInput({
 
   return (
     <div className={cn("relative group", className)}>
-      <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-400 transition-colors" />
+      <Search className="pointer-events-none absolute left-2.5 top-1/2 h-[13px] w-[13px] -translate-y-1/2 text-[#62666d]" />
       <input
         ref={inputRef}
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="h-9 w-full rounded-lg bg-[#121622] pl-9 pr-12 text-xs text-slate-100 placeholder:text-slate-400 border border-white/[0.08] focus:border-blue-500/50 focus:bg-[#151b2a] focus:ring-1 focus:ring-blue-500/30 outline-none transition-all shadow-inner"
+        className="h-8 w-full rounded-[6px] bg-[rgba(255,255,255,0.02)] border border-[#23252a] pl-8 pr-10 text-[13px] text-[#d0d6e0] placeholder:text-[#62666d] focus:border-[#d0d6e0] focus:outline-none transition-colors"
       />
       {value ? (
         <button
@@ -38,13 +38,13 @@ function SearchInput({
             onChange("")
             inputRef.current?.focus()
           }}
-          className="absolute right-3 top-1/2 -translate-y-1/2 flex h-5 w-5 items-center justify-center rounded-full text-slate-400 hover:text-white hover:bg-white/[0.08] transition-colors"
+          className="absolute right-2.5 top-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center rounded text-[#62666d] hover:text-[#d0d6e0] transition-colors"
           aria-label="Limpiar búsqueda"
         >
-          <X className="h-3.5 w-3.5" />
+          <X className="h-3 w-3" />
         </button>
       ) : shortcut ? (
-        <kbd className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono text-slate-400 bg-white/[0.05] rounded border border-white/[0.08]">
+        <kbd className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center px-1 text-[11px] font-mono text-[#62666d] bg-[rgba(255,255,255,0.05)] rounded-[3px]">
           {shortcut}
         </kbd>
       ) : null}

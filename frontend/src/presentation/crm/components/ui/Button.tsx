@@ -5,30 +5,30 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/src/shared/utils/cn"
 
 export const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap text-xs font-semibold tracking-wide transition-all duration-150 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 rounded-lg cursor-pointer select-none",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap font-[510] tracking-[-0.011em] transition-all duration-150 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40 [&_svg]:pointer-events-none [&_svg]:shrink-0 cursor-pointer select-none",
   {
     variants: {
       variant: {
         default:
-          "bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-600/25 border border-blue-400/30 hover:shadow-blue-500/40",
+          "bg-[#e4f222] hover:bg-[#edf755] text-[#08090a] rounded-[6px] shadow-[rgba(0,0,0,0.01)_0px_5px_2px_0px,rgba(0,0,0,0.04)_0px_3px_2px_0px,rgba(0,0,0,0.07)_0px_1px_1px_0px,rgba(0,0,0,0.08)_0px_0px_1px_0px]",
         secondary:
-          "bg-white/[0.06] hover:bg-white/[0.1] text-slate-200 border border-white/[0.08] hover:border-white/[0.15] shadow-sm",
+          "bg-transparent hover:bg-[#23252a] text-[#d0d6e0] rounded-[6px] border border-[#23252a] hover:border-[#383b3f]",
         ghost:
-          "bg-transparent text-slate-400 hover:text-white hover:bg-white/[0.05]",
+          "bg-transparent text-[#8a8f98] hover:text-[#d0d6e0] hover:bg-[rgba(255,255,255,0.04)] rounded-[6px]",
         danger:
-          "bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 hover:border-red-500/30",
+          "bg-transparent hover:bg-[rgba(235,87,87,0.08)] text-[#eb5757] border border-[#23252a] hover:border-[rgba(235,87,87,0.3)] rounded-[6px]",
         outline:
-          "border border-white/[0.12] bg-transparent text-slate-200 hover:bg-white/[0.06] hover:border-white/[0.2]",
+          "border border-[#23252a] bg-transparent text-[#d0d6e0] hover:bg-[rgba(255,255,255,0.03)] hover:border-[#383b3f] rounded-[6px]",
         success:
-          "bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/25 border border-emerald-400/30",
+          "bg-[#27a644] hover:bg-[#2db84e] text-white rounded-[6px] shadow-[rgba(0,0,0,0.4)_0px_2px_4px_0px]",
         glass:
-          "bg-white/[0.03] backdrop-blur-md hover:bg-white/[0.08] text-slate-200 border border-white/[0.1]",
+          "bg-[rgba(255,255,255,0.03)] hover:bg-[rgba(255,255,255,0.06)] text-[#d0d6e0] border border-[#23252a] rounded-[6px]",
       },
       size: {
-        sm: "h-8 px-3 text-[11px]",
-        md: "h-9 px-4 text-xs",
-        lg: "h-10 px-5 text-sm",
-        icon: "size-9",
+        sm: "h-7 px-3 text-[12px] [&_svg]:size-3",
+        md: "h-8 px-4 text-[13px] [&_svg]:size-[14px]",
+        lg: "h-9 px-5 text-[14px] [&_svg]:size-4",
+        icon: "size-8 rounded-[6px] [&_svg]:size-[14px]",
       },
     },
     defaultVariants: {

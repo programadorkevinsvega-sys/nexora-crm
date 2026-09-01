@@ -5,25 +5,29 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/src/shared/utils/cn"
 
 export const badgeVariants = cva(
-  "inline-flex items-center gap-1.5 rounded-full font-medium tracking-wide transition-colors select-none",
+  "inline-flex items-center gap-1 font-[400] tracking-[0.01em] transition-colors select-none rounded-[4px]",
   {
     variants: {
       variant: {
-        default: "bg-white/[0.06] text-slate-300 border border-white/[0.08]",
-        success: "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20",
-        warning: "bg-amber-500/10 text-amber-400 border border-amber-500/20",
-        danger: "bg-red-500/10 text-red-400 border border-red-500/20",
-        info: "bg-blue-500/10 text-blue-400 border border-blue-500/20",
-        purple: "bg-purple-500/10 text-purple-400 border border-purple-500/20",
-        cyan: "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20",
-        secondary: "bg-slate-800/80 text-slate-400 border border-slate-700/50",
-        outline: "border border-white/[0.14] text-slate-200 bg-transparent",
-        destructive: "bg-red-500/15 text-red-400 border border-red-500/30",
+        default: "bg-[rgba(255,255,255,0.05)] text-[#8a8f98]",
+        lime: "bg-[rgba(228,242,34,0.12)] text-[#e4f222] border border-[rgba(228,242,34,0.25)]",
+        success: "bg-[rgba(39,166,68,0.12)] text-[#27a644] border border-[rgba(39,166,68,0.25)]",
+        warning: "bg-[rgba(234,179,8,0.12)] text-[#ca8a04] border border-[rgba(234,179,8,0.25)]",
+        danger: "bg-[rgba(235,87,87,0.10)] text-[#eb5757] border border-[rgba(235,87,87,0.20)]",
+        info: "bg-[rgba(2,184,204,0.10)] text-[#02b8cc] border border-[rgba(2,184,204,0.20)]",
+        violet: "bg-[rgba(99,102,241,0.12)] text-[#6366f1] border border-[rgba(99,102,241,0.25)]",
+        lavender: "bg-[rgba(139,92,246,0.12)] text-[#8b5cf6] border border-[rgba(139,92,246,0.25)]",
+        teal: "bg-[rgba(2,184,204,0.10)] text-[#02b8cc] border border-[rgba(2,184,204,0.20)]",
+        secondary: "bg-[rgba(255,255,255,0.04)] text-[#8a8f98] border border-[#23252a]",
+        outline: "border border-[#23252a] text-[#d0d6e0] bg-transparent",
+        destructive: "bg-[rgba(235,87,87,0.10)] text-[#eb5757] border border-[rgba(235,87,87,0.20)]",
+        purple: "bg-[rgba(139,92,246,0.12)] text-[#8b5cf6] border border-[rgba(139,92,246,0.25)]",
+        cyan: "bg-[rgba(2,184,204,0.10)] text-[#02b8cc] border border-[rgba(2,184,204,0.20)]",
       },
       size: {
-        sm: "px-2 py-0.5 text-[10px]",
-        md: "px-2.5 py-0.5 text-xs",
-        lg: "px-3 py-1 text-xs",
+        sm: "px-1.5 py-0 text-[11px] leading-[18px]",
+        md: "px-1.5 py-0 text-[12px] leading-[18px]",
+        lg: "px-2 py-0.5 text-[12px]",
       },
     },
     defaultVariants: {
@@ -40,22 +44,9 @@ export interface BadgeProps
 }
 
 function Badge({ className, variant, size, dot = false, children, ...props }: BadgeProps) {
-  const dotColor = {
-    default: "bg-slate-400",
-    success: "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]",
-    warning: "bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]",
-    danger: "bg-red-400 shadow-[0_0_8px_rgba(248,113,113,0.6)]",
-    info: "bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.6)]",
-    purple: "bg-purple-400 shadow-[0_0_8px_rgba(192,132,252,0.6)]",
-    cyan: "bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.6)]",
-    secondary: "bg-slate-500",
-    outline: "bg-slate-300",
-    destructive: "bg-red-400",
-  }[variant || "default"]
-
   return (
     <span className={cn(badgeVariants({ variant, size }), className)} {...props}>
-      {dot && <span className={cn("size-1.5 rounded-full shrink-0", dotColor)} />}
+      {dot && <span className="size-1.5 rounded-full shrink-0 bg-current opacity-70" />}
       {children}
     </span>
   )

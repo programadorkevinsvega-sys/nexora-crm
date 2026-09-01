@@ -46,16 +46,16 @@ function DataTable<T>({
   }
 
   return (
-    <div className={cn("overflow-hidden rounded-xl border border-white/[0.08] bg-[#0f141f]/80 backdrop-blur-md shadow-xl shadow-black/20", className)}>
+    <div className={cn("overflow-hidden rounded-[12px] shadow-[rgb(35,37,42)_0px_0px_0px_1px_inset]", className)}>
       <div className="overflow-x-auto">
         <table className="w-full border-collapse">
           <thead>
-            <tr className="border-b border-white/[0.08] bg-white/[0.02]">
+            <tr className="bg-[#0f1011] border-b border-[#23252a]">
               {columns.map((col) => (
                 <th
                   key={col.key}
                   className={cn(
-                    "px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400 select-none",
+                    "px-4 py-2.5 text-[11px] font-[510] uppercase tracking-[0.06em] text-[#62666d] select-none",
                     alignClass(col.align),
                     col.className,
                   )}
@@ -65,28 +65,25 @@ function DataTable<T>({
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/[0.05]">
+          <tbody>
             {loading && data.length === 0 ? (
               Array.from({ length: 5 }).map((_, i) => (
-                <tr key={i} className="animate-pulse">
+                <tr key={i} className="animate-pulse border-b border-[#23252a]">
                   {columns.map((col) => (
-                    <td key={col.key} className="px-4 py-3.5">
-                      <Skeleton className="h-4 w-full bg-white/[0.05]" />
+                    <td key={col.key} className="px-4 py-3">
+                      <Skeleton className="h-4 w-full bg-[rgba(255,255,255,0.04)]" />
                     </td>
                   ))}
                 </tr>
               ))
             ) : data.length === 0 ? (
               <tr>
-                <td
-                  colSpan={columns.length}
-                  className="px-4 py-16 text-center text-slate-400"
-                >
+                <td colSpan={columns.length} className="px-4 py-16 text-center text-[#8a8f98]">
                   <div className="flex flex-col items-center justify-center gap-2">
-                    <div className="p-3 rounded-full bg-white/[0.04] text-slate-500">
+                    <div className="p-3 rounded-full text-[#383b3f]">
                       <Inbox className="w-6 h-6" />
                     </div>
-                    <p className="text-sm font-medium text-slate-300">{emptyMessage}</p>
+                    <p className="text-[13px] font-[400] text-[#62666d]">{emptyMessage}</p>
                   </div>
                 </td>
               </tr>
@@ -96,15 +93,15 @@ function DataTable<T>({
                   key={(row as Record<string, unknown>).id as string ?? rowIndex}
                   onClick={() => onRowClick?.(row)}
                   className={cn(
-                    "transition-all duration-150 group",
-                    onRowClick && "cursor-pointer hover:bg-blue-500/[0.06]",
+                    "border-b border-[#23252a] transition-colors duration-100",
+                    onRowClick && "cursor-pointer hover:bg-[rgba(255,255,255,0.02)]",
                   )}
                 >
                   {columns.map((col) => (
                     <td
                       key={col.key}
                       className={cn(
-                        "px-4 py-3.5 text-xs text-slate-200 group-hover:text-white transition-colors",
+                        "px-4 py-3 text-[13px] text-[#d0d6e0]",
                         alignClass(col.align),
                         col.className,
                       )}
@@ -119,7 +116,7 @@ function DataTable<T>({
         </table>
       </div>
       {nextCursor && onLoadMore && (
-        <div className="flex justify-center p-3.5 border-t border-white/[0.08] bg-white/[0.01]">
+        <div className="flex justify-center p-3 border-t border-[#23252a]">
           <Button
             variant="secondary"
             size="sm"

@@ -15,14 +15,8 @@ export function CrmHeader() {
   const [notifOpen, setNotifOpen] = useState(false)
 
   const handleLogout = async () => {
-    try {
-      await AuthService.logout()
-    } catch (e) {
-      console.error("Error logging out", e)
-    } finally {
-      clear()
-      router.push("/login")
-    }
+    try { await AuthService.logout() } catch (e) { console.error("Error logging out", e) }
+    finally { clear(); router.push("/login") }
   }
 
   const openCmd = () => {
@@ -31,114 +25,97 @@ export function CrmHeader() {
     }
   }
 
+  const menuItemCls = "w-full text-left px-3 py-1.5 text-[13px] text-[#8a8f98] hover:text-[#d0d6e0] hover:bg-[rgba(255,255,255,0.04)] rounded-[6px] transition-colors"
+  const dropdownCls = "absolute right-0 mt-1.5 rounded-[12px] border border-[#23252a] bg-[#161718] shadow-[rgba(8,9,10,0.6)_0px_4px_32px_0px] z-40 animate-in fade-in zoom-in-95 duration-100"
+
   return (
-    <header className="flex h-14 items-center justify-between bg-[#0e121a] px-6 border-b border-white/[0.08] relative z-20 select-none">
+    <header className="flex h-12 items-center justify-between bg-[#08090a] px-4 border-b border-[#23252a] relative z-20 select-none">
       {/* Search / Command palette trigger */}
-      <div className="flex items-center gap-4">
-        <button
-          onClick={openCmd}
-          className="flex items-center gap-2.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.07] px-3 py-1.5 text-slate-400 hover:text-slate-200 border border-white/[0.06] transition-all text-xs w-56 sm:w-72 justify-between cursor-pointer"
-        >
-          <div className="flex items-center gap-2">
-            <Search size={14} className="text-blue-400" />
-            <span>Buscar o saltar a...</span>
-          </div>
-          <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.2 text-[10px] font-mono text-slate-400 bg-white/[0.06] rounded border border-white/[0.08]">
-            ⌘K
-          </kbd>
-        </button>
-      </div>
+      <button
+        onClick={openCmd}
+        className="flex items-center gap-2 rounded-[6px] bg-[rgba(255,255,255,0.02)] hover:bg-[rgba(255,255,255,0.04)] px-3 h-7 text-[#62666d] hover:text-[#8a8f98] border border-[#23252a] transition-all text-[13px] w-64 justify-between cursor-pointer"
+      >
+        <div className="flex items-center gap-2">
+          <Search size={13} />
+          <span>Buscar o saltar a...</span>
+        </div>
+        <kbd className="hidden sm:inline-flex items-center px-1 text-[11px] font-mono text-[#62666d] bg-[rgba(255,255,255,0.05)] rounded-[3px]">
+          ⌘K
+        </kbd>
+      </button>
 
       {/* Right Toolbar */}
-      <div className="flex items-center gap-3">
-        {/* Quick Create Button */}
+      <div className="flex items-center gap-2">
+        {/* Quick Create — acid-lime CTA */}
         <div className="relative">
           <button
             onClick={() => setQuickCreateOpen(!quickCreateOpen)}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold shadow-md shadow-blue-600/20 border border-blue-400/30 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3 h-7 bg-[#e4f222] hover:bg-[#edf755] text-[#08090a] rounded-[6px] text-[13px] font-[510] tracking-[-0.011em] transition-all cursor-pointer shadow-[rgba(0,0,0,0.07)_0px_1px_1px_0px,rgba(0,0,0,0.08)_0px_0px_1px_0px]"
           >
-            <Plus size={14} />
+            <Plus size={13} />
             <span className="hidden sm:inline">Crear</span>
-            <ChevronDown size={12} className="opacity-70" />
+            <ChevronDown size={11} className="opacity-60" />
           </button>
-
           {quickCreateOpen && (
             <>
               <div className="fixed inset-0 z-30" onClick={() => setQuickCreateOpen(false)} />
-              <div className="absolute right-0 mt-2 w-48 rounded-xl border border-white/10 bg-[#121622] p-1.5 shadow-2xl z-40 animate-in fade-in zoom-in-95 duration-100">
-                <button
-                  onClick={() => { setQuickCreateOpen(false); router.push("/contacts") }}
-                  className="w-full text-left px-3 py-2 text-xs text-slate-200 hover:bg-white/[0.06] rounded-lg transition-colors flex items-center gap-2"
-                >
-                  <Plus size={13} className="text-blue-400" /> Nuevo Contacto
-                </button>
-                <button
-                  onClick={() => { setQuickCreateOpen(false); router.push("/pipelines/deals/new") }}
-                  className="w-full text-left px-3 py-2 text-xs text-slate-200 hover:bg-white/[0.06] rounded-lg transition-colors flex items-center gap-2"
-                >
-                  <Plus size={13} className="text-emerald-400" /> Nueva Oportunidad
-                </button>
-                <button
-                  onClick={() => { setQuickCreateOpen(false); router.push("/quotes/new") }}
-                  className="w-full text-left px-3 py-2 text-xs text-slate-200 hover:bg-white/[0.06] rounded-lg transition-colors flex items-center gap-2"
-                >
-                  <Plus size={13} className="text-amber-400" /> Nueva Cotización
-                </button>
-                <button
-                  onClick={() => { setQuickCreateOpen(false); router.push("/support/tickets/new") }}
-                  className="w-full text-left px-3 py-2 text-xs text-slate-200 hover:bg-white/[0.06] rounded-lg transition-colors flex items-center gap-2"
-                >
-                  <Plus size={13} className="text-purple-400" /> Nuevo Ticket
-                </button>
+              <div className={`${dropdownCls} w-48 p-1.5`}>
+                {[
+                  { label: "Nuevo Contacto", href: "/contacts" },
+                  { label: "Nueva Oportunidad", href: "/pipelines/deals/new" },
+                  { label: "Nueva Cotización", href: "/quotes/new" },
+                  { label: "Nuevo Ticket", href: "/support/tickets/new" },
+                ].map((item) => (
+                  <button key={item.href} onClick={() => { setQuickCreateOpen(false); router.push(item.href) }} className={menuItemCls}>
+                    {item.label}
+                  </button>
+                ))}
               </div>
             </>
           )}
         </div>
 
-        {/* AI Copilot shortcut button */}
+        {/* AI Copilot */}
         <button
           onClick={() => router.push("/ai")}
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 border border-purple-500/20 transition-colors cursor-pointer"
-          title="Abrir Copiloto IA"
+          className="flex h-7 w-7 items-center justify-center rounded-[6px] text-[#8a8f98] hover:text-[#d0d6e0] hover:bg-[rgba(255,255,255,0.04)] transition-colors cursor-pointer"
+          title="Copiloto IA"
         >
-          <Sparkles size={15} />
+          <Sparkles size={14} />
         </button>
 
-        {/* Light / Dark Mode Toggle */}
         <ThemeToggle />
 
         {/* Notifications */}
         <div className="relative">
           <button
             onClick={() => setNotifOpen(!notifOpen)}
-            className="relative flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.06] transition-colors"
-            title="Notificaciones"
+            className="relative flex h-7 w-7 items-center justify-center rounded-[6px] text-[#8a8f98] hover:text-[#d0d6e0] hover:bg-[rgba(255,255,255,0.04)] transition-colors"
           >
-            <Bell size={16} />
-            <span className="absolute top-1.5 right-1.5 size-2 bg-blue-500 rounded-full animate-pulse" />
+            <Bell size={14} />
+            <span className="absolute top-1.5 right-1.5 size-1.5 bg-[#e4f222] rounded-full" />
           </button>
-
           {notifOpen && (
             <>
               <div className="fixed inset-0 z-30" onClick={() => setNotifOpen(false)} />
-              <div className="absolute right-0 mt-2 w-72 rounded-xl border border-white/10 bg-[#121622] p-3 shadow-2xl z-40 animate-in fade-in zoom-in-95 duration-100 space-y-2">
-                <div className="flex items-center justify-between pb-2 border-b border-white/[0.08]">
-                  <p className="text-xs font-semibold text-slate-100">Notificaciones en vivo</p>
-                  <span className="text-[10px] text-blue-400 font-mono">3 nuevas</span>
+              <div className={`${dropdownCls} w-72 p-3 space-y-2`}>
+                <div className="flex items-center justify-between pb-2 border-b border-[#23252a]">
+                  <p className="text-[13px] font-[510] text-[#d0d6e0]">Notificaciones</p>
+                  <span className="text-[11px] text-[#e4f222] font-mono">3 nuevas</span>
                 </div>
-                <div className="space-y-1.5 text-xs">
-                  <div className="p-2 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] transition-colors flex items-start gap-2">
-                    <CheckCircle2 size={14} className="text-emerald-400 shrink-0 mt-0.5" />
+                <div className="space-y-1 text-[13px]">
+                  <div className="p-2 rounded-[6px] hover:bg-[rgba(255,255,255,0.04)] flex items-start gap-2 cursor-pointer">
+                    <CheckCircle2 size={13} className="text-[#27a644] shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-slate-200 font-medium text-[11px]">Cotización Aprobada</p>
-                      <p className="text-[10px] text-slate-400">Cliente aceptó la propuesta #Q-104</p>
+                      <p className="text-[#d0d6e0] font-[510] text-[12px]">Cotización Aprobada</p>
+                      <p className="text-[11px] text-[#62666d]">Cliente aceptó propuesta #Q-104</p>
                     </div>
                   </div>
-                  <div className="p-2 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] transition-colors flex items-start gap-2">
-                    <Sparkles size={14} className="text-purple-400 shrink-0 mt-0.5" />
+                  <div className="p-2 rounded-[6px] hover:bg-[rgba(255,255,255,0.04)] flex items-start gap-2 cursor-pointer">
+                    <Sparkles size={13} className="text-[#8b5cf6] shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-slate-200 font-medium text-[11px]">Nuevo Lead Scoring</p>
-                      <p className="text-[10px] text-slate-400">Prospecto asignado con score 92%</p>
+                      <p className="text-[#d0d6e0] font-[510] text-[12px]">Nuevo Lead Scoring</p>
+                      <p className="text-[11px] text-[#62666d]">Prospecto asignado con score 92%</p>
                     </div>
                   </div>
                 </div>
@@ -147,46 +124,28 @@ export function CrmHeader() {
           )}
         </div>
 
-        {/* User Profile dropdown */}
+        {/* Profile */}
         <div className="relative">
-          <div
-            onClick={() => setProfileOpen(!profileOpen)}
-            className="flex items-center gap-2 rounded-lg px-2 py-1 hover:bg-white/[0.06] transition-colors cursor-pointer select-none"
-          >
-            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-xs font-bold text-white shadow-sm">
-              {session?.userName ? session.userName.charAt(0).toUpperCase() : (session?.userEmail ? session.userEmail.charAt(0).toUpperCase() : "U")}
+          <div onClick={() => setProfileOpen(!profileOpen)} className="flex items-center gap-1.5 px-2 h-7 rounded-[6px] hover:bg-[rgba(255,255,255,0.04)] transition-colors cursor-pointer">
+            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#23252a] text-[11px] font-[510] text-[#d0d6e0]">
+              {session?.userName?.charAt(0).toUpperCase() ?? session?.userEmail?.charAt(0).toUpperCase() ?? "U"}
             </div>
-            <ChevronDown size={13} className="text-slate-400" />
+            <ChevronDown size={11} className="text-[#62666d]" />
           </div>
-
           {profileOpen && (
             <>
               <div className="fixed inset-0 z-30" onClick={() => setProfileOpen(false)} />
-              <div className="absolute right-0 mt-2 w-56 rounded-xl border border-white/10 bg-[#121622] p-2 shadow-2xl z-40 animate-in fade-in zoom-in-95 duration-100">
-                <div className="px-3 py-2 border-b border-white/[0.08] mb-1">
-                  <p className="font-semibold text-xs text-slate-100 truncate">{session?.userName || "Usuario"}</p>
-                  <p className="text-[11px] text-blue-400 truncate">{session?.companyName || "Nexora CRM"}</p>
-                  {session?.userEmail && <p className="text-[10px] text-slate-400 truncate">{session.userEmail}</p>}
+              <div className={`${dropdownCls} w-52 p-1.5`}>
+                <div className="px-3 py-2 border-b border-[#23252a] mb-1">
+                  <p className="font-[510] text-[13px] text-[#d0d6e0] truncate">{session?.userName ?? "Usuario"}</p>
+                  <p className="text-[11px] text-[#62666d] truncate">{session?.userEmail ?? ""}</p>
                 </div>
-                <button
-                  onClick={() => { setProfileOpen(false); router.push("/settings/profile") }}
-                  className="w-full text-left px-3 py-1.5 text-xs text-slate-300 hover:bg-white/[0.06] rounded-lg transition-colors"
-                >
-                  Mi Perfil & Ajustes
-                </button>
-                <button
-                  onClick={() => { setProfileOpen(false); router.push("/settings/developer") }}
-                  className="w-full text-left px-3 py-1.5 text-xs text-slate-300 hover:bg-white/[0.06] rounded-lg transition-colors"
-                >
-                  API Keys & Webhooks
-                </button>
-                <div className="my-1 border-t border-white/[0.06]" />
-                <button
-                  onClick={handleLogout}
-                  className="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left text-xs text-red-400 hover:bg-red-500/10 transition-colors"
-                >
+                <button onClick={() => { setProfileOpen(false); router.push("/settings/profile") }} className={menuItemCls}>Mi Perfil & Ajustes</button>
+                <button onClick={() => { setProfileOpen(false); router.push("/settings/developer") }} className={menuItemCls}>API Keys & Webhooks</button>
+                <div className="my-1 border-t border-[#23252a]" />
+                <button onClick={handleLogout} className="flex w-full items-center gap-2 rounded-[6px] px-3 py-1.5 text-left text-[13px] text-[#eb5757] hover:bg-[rgba(235,87,87,0.08)] transition-colors">
                   <LogOut size={13} />
-                  <span>Cerrar sesión</span>
+                  Cerrar sesión
                 </button>
               </div>
             </>
