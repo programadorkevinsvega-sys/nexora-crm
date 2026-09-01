@@ -15,52 +15,52 @@ export function LandingComparisonSection() {
   ]
 
   return (
-    <section id="comparison" className="py-24 bg-[#0a0d14] relative border-y border-white/[0.08]">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-xs text-blue-300 font-semibold mb-3">
-            <Sparkles className="w-3.5 h-3.5 text-blue-400" />
+    <section id="comparison" className="py-20 bg-muted/20 relative border-t border-border">
+      <div className="max-w-[1200px] mx-auto px-6">
+        <div className="text-center max-w-3xl mx-auto mb-12">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs text-primary font-semibold mb-3">
+            <Sparkles className="w-3.5 h-3.5" />
             <span>Retorno de Inversión Inmediato</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-            ¿Por qué Pagar Miles de Dólares en 5 Herramientas Separadas?
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-[510] text-foreground tracking-tight">
+            ¿Por qué pagar miles de dólares en 5 herramientas separadas?
           </h2>
-          <p className="mt-3 text-sm text-slate-400">
+          <p className="mt-3 text-sm text-muted-foreground">
             Descubre cómo Nexora unifica todo tu flujo comercial en una sola suite centralizada sin costos ocultos.
           </p>
         </div>
 
-        <div className="overflow-x-auto rounded-2xl border border-white/[0.08] bg-[#0f1420]/80 shadow-2xl backdrop-blur-md">
+        <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-xs">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-white/[0.08] bg-white/[0.02] text-slate-300">
-                <th className="py-4 px-6 font-bold text-slate-200">Capacidad Comercial</th>
-                <th className="py-4 px-6 font-extrabold text-blue-400 bg-blue-600/10 border-x border-blue-500/20">
+              <tr className="border-b border-border bg-muted/40 text-foreground">
+                <th className="py-4 px-6 font-bold text-foreground">Capacidad Comercial</th>
+                <th className="py-4 px-6 font-extrabold text-primary bg-primary/5 border-x border-border">
                   NEXORA CRM
                 </th>
-                <th className="py-4 px-6 font-semibold text-slate-400">CRMs Tradicionales + Add-ons</th>
+                <th className="py-4 px-6 font-semibold text-muted-foreground">CRMs Tradicionales + Add-ons</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/[0.05]">
+            <tbody className="divide-y divide-border">
               {rows.map((row, idx) => (
-                <tr key={row.feature} className={idx % 2 === 0 ? "bg-transparent" : "bg-white/[0.01]"}>
-                  <td className="py-3.5 px-6 font-medium text-slate-200">{row.feature}</td>
-                  <td className="py-3.5 px-6 bg-blue-600/[0.06] border-x border-blue-500/15">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/25 text-emerald-400 font-semibold text-[11px]">
-                      <Check className="w-3 h-3 text-emerald-400" /> Incluido
+                <tr key={row.feature} className={idx % 2 === 0 ? "bg-transparent" : "bg-muted/10"}>
+                  <td className="py-3.5 px-6 font-medium text-foreground">{row.feature}</td>
+                  <td className="py-3.5 px-6 bg-primary/5 border-x border-border">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-semibold text-[11px]">
+                      <Check className="w-3 h-3" /> Incluido
                     </span>
                   </td>
-                  <td className="py-3.5 px-6 text-slate-400">
+                  <td className="py-3.5 px-6 text-muted-foreground">
                     {typeof row.others === "boolean" ? (
                       row.others ? (
-                        <Check className="w-4 h-4 text-emerald-400" />
+                        <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-[11px] text-red-400 font-medium">
+                        <span className="inline-flex items-center gap-1 text-[11px] text-rose-500 font-medium">
                           <X className="w-3.5 h-3.5" /> No disponible
                         </span>
                       )
                     ) : (
-                      <span className="text-[11px] text-amber-300 font-medium">{row.others}</span>
+                      <span className="text-[11px] text-amber-600 dark:text-amber-400 font-medium">{row.others}</span>
                     )}
                   </td>
                 </tr>

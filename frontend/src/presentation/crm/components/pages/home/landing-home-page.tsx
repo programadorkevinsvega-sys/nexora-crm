@@ -10,7 +10,7 @@ import { LandingFooter } from "./landing-footer"
 
 export default function LandingHomePage() {
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-cyan-500 selection:text-white">
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-200">
       <LandingNavbar />
       <main>
         <LandingHeroSection />

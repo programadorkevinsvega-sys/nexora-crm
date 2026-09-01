@@ -43,47 +43,46 @@ const features = [
 
 export function LandingBentoGrid() {
   return (
-    <section id="features" className="py-24 bg-[#08090a] border-t border-[#23252a]">
+    <section id="features" className="py-20 bg-background border-t border-border">
       <div className="max-w-[1200px] mx-auto px-6">
         {/* Section header */}
-        <div className="mb-16">
-          <p className="text-[12px] font-[510] text-[#62666d] uppercase tracking-[0.08em] mb-4">
+        <div className="mb-12">
+          <p className="text-[12px] font-[510] text-muted-foreground uppercase tracking-[0.08em] mb-3">
             Ecosistema de soluciones
           </p>
           <h2
-            className="text-[32px] font-[400] text-[#ffffff] max-w-xl leading-[1.13]"
-            style={{ letterSpacing: "-0.704px" }}
+            className="text-[30px] sm:text-[36px] font-[510] text-foreground max-w-xl leading-tight tracking-tight"
           >
             Todo lo que necesitas para crecer en una sola plataforma.
           </h2>
         </div>
 
         {/* Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-[#23252a] border border-[#23252a] rounded-[12px] overflow-hidden">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-border border border-border rounded-xl overflow-hidden shadow-xs">
           {features.map((feat) => {
             const Icon = feat.icon
             return (
               <div
                 key={feat.title}
-                className="bg-[#0f1011] p-6 flex flex-col justify-between hover:bg-[#161718] transition-colors group cursor-default"
+                className="bg-card p-6 flex flex-col justify-between hover:bg-muted/50 transition-colors group cursor-default"
               >
                 <div>
                   <div className="flex items-center justify-between mb-5">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-[6px] bg-[rgba(255,255,255,0.04)] border border-[#23252a]">
-                      <Icon size={15} className="text-[#8a8f98] group-hover:text-[#d0d6e0] transition-colors" />
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary border border-primary/20">
+                      <Icon size={16} />
                     </div>
-                    <span className="text-[11px] font-[400] text-[#62666d] px-2 py-0.5 rounded-[4px] bg-[rgba(255,255,255,0.04)]">
+                    <span className="text-[11px] font-medium text-muted-foreground px-2 py-0.5 rounded-full bg-muted border border-border">
                       {feat.badge}
                     </span>
                   </div>
-                  <h3 className="text-[15px] font-[510] text-[#d0d6e0] group-hover:text-[#ffffff] transition-colors leading-[1.4] mb-2">
+                  <h3 className="text-[15px] font-[510] text-foreground leading-snug mb-2">
                     {feat.title}
                   </h3>
-                  <p className="text-[13px] text-[#62666d] leading-[1.6]">
+                  <p className="text-[13px] text-muted-foreground leading-relaxed">
                     {feat.desc}
                   </p>
                 </div>
-                <div className="mt-5 flex items-center gap-1 text-[12px] font-[400] text-[#62666d] group-hover:text-[#8a8f98] transition-colors">
+                <div className="mt-5 flex items-center gap-1 text-[12px] font-medium text-muted-foreground group-hover:text-foreground transition-colors">
                   <span>Incluido en la Suite</span>
                   <ArrowRight size={11} />
                 </div>

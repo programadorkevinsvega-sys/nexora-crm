@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { Menu, X } from "lucide-react"
+import { ThemeToggle } from "@/src/presentation/crm/components/common/theme-toggle"
 
 export function LandingNavbar() {
   const [scrolled, setScrolled] = useState(false)
@@ -24,14 +25,16 @@ export function LandingNavbar() {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${
-        scrolled ? "bg-[#08090a]/95 backdrop-blur-md border-b border-[#23252a]" : "bg-transparent"
+        scrolled
+          ? "bg-background/90 backdrop-blur-md border-b border-border shadow-2xs"
+          : "bg-transparent"
       }`}
     >
       <div className="max-w-[1200px] mx-auto px-6 h-14 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <div className="h-[7px] w-[7px] rounded-[1px] bg-[#e4f222]" />
-          <span className="text-[15px] font-[510] tracking-[-0.011em] text-[#ffffff]">NEXORA</span>
+          <div className="h-2 w-2 rounded-[2px] bg-primary" />
+          <span className="text-[15px] font-[510] tracking-tight text-foreground">NEXORA</span>
         </Link>
 
         {/* Desktop Nav */}
@@ -40,7 +43,7 @@ export function LandingNavbar() {
             <a
               key={link.href}
               href={link.href}
-              className="px-3 py-2 text-[13px] font-[400] text-[#8a8f98] hover:text-[#d0d6e0] transition-colors rounded-[6px] hover:bg-[rgba(255,255,255,0.04)]"
+              className="px-3 py-1.5 text-[13px] font-[400] text-muted-foreground hover:text-foreground transition-colors rounded-[6px] hover:bg-muted"
             >
               {link.label}
             </a>
@@ -48,16 +51,17 @@ export function LandingNavbar() {
         </nav>
 
         {/* Right CTA */}
-        <div className="hidden sm:flex items-center gap-2">
+        <div className="hidden sm:flex items-center gap-3">
+          <ThemeToggle />
           <Link
             href="/login?redirect=/crm"
-            className="px-3 py-1.5 text-[13px] font-[400] text-[#8a8f98] hover:text-[#d0d6e0] rounded-[6px] hover:bg-[rgba(255,255,255,0.04)] transition-colors"
+            className="px-3 py-1.5 text-[13px] font-[400] text-muted-foreground hover:text-foreground rounded-[6px] hover:bg-muted transition-colors"
           >
             Iniciar sesión
           </Link>
           <Link
             href="/login?redirect=/crm"
-            className="px-4 py-1.5 text-[13px] font-[510] tracking-[-0.011em] text-[#08090a] bg-[#e4f222] hover:bg-[#edf755] rounded-[9999px] transition-colors shadow-[rgba(0,0,0,0.07)_0px_1px_1px_0px]"
+            className="px-4 py-1.5 text-[13px] font-[510] tracking-[-0.011em] text-primary-foreground bg-primary hover:opacity-90 rounded-[9999px] transition-opacity shadow-xs"
           >
             Solicitar demo
           </Link>
@@ -65,9 +69,11 @@ export function LandingNavbar() {
 
         {/* Mobile */}
         <div className="flex items-center gap-2 md:hidden">
+          <ThemeToggle />
           <button
+            type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 rounded-[6px] text-[#8a8f98] hover:text-[#d0d6e0] hover:bg-[rgba(255,255,255,0.04)]"
+            className="p-2 rounded-[6px] text-muted-foreground hover:text-foreground hover:bg-muted"
           >
             {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
@@ -75,22 +81,28 @@ export function LandingNavbar() {
       </div>
 
       {mobileMenuOpen && (
-        <div className="md:hidden bg-[#08090a] border-b border-[#23252a] px-6 pt-2 pb-5 space-y-1">
+        <div className="md:hidden bg-background border-b border-border px-6 pt-2 pb-5 space-y-1 shadow-md">
           {navLinks.map((link) => (
             <a
               key={link.href}
               href={link.href}
               onClick={() => setMobileMenuOpen(false)}
-              className="block py-2 text-[13px] text-[#8a8f98] hover:text-[#d0d6e0]"
+              className="block py-2 text-[13px] text-muted-foreground hover:text-foreground"
             >
               {link.label}
             </a>
           ))}
-          <div className="pt-3 border-t border-[#23252a] flex flex-col gap-2">
-            <Link href="/login?redirect=/crm" className="py-2 text-center text-[13px] text-[#d0d6e0] bg-[rgba(255,255,255,0.04)] rounded-[6px]">
+          <div className="pt-3 border-t border-border flex flex-col gap-2">
+            <Link
+              href="/login?redirect=/crm"
+              className="py-2 text-center text-[13px] text-foreground bg-muted rounded-[6px]"
+            >
               Iniciar sesión
             </Link>
-            <Link href="/login?redirect=/crm" className="py-2 text-center text-[13px] font-[510] text-[#08090a] bg-[#e4f222] rounded-[9999px]">
+            <Link
+              href="/login?redirect=/crm"
+              className="py-2 text-center text-[13px] font-[510] text-primary-foreground bg-primary rounded-[9999px]"
+            >
               Solicitar demo
             </Link>
           </div>
