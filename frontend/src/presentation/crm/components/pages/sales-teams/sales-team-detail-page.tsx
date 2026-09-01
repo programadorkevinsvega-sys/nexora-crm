@@ -36,12 +36,12 @@ export function SalesTeamDetailPage() {
       <PageHeader
         title={team.name}
         breadcrumb={[
-          { label: "Sales Teams", href: "/crm/sales-teams" },
+          { label: "Sales Teams", href: "/sales-teams" },
           { label: team.name },
         ]}
         actions={
           <div className="flex gap-2">
-            <Button variant="ghost" onClick={() => router.push(`/crm/sales-teams/${id}/edit`)}>
+            <Button variant="ghost" onClick={() => router.push(`/sales-teams/${id}/edit`)}>
               <Pencil className="h-4 w-4" />
               Edit
             </Button>
@@ -95,7 +95,7 @@ export function SalesTeamDetailPage() {
         message={`Are you sure you want to delete "${team.name}"?`}
         confirmLabel="Delete"
         variant="danger"
-        onConfirm={() => deleteTeam(id, { onSuccess: () => router.push("/crm/sales-teams") })}
+        onConfirm={() => deleteTeam(id, { onSuccess: () => router.push("/sales-teams") })}
         onCancel={() => setShowDelete(false)}
       />
     </div>

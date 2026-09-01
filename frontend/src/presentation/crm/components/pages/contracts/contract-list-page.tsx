@@ -64,7 +64,7 @@ export function ContractListPage() {
         title="Contracts"
         description="Manage your contracts"
         actions={
-          <Button onClick={() => router.push("/crm/contracts/new")}>
+          <Button onClick={() => router.push("/contracts/new")}>
             <Plus className="h-4 w-4" />
             Add Contract
           </Button>
@@ -81,7 +81,7 @@ export function ContractListPage() {
           nextCursor={nextCursor}
           onLoadMore={loadMore}
           loadingMore={isLoadingMore}
-          onRowClick={(row) => router.push(`/crm/contracts/${row.id}`)}
+          onRowClick={(row) => router.push(`/contracts/${row.id}`)}
         />
       ) : (
         <EmptyState title="No contracts found" description="Create your first contract to get started" />

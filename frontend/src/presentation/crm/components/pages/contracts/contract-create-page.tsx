@@ -35,7 +35,7 @@ export function CreateContractPage() {
       <PageHeader
         title="Create Contract"
         breadcrumb={[
-          { label: "Contracts", href: "/crm/contracts" },
+          { label: "Contracts", href: "/contracts" },
           { label: "Create Contract" },
         ]}
       />
@@ -95,7 +95,7 @@ export function CreateContractPage() {
           <Button variant="ghost" onClick={() => router.back()}>Cancel</Button>
           <Button onClick={() => createContract(
                 { tenantId: tenantId!, companyId, name, status, startDate, ownerUserId: userId!, endDate: endDate || null, mrrValue: mrrValue ? Number(mrrValue) : null, autoRenew },
-                { onSuccess: () => router.push("/crm/contracts") }
+                { onSuccess: () => router.push("/contracts") }
               )} disabled={!name || !companyId || !startDate || isPending}>
             {isPending ? "Creating..." : "Create Contract"}
           </Button>

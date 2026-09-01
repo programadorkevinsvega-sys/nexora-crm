@@ -33,7 +33,7 @@ export function OrgChartNodeCard({
 
   const handleCardClick = (e: React.MouseEvent) => {
     e.stopPropagation()
-    router.push(`/crm/contacts/${contact.id}/360`)
+    router.push(`/contacts/${contact.id}/360`)
   }
 
   return (
@@ -71,7 +71,7 @@ export function OrgChartNodeCard({
                 <button
                   onClick={() => {
                     setShowMenu(false)
-                    router.push(`/crm/contacts/${contact.id}/360`)
+                    router.push(`/contacts/${contact.id}/360`)
                   }}
                   className="flex w-full items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-zinc-800 text-zinc-200"
                 >

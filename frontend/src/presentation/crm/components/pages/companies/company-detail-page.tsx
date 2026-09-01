@@ -143,7 +143,7 @@ export function CompanyDetailPage() {
         variant="danger"
         onConfirm={() => {
           deleteCompany(id)
-          router.push("/crm/companies")
+          router.push("/companies")
         }}
         onCancel={() => setShowDelete(false)}
       />

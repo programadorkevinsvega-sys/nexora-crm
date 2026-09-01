@@ -44,7 +44,7 @@ export function PipelineBoardPage() {
         title={pipeline.name}
         description={pipeline.description ?? "Pipeline board"}
         breadcrumb={[
-          { label: "Pipelines", href: "/crm/pipelines" },
+          { label: "Pipelines", href: "/pipelines" },
           { label: pipeline.name },
         ]}
         actions={
@@ -58,7 +58,7 @@ export function PipelineBoardPage() {
       <KanbanBoard
         stages={stages}
         onDragEnd={(dealId, newStageId) => moveDeal({ dealId, stageId: newStageId })}
-        onDealClick={(dealId) => router.push(`/crm/pipelines/deals/${dealId}`)}
+        onDealClick={(dealId) => router.push(`/pipelines/deals/${dealId}`)}
       />
 
       {showCreateDeal && (

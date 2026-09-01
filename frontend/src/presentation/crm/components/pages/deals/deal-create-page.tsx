@@ -36,7 +36,7 @@ export function CreateDealPage() {
       <PageHeader
         title="Create Deal"
         breadcrumb={[
-          { label: "Pipelines", href: "/crm/pipelines" },
+          { label: "Pipelines", href: "/pipelines" },
           { label: "Create Deal" },
         ]}
       />
@@ -100,7 +100,7 @@ export function CreateDealPage() {
           <Button variant="ghost" onClick={() => router.back()}>Cancel</Button>
           <Button onClick={() => createDeal(
                 { tenantId: tenantId!, pipelineId, stageId, name, value: value ? Number(value) : null, currency, probability: probability ? Number(probability) : null, closeDate: closeDate || null },
-                { onSuccess: () => router.push(`/crm/pipelines/${pipelineId}`) }
+                { onSuccess: () => router.push(`/pipelines/${pipelineId}`) }
               )} disabled={!name || !pipelineId || !stageId || isPending}>
             {isPending ? "Creating..." : "Create Deal"}
           </Button>

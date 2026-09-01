@@ -37,13 +37,13 @@ export function ContractDetailPage() {
       <PageHeader
         title={contract.name}
         breadcrumb={[
-          { label: "Contracts", href: "/crm/contracts" },
+          { label: "Contracts", href: "/contracts" },
           { label: contract.name },
         ]}
         actions={
           <div className="flex gap-2">
             <RenewContractAction contractId={id} status={contract.status} />
-            <Button variant="ghost" onClick={() => router.push(`/crm/contracts/${id}/edit`)}>
+            <Button variant="ghost" onClick={() => router.push(`/contracts/${id}/edit`)}>
               <Pencil className="h-4 w-4" />
               Edit
             </Button>
@@ -108,7 +108,7 @@ export function ContractDetailPage() {
         message={`Are you sure you want to delete "${contract.name}"?`}
         confirmLabel="Delete"
         variant="danger"
-        onConfirm={() => deleteMutation.mutate(id, { onSuccess: () => router.push("/crm/contracts") })}
+        onConfirm={() => deleteMutation.mutate(id, { onSuccess: () => router.push("/contracts") })}
         onCancel={() => setShowDelete(false)}
       />
     </div>

@@ -90,7 +90,7 @@ export function CampaignListPage() {
           nextCursor={nextCursor}
           onLoadMore={loadMore}
           loadingMore={isLoadingMore}
-          onRowClick={(row) => router.push(`/crm/campaigns/${row.id}`)}
+          onRowClick={(row) => router.push(`/campaigns/${row.id}`)}
         />
       ) : (
         <EmptyState title="No campaigns found" description="Create your first campaign to get started" />

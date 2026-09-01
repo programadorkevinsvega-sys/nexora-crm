@@ -50,8 +50,8 @@ export function EditContractPage() {
       <PageHeader
         title="Edit Contract"
         breadcrumb={[
-          { label: "Contracts", href: "/crm/contracts" },
-          { label: contract.name, href: `/crm/contracts/${id}` },
+          { label: "Contracts", href: "/contracts" },
+          { label: contract.name, href: `/contracts/${id}` },
           { label: "Edit" },
         ]}
       />
@@ -103,7 +103,7 @@ export function EditContractPage() {
           <Button variant="ghost" onClick={() => router.back()}>Cancel</Button>
           <Button onClick={() => updateContract(
                 { id, data: { name, status, startDate, endDate: endDate || null, mrrValue: mrrValue ? Number(mrrValue) : null, autoRenew } },
-                { onSuccess: () => router.push(`/crm/contracts/${id}`) }
+                { onSuccess: () => router.push(`/contracts/${id}`) }
               )} disabled={!name || isPending}>
             {isPending ? "Saving..." : "Save Changes"}
           </Button>

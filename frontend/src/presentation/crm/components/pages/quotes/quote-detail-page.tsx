@@ -40,7 +40,7 @@ export function QuoteDetailPage() {
       <PageHeader
         title={`Quote ${quote.quoteNumber}`}
         breadcrumb={[
-          { label: "Quotes", href: "/crm/quotes" },
+          { label: "Quotes", href: "/quotes" },
           { label: quote.quoteNumber },
         ]}
         actions={
@@ -122,7 +122,7 @@ export function QuoteDetailPage() {
         message={`Are you sure you want to delete quote "${quote.quoteNumber}"?`}
         confirmLabel="Delete"
         variant="danger"
-        onConfirm={() => deleteQuote(id, { onSuccess: () => router.push("/crm/quotes") })}
+        onConfirm={() => deleteQuote(id, { onSuccess: () => router.push("/quotes") })}
         onCancel={() => setShowDelete(false)}
       />
     </div>

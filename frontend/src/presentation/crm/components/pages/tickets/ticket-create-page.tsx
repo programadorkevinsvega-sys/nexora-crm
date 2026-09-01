@@ -25,7 +25,7 @@ export function CreateTicketPage() {
       <PageHeader
         title="Create Ticket"
         breadcrumb={[
-          { label: "Tickets", href: "/crm/tickets" },
+          { label: "Tickets", href: "/support/tickets" },
           { label: "Create Ticket" },
         ]}
       />

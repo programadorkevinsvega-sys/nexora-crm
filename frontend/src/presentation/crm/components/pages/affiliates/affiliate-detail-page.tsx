@@ -31,7 +31,7 @@ export function AffiliateDetailPage() {
       <PageHeader
         title={affiliate.referralCode}
         breadcrumb={[
-          { label: "Affiliates", href: "/crm/affiliates" },
+          { label: "Affiliates", href: "/affiliates" },
           { label: affiliate.referralCode },
         ]}
       />

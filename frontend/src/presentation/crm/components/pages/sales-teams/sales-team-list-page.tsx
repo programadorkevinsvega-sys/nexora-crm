@@ -61,7 +61,7 @@ export function SalesTeamListPage() {
         title="Sales Teams"
         description="Manage your sales teams"
         actions={
-          <Button onClick={() => router.push("/crm/sales-teams/new")}>
+          <Button onClick={() => router.push("/sales-teams/new")}>
             <Plus className="h-4 w-4" />
             Add Team
           </Button>
@@ -78,7 +78,7 @@ export function SalesTeamListPage() {
           nextCursor={nextCursor}
           onLoadMore={loadMore}
           loadingMore={isLoadingMore}
-          onRowClick={(row) => router.push(`/crm/sales-teams/${row.id}`)}
+          onRowClick={(row) => router.push(`/sales-teams/${row.id}`)}
         />
       ) : (
         <EmptyState title="No sales teams found" description="Create your first sales team to get started" />

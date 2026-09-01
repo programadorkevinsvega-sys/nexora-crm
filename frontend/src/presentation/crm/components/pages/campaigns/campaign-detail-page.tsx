@@ -37,7 +37,7 @@ export function CampaignDetailPage() {
       <PageHeader
         title={campaign.name}
         breadcrumb={[
-          { label: "Campaigns", href: "/crm/campaigns" },
+          { label: "Campaigns", href: "/campaigns" },
           { label: campaign.name },
         ]}
         actions={
@@ -124,7 +124,7 @@ export function CampaignDetailPage() {
         message={`Are you sure you want to delete "${campaign.name}"?`}
         confirmLabel="Delete"
         variant="danger"
-        onConfirm={() => { deleteCampaign(id); router.push("/crm/campaigns") }}
+        onConfirm={() => { deleteCampaign(id); router.push("/campaigns") }}
         onCancel={() => setShowDelete(false)}
       />
     </div>

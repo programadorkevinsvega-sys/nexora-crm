@@ -158,7 +158,7 @@ export function ContactListPage() {
           nextCursor={nextCursor}
           onLoadMore={loadMore}
           loadingMore={isLoadingMore}
-          onRowClick={(row) => router.push(`/crm/contacts/${row.id}`)}
+          onRowClick={(row) => router.push(`/contacts/${row.id}`)}
         />
       ) : (
         <EmptyState title="No se encontraron contactos" description="No hay registros disponibles bajo el filtro de visibilidad seleccionado." />

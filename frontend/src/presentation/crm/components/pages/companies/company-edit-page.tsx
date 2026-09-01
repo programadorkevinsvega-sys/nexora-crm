@@ -77,7 +77,7 @@ export function EditCompanyPage() {
         },
       },
       {
-        onSuccess: () => router.push(`/crm/companies/${id}`),
+        onSuccess: () => router.push(`/companies/${id}`),
       }
     )
   }
@@ -87,8 +87,8 @@ export function EditCompanyPage() {
       <PageHeader
         title="Edit Company"
         breadcrumb={[
-          { label: "Companies", href: "/crm/companies" },
-          { label: company.name, href: `/crm/companies/${id}` },
+          { label: "Companies", href: "/companies" },
+          { label: company.name, href: `/companies/${id}` },
           { label: "Edit" },
         ]}
       />

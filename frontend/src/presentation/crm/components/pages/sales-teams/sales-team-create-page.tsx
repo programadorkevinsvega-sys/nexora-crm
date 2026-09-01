@@ -23,7 +23,7 @@ export function CreateSalesTeamPage() {
       <PageHeader
         title="Create Sales Team"
         breadcrumb={[
-          { label: "Sales Teams", href: "/crm/sales-teams" },
+          { label: "Sales Teams", href: "/sales-teams" },
           { label: "Create Team" },
         ]}
       />
@@ -43,7 +43,7 @@ export function CreateSalesTeamPage() {
           <Button variant="ghost" onClick={() => router.back()}>Cancel</Button>
           <Button onClick={() => createTeam(
                 { tenantId: tenantId!, name, monthlyTarget: monthlyTarget ? Number(monthlyTarget) : null },
-                { onSuccess: () => router.push("/crm/sales-teams") }
+                { onSuccess: () => router.push("/sales-teams") }
               )} disabled={!name || isPending}>
             {isPending ? "Creating..." : "Create Team"}
           </Button>

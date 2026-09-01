@@ -38,7 +38,7 @@ export function ProgramDetailPage() {
       <PageHeader
         title={program.name}
         breadcrumb={[
-          { label: "Programs", href: "/crm/affiliates/programs" },
+          { label: "Programs", href: "/affiliates/programs" },
           { label: program.name },
         ]}
         actions={
@@ -104,7 +104,7 @@ export function ProgramDetailPage() {
         message={`Are you sure you want to delete "${program.name}"?`}
         confirmLabel="Delete"
         variant="danger"
-        onConfirm={() => deleteMutation.mutate(id, { onSuccess: () => router.push("/crm/affiliates/programs") })}
+        onConfirm={() => deleteMutation.mutate(id, { onSuccess: () => router.push("/affiliates/programs") })}
         onCancel={() => setShowDelete(false)}
       />
     </div>

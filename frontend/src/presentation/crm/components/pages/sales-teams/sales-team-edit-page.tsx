@@ -40,8 +40,8 @@ export function EditSalesTeamPage() {
       <PageHeader
         title="Edit Sales Team"
         breadcrumb={[
-          { label: "Sales Teams", href: "/crm/sales-teams" },
-          { label: team.name, href: `/crm/sales-teams/${id}` },
+          { label: "Sales Teams", href: "/sales-teams" },
+          { label: team.name, href: `/sales-teams/${id}` },
           { label: "Edit" },
         ]}
       />
@@ -61,7 +61,7 @@ export function EditSalesTeamPage() {
           <Button variant="ghost" onClick={() => router.back()}>Cancel</Button>
           <Button onClick={() => updateTeam(
                 { id, data: { name, monthlyTarget: monthlyTarget ? Number(monthlyTarget) : null } },
-                { onSuccess: () => router.push(`/crm/sales-teams/${id}`) }
+                { onSuccess: () => router.push(`/sales-teams/${id}`) }
               )} disabled={!name || isPending}>
             {isPending ? "Saving..." : "Save Changes"}
           </Button>

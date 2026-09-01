@@ -40,7 +40,7 @@ export function TicketDetailPage() {
       <PageHeader
         title={ticket.subject}
         breadcrumb={[
-          { label: "Tickets", href: "/crm/tickets" },
+          { label: "Tickets", href: "/support/tickets" },
           { label: ticket.subject },
         ]}
         actions={
@@ -121,7 +121,7 @@ export function TicketDetailPage() {
         message={`Are you sure you want to delete "${ticket.subject}"?`}
         confirmLabel="Delete"
         variant="danger"
-        onConfirm={() => deleteTicket(id, { onSuccess: () => router.push("/crm/tickets") })}
+        onConfirm={() => deleteTicket(id, { onSuccess: () => router.push("/support/tickets") })}
         onCancel={() => setShowDelete(false)}
       />
     </div>

@@ -30,7 +30,7 @@ export function CreateCampaignPage() {
       <PageHeader
         title="Create Campaign"
         breadcrumb={[
-          { label: "Campaigns", href: "/crm/campaigns" },
+          { label: "Campaigns", href: "/campaigns" },
           { label: "Create Campaign" },
         ]}
       />
@@ -83,7 +83,7 @@ export function CreateCampaignPage() {
           <Button variant="ghost" onClick={() => router.back()}>Cancel</Button>
           <Button onClick={() => createCampaign(
               { tenantId: tenantId!, name, type: type || null, status, startDate: startDate || null, endDate: endDate || null, budgetedCost: budgetedCost ? Number(budgetedCost) : null, expectedRevenue: expectedRevenue ? Number(expectedRevenue) : null },
-              { onSuccess: () => router.push("/crm/campaigns") }
+              { onSuccess: () => router.push("/campaigns") }
             )} disabled={!name || isCreating}>
             {isCreating ? "Creating..." : "Create Campaign"}
           </Button>

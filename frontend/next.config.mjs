@@ -10,6 +10,10 @@ const nextConfig = {
   async rewrites() {
     return [
       {
+        source: "/crm/:path+",
+        destination: "/:path+",
+      },
+      {
         source: "/api/:path*",
         destination: "http://localhost:3006/api/:path*",
       },

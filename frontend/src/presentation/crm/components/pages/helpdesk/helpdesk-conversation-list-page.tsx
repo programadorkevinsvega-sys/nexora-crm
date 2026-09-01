@@ -106,7 +106,7 @@ export function ConversationListPage() {
           nextCursor={nextCursor}
           onLoadMore={loadMore}
           loadingMore={isLoadingMore}
-          onRowClick={(row) => router.push(`/crm/helpdesk/conversations/${row.id}`)}
+          onRowClick={(row) => router.push(`/support/helpdesk/conversations/${row.id}`)}
         />
       ) : (
         <EmptyState title="No conversations found" />

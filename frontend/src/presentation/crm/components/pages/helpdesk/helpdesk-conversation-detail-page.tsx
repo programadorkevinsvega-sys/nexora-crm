@@ -32,7 +32,7 @@ export function ConversationDetailPage() {
   const handleDelete = async () => {
     const repo = container.resolve<any>(DI_TOKENS.HelpdeskRepository)
     await repo.delete(id)
-    router.push("/crm/helpdesk/conversations")
+    router.push("/support/helpdesk/conversations")
   }
 
   const { mutate: assignConversation } = useAssignConversation()
@@ -48,7 +48,7 @@ export function ConversationDetailPage() {
       <PageHeader
         title={conversation.subject}
         breadcrumb={[
-          { label: "Conversations", href: "/crm/helpdesk/conversations" },
+          { label: "Conversations", href: "/support/helpdesk/conversations" },
           { label: conversation.subject },
         ]}
         actions={

@@ -52,8 +52,8 @@ export function EditCampaignPage() {
       <PageHeader
         title="Edit Campaign"
         breadcrumb={[
-          { label: "Campaigns", href: "/crm/campaigns" },
-          { label: campaign.name, href: `/crm/campaigns/${id}` },
+          { label: "Campaigns", href: "/campaigns" },
+          { label: campaign.name, href: `/campaigns/${id}` },
           { label: "Edit" },
         ]}
       />
@@ -106,7 +106,7 @@ export function EditCampaignPage() {
           <Button variant="ghost" onClick={() => router.back()}>Cancel</Button>
           <Button onClick={() => updateCampaign(
               { id, data: { name, type: type || null, status, startDate: startDate || null, endDate: endDate || null, budgetedCost: budgetedCost ? Number(budgetedCost) : null, expectedRevenue: expectedRevenue ? Number(expectedRevenue) : null } },
-              { onSuccess: () => router.push(`/crm/campaigns/${id}`) }
+              { onSuccess: () => router.push(`/campaigns/${id}`) }
             )} disabled={!name || isSaving}>
             {isSaving ? "Saving..." : "Save Changes"}
           </Button>

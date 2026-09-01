@@ -39,7 +39,7 @@ export function DealDetailPage() {
       <PageHeader
         title={deal.name}
         breadcrumb={[
-          { label: "Pipelines", href: "/crm/pipelines" },
+          { label: "Pipelines", href: "/pipelines" },
           { label: deal.name },
         ]}
         actions={
@@ -109,7 +109,7 @@ export function DealDetailPage() {
         message={`Are you sure you want to delete "${deal.name}"?`}
         confirmLabel="Delete"
         variant="danger"
-        onConfirm={() => { deleteDeal(id); router.push("/crm/pipelines") }}
+        onConfirm={() => { deleteDeal(id); router.push("/pipelines") }}
         onCancel={() => setShowDelete(false)}
       />
     </div>
