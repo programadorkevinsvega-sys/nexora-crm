@@ -37,7 +37,7 @@ export function LandingHeroSection() {
         {/* CTA Buttons */}
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link
-            href="/login"
+            href="/login?redirect=/crm"
             className="w-full sm:w-auto px-8 py-4 text-base font-semibold text-white bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 rounded-xl shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 group"
           >
             <span>Probar Demo en Vivo</span>

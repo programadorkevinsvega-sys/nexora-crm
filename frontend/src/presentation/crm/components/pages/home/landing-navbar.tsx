@@ -47,13 +47,13 @@ export function LandingNavbar() {
         {/* Right CTA */}
         <div className="hidden sm:flex items-center gap-3">
           <Link
-            href="/login"
+            href="/login?redirect=/crm"
             className="px-4 py-2 text-sm font-semibold text-slate-200 hover:text-white rounded-lg hover:bg-slate-800/60 transition-colors"
           >
             Iniciar Sesión
           </Link>
           <Link
-            href="/login"
+            href="/login?redirect=/crm"
             className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 rounded-lg shadow-md shadow-cyan-500/20 hover:shadow-cyan-500/35 transition-all flex items-center gap-1.5 group"
           >
             <Sparkles className="w-4 h-4 text-cyan-200 group-hover:rotate-12 transition-transform" />
@@ -79,10 +79,10 @@ export function LandingNavbar() {
           <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-slate-300">Precios</a>
           <a href="#tech" onClick={() => setMobileMenuOpen(false)} className="block py-2 text-slate-300">Arquitectura</a>
           <div className="pt-3 border-t border-slate-800 flex flex-col gap-2">
-            <Link href="/login" className="w-full py-2 text-center text-sm font-semibold text-white bg-slate-800 rounded-lg">
+            <Link href="/login?redirect=/crm" className="w-full py-2 text-center text-sm font-semibold text-white bg-slate-800 rounded-lg">
               Iniciar Sesión
             </Link>
-            <Link href="/login" className="w-full py-2 text-center text-sm font-semibold text-white bg-cyan-600 rounded-lg">
+            <Link href="/login?redirect=/crm" className="w-full py-2 text-center text-sm font-semibold text-white bg-cyan-600 rounded-lg">
               Acceder a la Demo
             </Link>
           </div>

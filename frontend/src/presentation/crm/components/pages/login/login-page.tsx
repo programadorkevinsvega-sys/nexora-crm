@@ -27,13 +27,9 @@ export function LoginPage() {
       const search = new URLSearchParams(window.location.search)
       const rawRedirect = search.get("redirect")
       const redirectTarget =
-        rawRedirect === "/crm"
-          ? "/"
-          : rawRedirect?.startsWith("/crm/")
-            ? rawRedirect.replace(/^\/crm/, "")
-            : rawRedirect && rawRedirect.startsWith("/")
-              ? rawRedirect
-              : "/"
+        rawRedirect && rawRedirect.startsWith("/") && rawRedirect !== "/"
+          ? rawRedirect
+          : "/crm"
 
       await AuthService.login(email, password)
       router.replace(redirectTarget)

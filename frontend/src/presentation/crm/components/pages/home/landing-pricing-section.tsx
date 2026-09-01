@@ -129,7 +129,7 @@ export function LandingPricingSection() {
 
               <div className="mt-8 pt-6 border-t border-slate-800/80">
                 <Link
-                  href="/login"
+                  href="/login?redirect=/crm"
                   className={`w-full py-3.5 px-4 rounded-xl text-center text-xs font-bold tracking-wide transition-all flex items-center justify-center gap-2 group ${
                     plan.highlight
                       ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-400 hover:to-blue-500 shadow-lg shadow-cyan-500/25"
