@@ -10,17 +10,12 @@ import {
   Body,
   Headers,
   ParseUUIDPipe,
-  Res,
 } from '@nestjs/common'
-import { Response } from 'express'
+import { ApiTags, ApiOperation, ApiBody, ApiParam, ApiQuery, ApiHeader } from '@nestjs/swagger'
 import { z } from 'zod'
-import {
-  CreateCampaignSchema,
-  AddCampaignMemberSchema,
-} from '@crm/contracts'
+import { CreateCampaignSchema, AddCampaignMemberSchema } from '@crm/contracts'
 import { createZodPipe } from '../../common/pipes/zod-validation.pipe'
 import { CampaignsBffService, CampaignFilters, PaginatedResult } from './campaigns.bff.service'
-import { MassEmailService } from './mass-email.service'
 import type { CreateCampaign, Campaign, AddCampaignMember, CampaignMember } from '@crm/contracts'
 
 const UpdateCampaignStatusSchema = z.object({
@@ -31,14 +26,16 @@ const UpdateMemberStatusSchema = z.object({
   status: z.enum(['SENT', 'OPENED', 'CLICKED', 'RESPONDED', 'BOUNCED', 'UNSUBSCRIBED']),
 })
 
-@Controller('api')
+@ApiTags('Marketing: Campañas (Campaigns)')
+@ApiHeader({ name: 'X-Tenant-Id', required: false, description: 'ID del inquilino' })
+@Controller('api/campaigns')
 export class CampaignsBffController {
-  constructor(
-    private readonly service: CampaignsBffService,
-    private readonly massEmailService: MassEmailService,
-  ) {}
+  constructor(private readonly service: CampaignsBffService) {}
 
-  @Get('campaigns')
+  @Get()
+  @ApiOperation({ summary: 'Listar campañas de marketing' })
+  @ApiQuery({ name: 'status', required: false, description: 'PLANNED, ACTIVE, COMPLETED, CANCELLED' })
+  @ApiQuery({ name: 'type', required: false, description: 'EMAIL, WHATSAPP, SMS' })
   async list(
     @Query('cursor') cursor?: string,
     @Query('limit') limit?: string,
@@ -55,7 +52,21 @@ export class CampaignsBffController {
     return this.service.list(filters, tenantId!)
   }
 
-  @Post('campaigns')
+  @Post()
+  @ApiOperation({ summary: 'Crear una nueva campaña' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['name', 'type'],
+      properties: {
+        name: { type: 'string', example: 'Lanzamiento Promoción Black Friday' },
+        type: { type: 'string', example: 'EMAIL' },
+        budget: { type: 'number', example: 500 },
+        startDate: { type: 'string', example: '2026-11-20' },
+        endDate: { type: 'string', example: '2026-11-30' },
+      },
+    },
+  })
   async create(
     @Body(createZodPipe(CreateCampaignSchema)) dto: CreateCampaign,
     @Headers('X-Tenant-Id') tenantId?: string,
@@ -63,7 +74,9 @@ export class CampaignsBffController {
     return this.service.create(dto, tenantId!)
   }
 
-  @Get('campaigns/:id')
+  @Get(':id')
+  @ApiOperation({ summary: 'Obtener campaña por ID' })
+  @ApiParam({ name: 'id', description: 'UUID de la campaña' })
   async getById(
     @Param('id', ParseUUIDPipe) id: string,
     @Headers('X-Tenant-Id') tenantId?: string,
@@ -71,7 +84,18 @@ export class CampaignsBffController {
     return this.service.getById(id, tenantId!)
   }
 
-  @Put('campaigns/:id')
+  @Put(':id')
+  @ApiOperation({ summary: 'Actualizar una campaña' })
+  @ApiParam({ name: 'id', description: 'UUID de la campaña' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', example: 'Lanzamiento Promoción CyberWeek' },
+        budget: { type: 'number', example: 750 },
+      },
+    },
+  })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: Partial<CreateCampaign>,
@@ -80,7 +104,18 @@ export class CampaignsBffController {
     return this.service.update(id, dto, tenantId!)
   }
 
-  @Patch('campaigns/:id/status')
+  @Patch(':id/status')
+  @ApiOperation({ summary: 'Actualizar estado de la campaña' })
+  @ApiParam({ name: 'id', description: 'UUID de la campaña' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['status'],
+      properties: {
+        status: { type: 'string', example: 'ACTIVE' },
+      },
+    },
+  })
   async updateStatus(
     @Param('id', ParseUUIDPipe) id: string,
     @Body(createZodPipe(UpdateCampaignStatusSchema)) dto: { status: string },
@@ -89,7 +124,9 @@ export class CampaignsBffController {
     return this.service.updateStatus(id, dto.status, tenantId!)
   }
 
-  @Delete('campaigns/:id')
+  @Delete(':id')
+  @ApiOperation({ summary: 'Eliminar una campaña' })
+  @ApiParam({ name: 'id', description: 'UUID de la campaña' })
   async delete(
     @Param('id', ParseUUIDPipe) id: string,
     @Headers('X-Tenant-Id') tenantId?: string,
@@ -97,7 +134,9 @@ export class CampaignsBffController {
     return this.service.delete(id, tenantId!)
   }
 
-  @Get('campaigns/:id/members')
+  @Get(':id/members')
+  @ApiOperation({ summary: 'Listar contactos/miembros asignados a la campaña' })
+  @ApiParam({ name: 'id', description: 'UUID de la campaña' })
   async listMembers(
     @Param('id', ParseUUIDPipe) id: string,
     @Query('cursor') cursor?: string,
@@ -107,7 +146,18 @@ export class CampaignsBffController {
     return this.service.listMembers(id, { cursor, limit: limit ? Number(limit) : undefined }, tenantId!)
   }
 
-  @Post('campaigns/:id/members')
+  @Post(':id/members')
+  @ApiOperation({ summary: 'Agregar un contacto como miembro de la campaña' })
+  @ApiParam({ name: 'id', description: 'UUID de la campaña' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['contactId'],
+      properties: {
+        contactId: { type: 'string', example: '00000000-0000-0000-0000-000000000001' },
+      },
+    },
+  })
   async addMember(
     @Param('id', ParseUUIDPipe) id: string,
     @Body(createZodPipe(AddCampaignMemberSchema)) dto: AddCampaignMember,
@@ -116,63 +166,23 @@ export class CampaignsBffController {
     return this.service.addMember(id, dto, tenantId!)
   }
 
-  @Patch('campaigns/members/:memberId/status')
+  @Patch('members/:memberId/status')
+  @ApiOperation({ summary: 'Actualizar estado de entrega de un miembro' })
+  @ApiParam({ name: 'memberId', description: 'UUID del miembro de la campaña' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['status'],
+      properties: {
+        status: { type: 'string', example: 'OPENED' },
+      },
+    },
+  })
   async updateMemberStatus(
     @Param('memberId', ParseUUIDPipe) memberId: string,
     @Body(createZodPipe(UpdateMemberStatusSchema)) dto: { status: string },
     @Headers('X-Tenant-Id') tenantId?: string,
   ): Promise<{ id: string }> {
     return this.service.updateMemberStatus(memberId, dto.status, tenantId!)
-  }
-
-  @Post('campaigns/:id/send-bulk')
-  async sendBulk(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() dto: { creds: any; recipients: string[]; subject: string; htmlTemplate: string },
-    @Headers('X-Tenant-Id') tenantId?: string,
-  ) {
-    return this.massEmailService.sendBulk(dto.creds, dto.recipients, dto.subject, dto.htmlTemplate)
-  }
-
-  @Post('campaigns/send-test')
-  async sendTest(
-    @Body() dto: { creds: any; recipient: string; subject: string; html: string },
-    @Headers('X-Tenant-Id') tenantId?: string,
-  ) {
-    return this.massEmailService.sendTest(dto.creds, dto.recipient, dto.subject, dto.html)
-  }
-
-  @Get('campaigns/track/open')
-  trackOpen(
-    @Query('campaignId') campaignId: string,
-    @Query('memberId') memberId: string,
-    @Res() res: Response,
-  ) {
-    // In a real app we might mark as opened here
-    // this.service.updateMemberStatus(memberId, 'OPENED', tenantId)
-    const buffer = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64')
-    res.setHeader('Content-Type', 'image/gif')
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private')
-    res.send(buffer)
-  }
-
-  @Get('campaigns/unsubscribe')
-  async unsubscribe(
-    @Query('campaignId') campaignId: string,
-    @Query('memberId') memberId: string,
-    @Query('tenantId') tenantId: string,
-  ) {
-    if (memberId && tenantId) {
-      await this.service.updateMemberStatus(memberId, 'UNSUBSCRIBED', tenantId)
-    }
-    return { success: true, message: 'Unsubscribed successfully' }
-  }
-
-  @Get('campaigns/:id/stats')
-  async getStats(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Headers('X-Tenant-Id') tenantId?: string,
-  ) {
-    return this.service.getCampaignStats(id, tenantId!)
   }
 }

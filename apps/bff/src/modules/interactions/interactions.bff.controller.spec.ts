@@ -1,8 +1,12 @@
 import { CreateNoteSchema, CreateTaskSchema, CreateCallSchema } from '@crm/contracts'
-import { InteractionsBffController } from './interactions.bff.controller'
+import { NotesBffController } from './notes.bff.controller'
+import { TasksBffController } from './tasks.bff.controller'
+import { CallsBffController } from './calls.bff.controller'
 
-describe('InteractionsBffController - Notes, Tasks, Calls E2E Gateway Tests', () => {
-  let controller: InteractionsBffController
+describe('Interactions BFF Controllers - Notes, Tasks, Calls', () => {
+  let notesController: NotesBffController
+  let tasksController: TasksBffController
+  let callsController: CallsBffController
   let mockService: any
 
   beforeEach(() => {
@@ -15,7 +19,9 @@ describe('InteractionsBffController - Notes, Tasks, Calls E2E Gateway Tests', ()
       listCalls: jest.fn().mockResolvedValue({ data: [], nextCursor: null }),
     }
 
-    controller = new InteractionsBffController(mockService)
+    notesController = new NotesBffController(mockService)
+    tasksController = new TasksBffController(mockService)
+    callsController = new CallsBffController(mockService)
   })
 
   describe('Notes', () => {
@@ -30,7 +36,7 @@ describe('InteractionsBffController - Notes, Tasks, Calls E2E Gateway Tests', ()
     })
 
     it('should inject authorUserId from header when creating note', async () => {
-      const result = await controller.createNote(
+      const result = await notesController.createNote(
         { content: 'Follow-up needed' } as any,
         'tenant-1',
         'user-uuid-123',
@@ -56,7 +62,7 @@ describe('InteractionsBffController - Notes, Tasks, Calls E2E Gateway Tests', ()
     })
 
     it('should normalize simple date to ISO string and inject assignedUserId', async () => {
-      const result = await controller.createTask(
+      const result = await tasksController.createTask(
         { title: 'Prepare deck', dueDate: '2026-09-30' } as any,
         'tenant-1',
         'user-uuid-456',
@@ -85,7 +91,7 @@ describe('InteractionsBffController - Notes, Tasks, Calls E2E Gateway Tests', ()
     })
 
     it('should normalize call date and inject authorUserId', async () => {
-      const result = await controller.createCall(
+      const result = await callsController.createCall(
         { callType: 'OUTBOUND', happenedAt: '2026-08-29' } as any,
         'tenant-1',
         'user-uuid-789',

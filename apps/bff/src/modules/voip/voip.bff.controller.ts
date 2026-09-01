@@ -1,7 +1,10 @@
 import { Controller, Post, Body, Headers, Res, Logger } from '@nestjs/common'
+import { ApiTags, ApiOperation, ApiBody, ApiHeader } from '@nestjs/swagger'
 import { Response } from 'express'
 import { VoipBffService } from './voip.bff.service'
 
+@ApiTags('Telefonía VoIP Click-to-Call (VoIP)')
+@ApiHeader({ name: 'X-Tenant-Id', required: false, description: 'ID del inquilino' })
 @Controller('api/voip')
 export class VoipBffController {
   private readonly logger = new Logger(VoipBffController.name)
@@ -9,6 +12,15 @@ export class VoipBffController {
   constructor(private readonly voipService: VoipBffService) {}
 
   @Post('token')
+  @ApiOperation({ summary: 'Generar token Twilio Voice SDK para llamar desde el navegador' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        identity: { type: 'string', example: 'agente_ventas_01' },
+      },
+    },
+  })
   async generateToken(
     @Body() body: { identity?: string },
     @Headers('X-Tenant-Id') tenantId?: string,
@@ -18,6 +30,7 @@ export class VoipBffController {
   }
 
   @Post('voice')
+  @ApiOperation({ summary: 'Webhook TwiML para conectar llamada saliente' })
   async handleVoiceWebhook(
     @Body() body: Record<string, any>,
     @Res() res: Response,
@@ -31,6 +44,7 @@ export class VoipBffController {
   }
 
   @Post('recording')
+  @ApiOperation({ summary: 'Webhook de Twilio para guardar grabación y duración de llamada' })
   async handleRecordingWebhook(
     @Body() body: Record<string, any>,
     @Res() res: Response,

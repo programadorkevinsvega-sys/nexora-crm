@@ -2,6 +2,7 @@ import {
   Controller, Post, UseInterceptors, UploadedFile,
   Body, Headers, BadRequestException, Logger,
 } from '@nestjs/common'
+import { ApiTags, ApiOperation, ApiConsumes, ApiBody, ApiHeader } from '@nestjs/swagger'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { memoryStorage } from 'multer'
 import { ApiCoreGrpcClient } from '../../common/grpc/api-core-grpc.client'
@@ -18,6 +19,8 @@ const ALLOWED_MIMES = [
   'image/png', 'image/jpeg', 'image/webp', 'image/gif',
 ]
 
+@ApiTags('Base de Conocimiento: Carga de Archivos (R2 Upload)')
+@ApiHeader({ name: 'X-Tenant-Id', required: false, description: 'ID del inquilino' })
 @Controller('api/kb')
 export class KbUploadController {
   private readonly logger = new Logger(KbUploadController.name)
@@ -28,6 +31,19 @@ export class KbUploadController {
   ) {}
 
   @Post('upload')
+  @ApiOperation({ summary: 'Subir archivo PDF, DOCX o TXT a Cloudflare R2 e indexar en RAG IA' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['file'],
+      properties: {
+        file: { type: 'string', format: 'binary', description: 'Archivo documento (PDF, DOCX, TXT, MD, PNG, JPG)' },
+        title: { type: 'string', example: 'Manual de Políticas Comerciales' },
+        categoryId: { type: 'string', example: '00000000-0000-0000-0000-000000000001' },
+      },
+    },
+  })
   @UseInterceptors(FileInterceptor('file', {
     storage: memoryStorage(),
     limits: { fileSize: 20 * 1024 * 1024 }, // 20 MB

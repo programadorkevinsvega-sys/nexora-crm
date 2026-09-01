@@ -9,6 +9,7 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common'
+import { ApiTags, ApiOperation, ApiBody, ApiHeader } from '@nestjs/swagger'
 import { ClientGrpc } from '@nestjs/microservices'
 import { Observable, lastValueFrom } from 'rxjs'
 import { Request } from 'express'
@@ -21,6 +22,7 @@ interface GrpcAuthService {
   logout(data: { tenantId: string; sessionId: string }): Observable<any>
 }
 
+@ApiTags('Autenticación (Auth & JWT)')
 @Controller('api/auth')
 export class AuthBffController implements OnModuleInit {
   private grpcService!: GrpcAuthService
@@ -32,6 +34,19 @@ export class AuthBffController implements OnModuleInit {
   }
 
   @Post('register')
+  @ApiOperation({ summary: 'Registrar un nuevo inquilino/empresa y usuario administrador' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['name', 'email', 'password', 'company'],
+      properties: {
+        name: { type: 'string', example: 'Juan Pérez' },
+        email: { type: 'string', example: 'juan@miempresa.com' },
+        password: { type: 'string', example: 'Password123!' },
+        company: { type: 'string', example: 'Mi Empresa SAS' },
+      },
+    },
+  })
   async register(
     @Body() body: any,
     @Ip() ip: string,
@@ -61,6 +76,18 @@ export class AuthBffController implements OnModuleInit {
   }
 
   @Post('login')
+  @ApiOperation({ summary: 'Iniciar sesión y obtener tokens JWT de acceso y refresco' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['email', 'password'],
+      properties: {
+        email: { type: 'string', example: 'demo@nexoracrm.com' },
+        password: { type: 'string', example: 'Password123!' },
+        tenantId: { type: 'string', example: '00000000-0000-0000-0000-000000000001' },
+      },
+    },
+  })
   async login(
     @Body() body: any,
     @Ip() ip: string,
@@ -92,6 +119,16 @@ export class AuthBffController implements OnModuleInit {
   }
 
   @Post('refresh')
+  @ApiOperation({ summary: 'Refrescar token de acceso expirado' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['refreshToken'],
+      properties: {
+        refreshToken: { type: 'string', example: 'eyJhbGciOiJIUzI1Ni...' },
+      },
+    },
+  })
   async refresh(@Body() body: any, @Req() request: Request) {
     try {
       const tenantId = body.tenantId || (request.headers['x-tenant-id'] as string) || '00000000-0000-0000-0000-000000000001'
@@ -111,11 +148,20 @@ export class AuthBffController implements OnModuleInit {
   }
 
   @Post('logout')
+  @ApiOperation({ summary: 'Cerrar sesión e invalidar tokens' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        sessionId: { type: 'string', example: 'sess_12345' },
+      },
+    },
+  })
   async logout(@Body() body: any) {
     try {
       await lastValueFrom(
         this.grpcService.logout({
-          tenantId: body.tenantId,
+          tenantId: body.tenantId || '00000000-0000-0000-0000-000000000001',
           sessionId: body.sessionId,
         })
       )

@@ -8,23 +8,21 @@ describe('ContactsBffController - HTTP REST Gateway E2E Tests', () => {
   beforeEach(() => {
     mockService = {
       list: jest.fn().mockResolvedValue({
-        data: [{ id: 'c-1', firstName: 'Ada', lastName: 'Lovelace', email: 'ada@computing.test' }],
+        data: [{ id: 'contact-1', firstName: 'Ada', lastName: 'Lovelace', email: 'ada@example.com' }],
         nextCursor: null,
       }),
-      create: jest.fn().mockResolvedValue({
-        id: 'c-new',
-        firstName: 'Alan',
-        lastName: 'Turing',
-      }),
-      getById: jest.fn().mockResolvedValue({
-        id: 'c-1',
-        firstName: 'Ada',
-      }),
-      update: jest.fn().mockResolvedValue({
-        id: 'c-1',
-        firstName: 'Ada Augusta',
-      }),
-      delete: jest.fn().mockResolvedValue({ success: true }),
+      create: jest.fn().mockImplementation((dto, tenantId) =>
+        Promise.resolve({
+          id: 'contact-new',
+          ...dto,
+          tenantId,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }),
+      ),
+      getById: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
     }
 
     controller = new ContactsBffController(mockService)
@@ -46,7 +44,17 @@ describe('ContactsBffController - HTTP REST Gateway E2E Tests', () => {
   })
 
   it('should forward list contacts query with pagination and filters to gRPC service', async () => {
-    const result = await controller.list(undefined, '20', 'Ada', 'LEAD', undefined, 'true', 'tenant-1')
+    const result = await controller.list(
+      undefined,
+      '20',
+      'Ada',
+      'LEAD',
+      undefined,
+      'true',
+      undefined,
+      undefined,
+      'tenant-1',
+    )
 
     expect(result.data.length).toBe(1)
     expect(mockService.list).toHaveBeenCalledWith(
@@ -59,7 +67,10 @@ describe('ContactsBffController - HTTP REST Gateway E2E Tests', () => {
     const dto = { firstName: 'Alan', lastName: 'Turing' } as any
     const result = await controller.create(dto, 'tenant-1')
 
-    expect(result.id).toBe('c-new')
-    expect(mockService.create).toHaveBeenCalledWith(dto, 'tenant-1')
+    expect(result.id).toBe('contact-new')
+    expect(mockService.create).toHaveBeenCalledWith(
+      expect.objectContaining({ firstName: 'Alan', lastName: 'Turing' }),
+      'tenant-1',
+    )
   })
 })
