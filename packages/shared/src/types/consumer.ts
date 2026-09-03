@@ -17,5 +17,7 @@ export async function sendToDeadLetter(
       sourceService, eventType: subject.split('.').slice(1).join('.'),
       createdAt: new Date(),
     }).onConflictDoNothing()
-  } catch {}
+  } catch {
+    // Dead-letter persistence is best-effort and must not mask the original failure.
+  }
 }
