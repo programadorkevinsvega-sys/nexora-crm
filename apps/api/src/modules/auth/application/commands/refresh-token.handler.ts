@@ -1,9 +1,19 @@
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import * as bcrypt from 'bcrypt'
+import { and, eq } from 'drizzle-orm'
+import { getDb, roles, userRoles } from '@crm/database'
 import { AuthRepository } from '../../domain/repositories/auth.repository'
 import { Session } from '../../domain/entities/session.entity'
 import { RefreshTokenCommand } from './auth.commands'
+
+type RefreshPayload = {
+  sub: string
+  tenantId: string
+  email: string
+  roles?: string[]
+  role?: string
+}
 
 @Injectable()
 export class RefreshTokenHandler {
@@ -15,7 +25,7 @@ export class RefreshTokenHandler {
   ) {}
 
   async execute(command: RefreshTokenCommand) {
-    let payload: { sub: string; tenantId: string; email: string }
+    let payload: RefreshPayload
     try {
       payload = await this.jwtService.verifyAsync(command.refreshToken)
     } catch {
@@ -42,7 +52,8 @@ export class RefreshTokenHandler {
       throw new UnauthorizedException('Session invalid or expired')
     }
 
-    const tokens = await this.generateTokens(command.tenantId, payload.sub, payload.email)
+    const roleNames = await this.findRoleNames(command.tenantId, payload.sub, payload.roles)
+    const tokens = await this.generateTokens(command.tenantId, payload.sub, payload.email, roleNames)
 
     const newSession = Session.create({
       tenantId: command.tenantId,
@@ -62,8 +73,32 @@ export class RefreshTokenHandler {
     }
   }
 
-  private async generateTokens(tenantId: string, userId: string, email: string) {
-    const payload = { sub: userId, tenantId, email }
+  private async findRoleNames(tenantId: string, userId: string, fallback?: string[]): Promise<string[]> {
+    if (!process.env.DATABASE_URL) return fallback ?? []
+
+    try {
+      const db = getDb()
+      const assignedRoles = await db
+        .select({ name: roles.name })
+        .from(userRoles)
+        .innerJoin(roles, eq(userRoles.roleId, roles.id))
+        .where(and(eq(userRoles.userId, userId), eq(userRoles.tenantId, tenantId)))
+
+      return assignedRoles.map((role) => role.name).filter(Boolean)
+    } catch (error) {
+      this.logger.warn(`Unable to load roles for user ${userId}: ${error}`)
+      return fallback ?? []
+    }
+  }
+
+  private async generateTokens(tenantId: string, userId: string, email: string, roleNames: string[]) {
+    const payload = {
+      sub: userId,
+      tenantId,
+      email,
+      roles: roleNames,
+      ...(roleNames[0] ? { role: roleNames[0] } : {}),
+    }
     const accessToken = await this.jwtService.signAsync(payload, { expiresIn: '15m' })
     const refreshToken = await this.jwtService.signAsync(payload, { expiresIn: '30d' })
     return { accessToken, refreshToken }
