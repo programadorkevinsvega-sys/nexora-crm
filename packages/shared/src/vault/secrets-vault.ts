@@ -1,4 +1,4 @@
-import { createCipheriv, createDecipheriv, randomBytes, createHmac, hkdfSync } from 'crypto'
+import { createCipheriv, createDecipheriv, randomBytes, hkdfSync } from 'crypto'
 
 export interface EncryptedVaultEnvelope {
   version: 'v1'
