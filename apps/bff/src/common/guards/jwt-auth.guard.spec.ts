@@ -3,6 +3,13 @@ import { ExecutionContext, UnauthorizedException } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { BffJwtAuthGuard } from './jwt-auth.guard'
 
+type TestRequest = {
+  path: string
+  headers: Record<string, string>
+  tenantId?: string
+  userId?: string
+}
+
 const encode = (value: unknown) => Buffer.from(JSON.stringify(value)).toString('base64url')
 
 const tokenFor = (payload: Record<string, unknown>, secret = 'test-secret') => {
@@ -12,7 +19,7 @@ const tokenFor = (payload: Record<string, unknown>, secret = 'test-secret') => {
   return `${header}.${body}.${signature}`
 }
 
-const contextFor = (request: Record<string, any>, isPublic = false): ExecutionContext => ({
+const contextFor = (request: TestRequest, isPublic = false): ExecutionContext => ({
   getType: () => 'http',
   getHandler: () => ({}),
   getClass: () => ({}),
@@ -44,18 +51,18 @@ describe('BffJwtAuthGuard', () => {
   })
 
   it('allows explicitly public routes', () => {
-    const request = { path: '/api/v1/contacts', headers: {} }
+    const request: TestRequest = { path: '/api/v1/contacts', headers: {} }
     expect(guard.canActivate(contextFor(request))).toBe(true)
   })
 
   it('rejects protected requests without bearer token', () => {
-    const request = { path: '/api/contacts', headers: {} }
+    const request: TestRequest = { path: '/api/contacts', headers: {} }
     expect(() => guard.canActivate(contextFor(request))).toThrow(UnauthorizedException)
   })
 
   it('accepts a valid token and derives identity headers from claims', () => {
     const token = tokenFor({ sub: 'user-1', tenantId: 'tenant-1', role: 'admin', exp: Math.floor(Date.now() / 1000) + 300 })
-    const request = { path: '/api/contacts', headers: { authorization: `Bearer ${token}`, 'x-tenant-id': 'attacker-tenant' } }
+    const request: TestRequest = { path: '/api/contacts', headers: { authorization: `Bearer ${token}`, 'x-tenant-id': 'attacker-tenant' } }
 
     expect(guard.canActivate(contextFor(request))).toBe(true)
     expect(request.tenantId).toBe('tenant-1')
@@ -67,7 +74,7 @@ describe('BffJwtAuthGuard', () => {
 
   it('rejects a token with an invalid signature', () => {
     const token = tokenFor({ sub: 'user-1', tenantId: 'tenant-1', exp: Math.floor(Date.now() / 1000) + 300 })
-    const request = { path: '/api/contacts', headers: { authorization: `Bearer ${token.slice(0, -1)}x` } }
+    const request: TestRequest = { path: '/api/contacts', headers: { authorization: `Bearer ${token.slice(0, -1)}x` } }
     expect(() => guard.canActivate(contextFor(request))).toThrow(UnauthorizedException)
   })
 })
