@@ -72,6 +72,14 @@ describe('BffJwtAuthGuard', () => {
     expect(request.headers['x-user-role']).toBe('admin')
   })
 
+  it('falls back to the first roles claim when role is absent', () => {
+    const token = tokenFor({ sub: 'user-1', tenantId: 'tenant-1', roles: ['manager', 'admin'], exp: Math.floor(Date.now() / 1000) + 300 })
+    const request: TestRequest = { path: '/api/contacts', headers: { authorization: `Bearer ${token}`, 'x-user-role': 'attacker-role' } }
+
+    expect(guard.canActivate(contextFor(request))).toBe(true)
+    expect(request.headers['x-user-role']).toBe('manager')
+  })
+
   it('rejects a token with an invalid signature', () => {
     const token = tokenFor({ sub: 'user-1', tenantId: 'tenant-1', exp: Math.floor(Date.now() / 1000) + 300 })
     const request: TestRequest = { path: '/api/contacts', headers: { authorization: `Bearer ${token.slice(0, -1)}x` } }
