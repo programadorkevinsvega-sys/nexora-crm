@@ -59,8 +59,7 @@ jobs:
           version: 9.15.9
 
       - name: Install frontend dependencies
-        working-directory: ./frontend
-        run: pnpm install --ignore-workspace
+        run: pnpm install --frozen-lockfile --filter my-project...
 
       - name: Typecheck Frontend
         working-directory: ./frontend
