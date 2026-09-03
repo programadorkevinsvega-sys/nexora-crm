@@ -21,16 +21,6 @@ async function bootstrap() {
   app.enableCors({ origin: allowedOrigins, credentials: true })
   app.useGlobalFilters(new GrpcToHttpExceptionFilter())
 
-  app.use((req: any, _res: any, next: any) => {
-    if (req.query?.tenantId && req.query.tenantId !== 'undefined' && req.query.tenantId !== 'null') {
-      req.headers['x-tenant-id'] = req.query.tenantId
-    }
-    if (!req.headers['x-tenant-id'] || req.headers['x-tenant-id'] === 'undefined' || req.headers['x-tenant-id'] === 'null') {
-      req.headers['x-tenant-id'] = '00000000-0000-0000-0000-000000000001'
-    }
-    next()
-  })
-
   const config = new DocumentBuilder()
     .setTitle('CRM API & BFF Gateway')
     .setDescription('REST API Documentation for CRM Services & Frontend Gateway')
