@@ -4,7 +4,9 @@ export async function setTenantContext(db: any, tenantId: string): Promise<void>
     if (sql) {
       await sql`SELECT set_config('app.current_tenant_id', ${tenantId}, true)`
     }
-  } catch {}
+  } catch {
+    // Preserve existing best-effort behavior when tenant context cannot be set.
+  }
 }
 
 export async function withTenant<T>(
