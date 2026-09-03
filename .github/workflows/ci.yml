@@ -59,7 +59,7 @@ jobs:
           version: 9.15.9
 
       - name: Install frontend dependencies
-        run: pnpm install --frozen-lockfile --filter my-project...
+        run: pnpm install --frozen-lockfile
 
       - name: Typecheck Frontend
         working-directory: ./frontend
