@@ -17,14 +17,14 @@ export async function retryWithBackoff<T>(
   const useJitter = options.jitter ?? true
 
   let attempt = 0
-  while (true) {
+  while (attempt <= maxRetries) {
     try {
       return await fn()
     } catch (error) {
-      attempt++
-      if (attempt > maxRetries) {
+      if (attempt >= maxRetries) {
         throw error
       }
+      attempt++
 
       let delay = Math.min(initialDelayMs * Math.pow(factor, attempt - 1), maxDelayMs)
       if (useJitter) {
@@ -34,4 +34,6 @@ export async function retryWithBackoff<T>(
       await new Promise((resolve) => setTimeout(resolve, delay))
     }
   }
+
+  throw new Error('Retry loop exited unexpectedly')
 }
