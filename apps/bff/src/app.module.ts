@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core'
 import { resolve } from 'path'
 import { GrpcClientModule } from './common/grpc/grpc-client.module'
 import { CacheService } from './common/cache/cache.service'
+import { BffJwtAuthGuard } from './common/guards/jwt-auth.guard'
 import { CompaniesBffModule } from './modules/companies/companies.bff.module'
 import { ContactsBffModule } from './modules/contacts/contacts.bff.module'
 import { PipelinesBffModule } from './modules/pipelines/pipelines.bff.module'
@@ -36,8 +38,6 @@ import { WhatsappWebhookModule } from './modules/inbox/webhooks/whatsapp-webhook
 import { VoipBffModule } from './modules/voip/voip.bff.module'
 import { TiktokLeadsBffModule } from './modules/tiktok-leads/tiktok-leads.bff.module'
 import { SocialInboxBffModule } from './modules/social-inbox/social-inbox.bff.module'
-
-import { APP_INTERCEPTOR } from '@nestjs/core'
 import { IdempotencyInterceptor } from './common/idempotency/idempotency.interceptor'
 
 @Module({
@@ -78,10 +78,12 @@ import { IdempotencyInterceptor } from './common/idempotency/idempotency.interce
     TiktokLeadsBffModule,
     SocialInboxBffModule,
   ],
-
-
   providers: [
     CacheService,
+    {
+      provide: APP_GUARD,
+      useClass: BffJwtAuthGuard,
+    },
     {
       provide: APP_INTERCEPTOR,
       useClass: IdempotencyInterceptor,
