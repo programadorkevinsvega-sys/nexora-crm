@@ -119,7 +119,9 @@ export abstract class NatsConsumer {
         sourceService: this.serviceName, eventType: msg.subject.split('.').slice(1).join('.'),
         createdAt: new Date(),
       })
-    } catch {}
+    } catch {
+      // Dead-letter persistence is best-effort and must not mask the original failure.
+    }
   }
 
   async stop(): Promise<void> { this.running = false; this.consumer = null }
