@@ -13,6 +13,8 @@ type JwtPayload = {
   [key: string]: unknown
 }
 
+const PUBLIC_PATHS = ['/api/v1', '/api/webhooks/whatsapp']
+
 @Injectable()
 export class BffJwtAuthGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
@@ -27,6 +29,8 @@ export class BffJwtAuthGuard implements CanActivate {
     if (isPublic) return true
 
     const request = context.switchToHttp().getRequest()
+    if (this.isPublicPath(request.path)) return true
+
     const token = this.extractBearerToken(request.headers.authorization)
     const payload = this.verifyToken(token)
 
@@ -45,6 +49,10 @@ export class BffJwtAuthGuard implements CanActivate {
     else delete request.headers['x-user-role']
 
     return true
+  }
+
+  private isPublicPath(path: string): boolean {
+    return PUBLIC_PATHS.some((publicPath) => path === publicPath || path.startsWith(`${publicPath}/`))
   }
 
   private extractBearerToken(header?: string): string {
