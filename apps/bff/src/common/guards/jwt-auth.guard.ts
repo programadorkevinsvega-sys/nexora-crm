@@ -44,8 +44,7 @@ export class BffJwtAuthGuard implements CanActivate {
     request.headers['x-tenant-id'] = payload.tenantId
     request.headers['x-user-id'] = payload.sub
 
-    const role = payload.role ?? payload.roles?.[0]
-    if (role) request.headers['x-user-role'] = role
+    if (payload.role) request.headers['x-user-role'] = payload.role
     else delete request.headers['x-user-role']
 
     return true
