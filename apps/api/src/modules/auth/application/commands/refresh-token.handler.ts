@@ -52,7 +52,11 @@ export class RefreshTokenHandler {
       throw new UnauthorizedException('Session invalid or expired')
     }
 
-    const roleNames = await this.findRoleNames(command.tenantId, payload.sub, payload.roles)
+    const roleNames = await this.findRoleNames(
+      command.tenantId,
+      payload.sub,
+      payload.roles ?? (payload.role ? [payload.role] : undefined),
+    )
     const tokens = await this.generateTokens(command.tenantId, payload.sub, payload.email, roleNames)
 
     const newSession = Session.create({
@@ -97,7 +101,7 @@ export class RefreshTokenHandler {
       tenantId,
       email,
       roles: roleNames,
-      ...(roleNames[0] ? { role: roleNames[0] } : {}),
+      ...(roleNames.length === 1 ? { role: roleNames[0] } : {}),
     }
     const accessToken = await this.jwtService.signAsync(payload, { expiresIn: '15m' })
     const refreshToken = await this.jwtService.signAsync(payload, { expiresIn: '30d' })
