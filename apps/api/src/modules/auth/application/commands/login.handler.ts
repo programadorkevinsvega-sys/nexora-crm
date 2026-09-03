@@ -184,7 +184,7 @@ export class LoginHandler {
       tenantId,
       email,
       roles: roleNames,
-      ...(roleNames[0] ? { role: roleNames[0] } : {}),
+      ...(roleNames.length === 1 ? { role: roleNames[0] } : {}),
     }
     const accessToken = await this.jwtService.signAsync(payload, { expiresIn: '15m' })
     const refreshToken = await this.jwtService.signAsync(payload, { expiresIn: '30d' })
