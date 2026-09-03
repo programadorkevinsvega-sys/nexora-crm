@@ -2,8 +2,15 @@ import { Injectable, Logger, UnauthorizedException } from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
 import * as bcrypt from 'bcrypt'
 import { authenticator } from 'otplib'
-import { eq } from 'drizzle-orm'
-import { getDb, users as usersTable, tenants as tenantsTable, naturalPersonProfiles } from '@crm/database'
+import { and, eq } from 'drizzle-orm'
+import {
+  getDb,
+  users as usersTable,
+  tenants as tenantsTable,
+  naturalPersonProfiles,
+  roles,
+  userRoles,
+} from '@crm/database'
 import { AuthRepository } from '../../domain/repositories/auth.repository'
 import { Session } from '../../domain/entities/session.entity'
 import { MfaMethod } from '../../domain/entities/mfa-method.entity'
@@ -69,7 +76,8 @@ export class LoginHandler {
       if (!verified) throw new UnauthorizedException('Invalid MFA code')
     }
 
-    const tokens = await this.generateTokens(actualTenantId, user.id, user.email)
+    const userRoleNames = await this.findRoleNames(actualTenantId, user.id)
+    const tokens = await this.generateTokens(actualTenantId, user.id, user.email, userRoleNames)
     const session = Session.create({
       tenantId: actualTenantId,
       userId: user.id,
@@ -127,6 +135,24 @@ export class LoginHandler {
     }
   }
 
+  private async findRoleNames(tenantId: string, userId: string): Promise<string[]> {
+    if (!process.env.DATABASE_URL) return []
+
+    try {
+      const db = getDb()
+      const assignedRoles = await db
+        .select({ name: roles.name })
+        .from(userRoles)
+        .innerJoin(roles, eq(userRoles.roleId, roles.id))
+        .where(and(eq(userRoles.userId, userId), eq(userRoles.tenantId, tenantId)))
+
+      return assignedRoles.map((role) => role.name).filter(Boolean)
+    } catch (error) {
+      this.logger.warn(`Unable to load roles for user ${userId}: ${error}`)
+      return []
+    }
+  }
+
   private async verifyMfaCode(method: MfaMethod, code: string, tenantId: string, userId: string): Promise<boolean> {
     if (method.type === 'TOTP') {
       try {
@@ -152,8 +178,14 @@ export class LoginHandler {
     return false
   }
 
-  private async generateTokens(tenantId: string, userId: string, email: string) {
-    const payload = { sub: userId, tenantId, email }
+  private async generateTokens(tenantId: string, userId: string, email: string, roleNames: string[]) {
+    const payload = {
+      sub: userId,
+      tenantId,
+      email,
+      roles: roleNames,
+      ...(roleNames[0] ? { role: roleNames[0] } : {}),
+    }
     const accessToken = await this.jwtService.signAsync(payload, { expiresIn: '15m' })
     const refreshToken = await this.jwtService.signAsync(payload, { expiresIn: '30d' })
     return { accessToken, refreshToken }
