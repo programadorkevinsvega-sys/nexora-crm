@@ -101,7 +101,7 @@ cd frontend && pnpm dev
 ## Despliegue CI/CD
 
 - GitHub Actions valida los cambios en pull requests y pushes a `main`, `master` o `develop`. Despliega producción después de un push a `main` con validaciones aprobadas, o manualmente desde `main`.
-- El job de despliegue conecta el runner a Tailscale, compila el workspace en GitHub Actions, sincroniza el workspace compilado con la VM de aplicación, instala allí dependencias de producción y recarga PM2. La compilación no se ejecuta en la VM.
+- El job de despliegue conecta el runner a Tailscale, compila el workspace en GitHub Actions, sincroniza el workspace con la VM de aplicación e instala allí dependencias de producción. Antes de recargar PM2, ejecuta las migraciones pendientes de PostgreSQL usando el `DATABASE_URL` del `.env` que ya existe en la VM. El runner registra cada archivo aplicado para no repetirlo en despliegues posteriores. La compilación no se ejecuta en la VM.
 - `deploy-vm.sh` sincroniza únicamente el `.env` local con la VM por Tailscale y lo instala con permisos `600`; no compila, copia código ni reinicia servicios. Para publicar cambios de código o reiniciar procesos, usa el workflow de GitHub Actions.
 - En el entorno `production` de GitHub configura los secretos `TS_OAUTH_CLIENT_ID`, `TS_OAUTH_SECRET` y `DEPLOY_SSH_KEY` (clave SSH dedicada), más las variables `DEPLOY_HOST` (IP Tailscale de la VM, actualmente `100.64.183.123`) y `DEPLOY_KNOWN_HOSTS` (clave de host SSH verificada). La política de Tailscale debe permitir a `tag:ci` llegar por SSH a esa VM; la clave SSH debe estar autorizada en la cuenta `ubuntu`.
 
