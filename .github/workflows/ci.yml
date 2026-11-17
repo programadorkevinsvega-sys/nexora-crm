@@ -5,6 +5,10 @@ on:
     branches: [main, master, develop]
   pull_request:
     branches: [main, master, develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   validate-backend:
@@ -68,3 +72,110 @@ jobs:
       - name: Build Frontend Production Bundle
         working-directory: ./frontend
         run: npx next build
+
+  deploy-production:
+    name: Build and deploy production
+    needs:
+      - validate-backend
+      - validate-frontend
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency:
+      group: production-deploy
+      cancel-in-progress: false
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 12.21.0
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build backend, packages, and frontend
+        run: pnpm build
+
+      - name: Validate deployment target
+        env:
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+        run: test -n "$DEPLOY_HOST" || { echo "Missing production variable DEPLOY_HOST" >&2; exit 1; }
+
+      - name: Connect runner to Tailscale
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+          ping: ${{ vars.DEPLOY_HOST }}
+
+      - name: Configure SSH
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ vars.DEPLOY_KNOWN_HOSTS }}
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+        run: |
+          test -n "$DEPLOY_SSH_KEY" || { echo "Missing production secret DEPLOY_SSH_KEY" >&2; exit 1; }
+          test -n "$DEPLOY_KNOWN_HOSTS" || { echo "Missing production variable DEPLOY_KNOWN_HOSTS" >&2; exit 1; }
+          test -n "$DEPLOY_HOST" || { echo "Missing production variable DEPLOY_HOST" >&2; exit 1; }
+          install -m 700 -d "$HOME/.ssh"
+          printf '%s\n' "$DEPLOY_SSH_KEY" > "$HOME/.ssh/id_ed25519"
+          chmod 600 "$HOME/.ssh/id_ed25519"
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/known_hosts"
+
+      - name: Transfer compiled workspace
+        env:
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+          DEPLOY_USER: ubuntu
+          DEPLOY_DIR: /home/ubuntu/crm-service
+        run: |
+          ssh -i "$HOME/.ssh/id_ed25519" \
+            -o IdentitiesOnly=yes \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=yes \
+            "$DEPLOY_USER@$DEPLOY_HOST" "mkdir -p '$DEPLOY_DIR'"
+          rsync -az --delete \
+            --exclude='.env' \
+            --exclude='.env.*' \
+            --exclude='/node_modules/' \
+            --exclude='/.git/' \
+            --exclude='/.turbo/' \
+            --exclude='/coverage/' \
+            -e "ssh -i $HOME/.ssh/id_ed25519 -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes" \
+            ./ "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_DIR/"
+
+      - name: Install production dependencies and restart PM2
+        env:
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+          DEPLOY_USER: ubuntu
+          DEPLOY_DIR: /home/ubuntu/crm-service
+        run: |
+          ssh -i "$HOME/.ssh/id_ed25519" \
+            -o IdentitiesOnly=yes \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=yes \
+            "$DEPLOY_USER@$DEPLOY_HOST" \
+            "bash -s -- '$DEPLOY_DIR'" <<'REMOTE'
+          set -euo pipefail
+          deploy_dir="$1"
+          cd "$deploy_dir"
+          export VOLTA_HOME="$HOME/.volta"
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$VOLTA_HOME/bin:$PNPM_HOME:$PATH"
+          if [ -s "$HOME/.nvm/nvm.sh" ]; then
+            . "$HOME/.nvm/nvm.sh"
+          fi
+          pnpm install --prod --frozen-lockfile
+          pm2 startOrReload ecosystem.config.js --update-env
+          pm2 save
+          REMOTE

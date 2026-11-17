@@ -4,12 +4,10 @@ dist/
 coverage/
 *.log
 .env
-.env.local
-.env.production
+.env.*
+!.env.example
 .next/
 *.tsbuildinfo
 *.pem
-.env
-.env.example
 interserver_vault.pem
 servidor-07.pem
