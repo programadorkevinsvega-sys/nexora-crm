@@ -16,16 +16,20 @@ export function DeveloperPortalPage() {
   const [keys, setKeys] = useState<ApiKey[]>([])
   const [webhooks, setWebhooks] = useState<WebhookEndpoint[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const loadData = useCallback(async () => {
     setLoading(true)
+    setError(null)
     try {
       const [k, w] = await Promise.all([
-        ApiDeveloperRepository.listApiKeys().catch(() => []),
-        ApiDeveloperRepository.listWebhookEndpoints().catch(() => []),
+        ApiDeveloperRepository.listApiKeys(),
+        ApiDeveloperRepository.listWebhookEndpoints(),
       ])
       setKeys(k)
       setWebhooks(w)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudieron cargar las claves de API y los webhooks.')
     } finally {
       setLoading(false)
     }
@@ -54,6 +58,12 @@ export function DeveloperPortalPage() {
           Actualizar
         </button>
       </div>
+
+      {error && (
+        <div role="alert" className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-500">
+          {error}
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="flex border-b border-steel/60 gap-6 overflow-x-auto">

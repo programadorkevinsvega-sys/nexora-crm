@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { randomUUID } from 'crypto'
+import { stderr } from 'node:process'
+import { format } from 'node:util'
 
 export interface InboxRecord {
   eventId: string
@@ -59,7 +61,9 @@ export abstract class NatsConsumer {
       }
       this.consumer = await this.jetStream.consumers.get(streamName, configName)
       this.pollLoop()
-    } catch (error) { console.error(`[${this.serviceName}] Failed to start consumer:`, error) }
+    } catch (error) {
+      stderr.write(`${format('[%s] Failed to start consumer:', this.serviceName, error)}\n`)
+    }
   }
 
   private async pollLoop(): Promise<void> {
@@ -76,10 +80,11 @@ export abstract class NatsConsumer {
             await this.processEvent(subject, payload, eventId)
             await this.recordProcessed(eventId, payload.tenantId, subject)
             msg.ack()
-          } catch (error: any) {
-            console.error(`[${this.serviceName}] Error processing message:`, error.message)
+          } catch (error) {
+            const message = error instanceof Error ? error.message : String(error)
+            stderr.write(`${format('[%s] Error processing message: %s', this.serviceName, message)}\n`)
             msg.nak(10000)
-            await this.moveToDeadLetter(msg, error.message)
+            await this.moveToDeadLetter(msg, message)
           }
         }
       } catch { break }

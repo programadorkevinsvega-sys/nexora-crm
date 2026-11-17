@@ -12,7 +12,7 @@ export const biReports = pgTable(
     embedUrl: text('embed_url').notNull(),
     reportId: varchar('report_id', { length: 255 }),
     workspaceId: varchar('workspace_id', { length: 255 }),
-    refreshSchedule: varchar('50', { length: 50 }).default('HOURLY').notNull(),
+    refreshSchedule: varchar('refresh_schedule', { length: 50 }).default('HOURLY').notNull(),
     isDefault: boolean('is_default').default(false).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),

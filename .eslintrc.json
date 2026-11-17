@@ -16,5 +16,13 @@
     "no-undef": "warn",
     "@typescript-eslint/no-var-requires": "warn"
   },
-  "ignorePatterns": ["dist", "node_modules"]
+  "ignorePatterns": ["dist", "node_modules"],
+  "overrides": [
+    {
+      "files": ["packages/shared/**/*.ts"],
+      "env": {
+        "node": true
+      }
+    }
+  ]
 }

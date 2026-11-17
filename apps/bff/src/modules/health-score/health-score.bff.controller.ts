@@ -4,7 +4,7 @@ import { HealthScoreBffService } from './health-score.bff.service'
 import type { CustomerHealthScore } from '@crm/contracts'
 
 @ApiTags('Customer Health & Churn Prevention')
-@Controller('health-score')
+@Controller('api/health-score')
 export class HealthScoreBffController {
   constructor(private readonly service: HealthScoreBffService) {}
 
