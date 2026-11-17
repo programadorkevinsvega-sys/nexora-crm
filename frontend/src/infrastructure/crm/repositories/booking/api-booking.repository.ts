@@ -5,26 +5,15 @@ import type {
   CreateBookingAppointment,
   AvailableTimeSlot,
 } from '@crm/contracts'
+import { api } from '../../api/api-client'
 
 export class ApiBookingRepository {
   static async listBookingLinks(): Promise<BookingLink[]> {
-    const res = await fetch('/api/booking/links', { credentials: 'include' })
-    if (!res.ok) return []
-    return res.json()
+    return api.get<BookingLink[]>('/api/booking/links')
   }
 
   static async createBookingLink(dto: CreateBookingLink): Promise<BookingLink> {
-    const res = await fetch('/api/booking/links', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify(dto),
-    })
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}))
-      throw new Error(err.message || 'Error al crear el enlace de reserva')
-    }
-    return res.json()
+    return api.post<BookingLink>('/api/booking/links', dto)
   }
 
   static async getPublicBookingPage(
@@ -54,17 +43,10 @@ export class ApiBookingRepository {
   }
 
   static async listAppointments(): Promise<BookingAppointment[]> {
-    const res = await fetch('/api/booking/appointments', { credentials: 'include' })
-    if (!res.ok) return []
-    return res.json()
+    return api.get<BookingAppointment[]>('/api/booking/appointments')
   }
 
   static async cancelAppointment(id: string, reason?: string): Promise<void> {
-    await fetch(`/api/booking/appointments/${id}/cancel`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ reason }),
-    })
+    await api.patch<{ success: boolean }>(`/api/booking/appointments/${id}/cancel`, { reason })
   }
 }

@@ -11,7 +11,7 @@ import type {
 } from '@crm/contracts'
 
 @ApiTags('Booking & Scheduling')
-@Controller('booking')
+@Controller('api/booking')
 export class BookingBffController {
   constructor(private readonly service: BookingBffService) {}
 

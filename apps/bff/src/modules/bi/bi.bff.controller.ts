@@ -4,7 +4,7 @@ import { BiBffService } from './bi.bff.service'
 import type { BiReport, CreateBiReportDto } from '@crm/contracts'
 
 @ApiTags('Business Intelligence & Power BI Hub')
-@Controller('bi')
+@Controller('api/bi')
 export class BiBffController {
   constructor(private readonly service: BiBffService) {}
 

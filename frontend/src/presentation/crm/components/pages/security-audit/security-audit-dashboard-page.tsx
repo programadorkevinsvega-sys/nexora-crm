@@ -10,9 +10,11 @@ export function SecurityAuditDashboardPage() {
   const [logs, setLogs] = useState<SecurityAccessLog[]>([])
   const [anomalies, setAnomalies] = useState<SecurityAnomaly[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const fetchData = async () => {
     setLoading(true)
+    setError(null)
     try {
       const [logsData, anomData] = await Promise.all([
         ApiSecurityAuditRepository.listLogs(),
@@ -22,6 +24,7 @@ export function SecurityAuditDashboardPage() {
       setAnomalies(anomData || [])
     } catch (err) {
       console.error('Failed to load security audit data:', err)
+      setError(err instanceof Error ? err.message : 'No se pudieron cargar los datos de auditoría de seguridad.')
     } finally {
       setLoading(false)
     }
@@ -32,11 +35,12 @@ export function SecurityAuditDashboardPage() {
   }, [])
 
   const handleResolve = async (id: string) => {
+    setError(null)
     try {
       await ApiSecurityAuditRepository.resolveAnomaly(id, { notes: 'Revisado y mitigado por el administrador' })
-      fetchData()
-    } catch (err: any) {
-      alert(err.message || 'Error al resolver alerta')
+      await fetchData()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudo resolver la alerta de seguridad.')
     }
   }
 
@@ -63,6 +67,12 @@ export function SecurityAuditDashboardPage() {
           </p>
         </div>
       </div>
+
+      {error && (
+        <div role="alert" className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-sm text-rose-500">
+          {error}
+        </div>
+      )}
 
       {/* Security Alerts Banner */}
       {activeAnomalies.length > 0 && (
