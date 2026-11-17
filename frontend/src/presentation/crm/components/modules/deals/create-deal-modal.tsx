@@ -33,7 +33,11 @@ export interface CreateDealModalProps {
 export function CreateDealModal({ pipelineId, stages, onClose, onSuccess }: CreateDealModalProps) {
   const { tenantId } = useAuth()
 
-  const { register, handleSubmit, formState: { errors } } = useForm<DealFormData>({
+  const { register, handleSubmit, formState: { errors } } = useForm<
+    z.input<typeof dealSchema>,
+    unknown,
+    DealFormData
+  >({
     resolver: zodResolver(dealSchema),
     defaultValues: {
       stageId: stages[0]?.id ?? "",

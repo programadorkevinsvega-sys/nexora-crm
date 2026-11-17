@@ -7,7 +7,7 @@ export interface PipelineStage {
   name: string
   order: number
   color: string | null
-  probability: number | null
+  probabilityPercent: number | null
 }
 
 export interface Pipeline {

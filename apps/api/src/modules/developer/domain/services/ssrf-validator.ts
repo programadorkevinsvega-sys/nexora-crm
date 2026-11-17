@@ -7,7 +7,7 @@ export function isPrivateOrLoopbackHost(targetUrl: string): boolean {
     }
 
     const rawHostname = parsed.hostname.toLowerCase().trim()
-    const hostname = rawHostname.replace(/[\[\]]/g, '')
+    const hostname = rawHostname.replaceAll('[', '').replaceAll(']', '')
 
     // Block localhost, loopbacks, and zero addresses
     if (
@@ -47,6 +47,7 @@ export function isPrivateOrLoopbackHost(targetUrl: string): boolean {
 export function sanitizeWebhookResponse(responseBody: string): string {
   if (!responseBody) return ''
   // 1. Remove control and non-printable characters
+  // eslint-disable-next-line no-control-regex -- Strip control characters from untrusted webhook response text.
   let sanitized = responseBody.replace(/[\u0000-\u001F\u007F-\u009F]/g, '')
   // 2. Redact sensitive patterns (tokens, secrets, passwords)
   sanitized = sanitized.replace(/(bearer|token|secret|password|key)\s*[:=]\s*["']?[^"'\s,]+/gi, '$1: [REDACTED]')

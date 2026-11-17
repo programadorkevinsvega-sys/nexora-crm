@@ -24,25 +24,27 @@ export interface DealCreateInput {
   pipelineId: string
   stageId: string
   name: string
-  value?: number | null
+  amount?: number
   currency?: string | null
-  probability?: number | null
+  probabilityOverride?: number | null
+  forecastCategory?: "PIPELINE" | "BEST_CASE" | "COMMIT" | "CLOSED"
   contactId?: string | null
   companyId?: string | null
-  ownerUserId?: string | null
-  closeDate?: string | null
+  assignedUserId?: string | null
+  expectedCloseDate?: string | null
 }
 
 export interface DealUpdateInput {
   name?: string
   stageId?: string
-  value?: number | null
+  amount?: number
   currency?: string | null
-  probability?: number | null
+  probabilityOverride?: number | null
+  forecastCategory?: "PIPELINE" | "BEST_CASE" | "COMMIT" | "CLOSED"
   contactId?: string | null
   companyId?: string | null
-  ownerUserId?: string | null
-  closeDate?: string | null
+  assignedUserId?: string | null
+  expectedCloseDate?: string | null
 }
 
 export interface DealFilters {

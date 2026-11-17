@@ -39,7 +39,11 @@ export function EditContactPage() {
   const id = params.id as string
 
   const { data: contact, isLoading, isError, error } = useContact(id)
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm<ContactFormData>({
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm<
+    z.input<typeof contactSchema>,
+    unknown,
+    ContactFormData
+  >({
     resolver: zodResolver(contactSchema),
   })
 

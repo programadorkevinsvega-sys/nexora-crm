@@ -1,12 +1,12 @@
 import { AutomationConsumerService } from '../../infrastructure/automation-consumer.service'
 import { TriggerEventHandler } from '../../application/commands/workflow.handlers'
-import { NatsConsumerService } from '../../../../common/nats/nats-consumer.service'
+import { NatsConsumerService, type DomainEventHandler } from '../../../../common/nats/nats-consumer.service'
 
 describe('AutomationConsumerService', () => {
   let service: AutomationConsumerService
   let mockNatsConsumer: jest.Mocked<Partial<NatsConsumerService>>
   let mockTriggerHandler: jest.Mocked<Partial<TriggerEventHandler>>
-  const subscriptions: Record<string, Function> = {}
+  const subscriptions: Record<string, DomainEventHandler> = {}
 
   beforeEach(() => {
     mockNatsConsumer = {

@@ -1,12 +1,12 @@
 import { DeveloperWebhooksConsumerService } from '../../infrastructure/developer-webhooks-consumer.service'
 import { DispatchWebhookEventHandler } from '../../application/commands/developer.handlers'
-import { NatsConsumerService } from '../../../../common/nats/nats-consumer.service'
+import { NatsConsumerService, type DomainEventHandler } from '../../../../common/nats/nats-consumer.service'
 
 describe('DeveloperWebhooksConsumerService', () => {
   let service: DeveloperWebhooksConsumerService
   let mockNatsConsumer: jest.Mocked<Partial<NatsConsumerService>>
   let mockDispatchHandler: jest.Mocked<Partial<DispatchWebhookEventHandler>>
-  const subscriptions: Record<string, Function> = {}
+  const subscriptions: Record<string, DomainEventHandler> = {}
 
   beforeEach(() => {
     mockNatsConsumer = {

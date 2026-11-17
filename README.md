@@ -11,12 +11,12 @@
 El sistema implementa un **Monolito Modular preparado para fisión a microservicios**:
 - **Backend Unificado (`apps/api`):** Aloja los **33 módulos** de la plataforma en un único proceso Node.js, exponiendo un servidor gRPC unificado por defecto en el puerto `50059` y HTTP en el `3005`.
 - **API Gateway BFF (`apps/bff`):** Actúa como puerta de enlace para el Frontend, exponiendo endpoints REST y documentación OpenAPI/Swagger en el puerto `3006`, y comunicándose con el Monolito Modular vía gRPC.
-- **Frontend (`frontend`):** Aplicación SPA/SSR en Next.js 16 con React 19 (puerto `3000`), consumiendo la API REST del BFF mediante HTTP `fetch`.
+- **Frontend (`frontend`):** Aplicación SPA/SSR en Next.js 16 con React 19 (puerto local `3000`; producción en VM `3003`), consumiendo la API REST del BFF mediante HTTP `fetch`.
 - **Eventos Asíncronos:** Comunicación reactiva e integrable mediante **NATS JetStream** y el **Transactional Outbox Pattern**.
 
 ```mermaid
 graph TD
-    Client["🖥️ Frontend Next.js (Puerto 3000)"] -->|HTTP fetch / REST + JWT| BFF["⚡ BFF Gateway & Swagger (Puerto 3006)"]
+    Client["🖥️ Frontend Next.js (VM: 3003)"] -->|HTTP fetch / REST + JWT| BFF["⚡ BFF Gateway & Swagger (Puerto 3006)"]
     
     subgraph "Sincronía (gRPC / Baja Latencia)"
         BFF -->|gRPC Unificado :50059| API["📡 Monolito Modular Backend (apps/api)"]
@@ -46,7 +46,7 @@ graph TD
 
 | Componente | Servicio | Tipo | Puerto | Descripción |
 |---|---|---|:---:|---|
-| **`frontend`** | Next.js 16 | HTTP | `3000` | Interfaz de usuario web moderna |
+| **`frontend`** | Next.js 16 | HTTP | `3000` local / `3003` VM | Interfaz de usuario web moderna |
 | **`apps/bff`** | BFF Gateway | HTTP / REST | `3006` | API Gateway REST y Swagger UI (`/api/docs`) |
 | **`apps/api`** | Monolito Modular | HTTP | `3005` | Core API HTTP / Health checks |
 | **`apps/api`** | Monolito Modular | gRPC | `50059` | Servidor gRPC que carga los contratos Protobuf del repositorio |
@@ -95,6 +95,17 @@ pnpm dev
 # 5. En otra terminal, iniciar el Frontend Next.js
 cd frontend && pnpm dev
 ```
+
+---
+
+## Despliegue CI/CD
+
+- GitHub Actions valida los cambios en pull requests y pushes a `main`, `master` o `develop`. Despliega producción después de un push a `main` con validaciones aprobadas, o manualmente desde `main`.
+- El job de despliegue conecta el runner a Tailscale, compila el workspace en GitHub Actions, sincroniza el workspace compilado con la VM de aplicación, instala allí dependencias de producción y recarga PM2. La compilación no se ejecuta en la VM.
+- `deploy-vm.sh` sincroniza únicamente el `.env` local con la VM por Tailscale y lo instala con permisos `600`; no compila, copia código ni reinicia servicios. Para publicar cambios de código o reiniciar procesos, usa el workflow de GitHub Actions.
+- En el entorno `production` de GitHub configura los secretos `TS_OAUTH_CLIENT_ID`, `TS_OAUTH_SECRET` y `DEPLOY_SSH_KEY` (clave SSH dedicada), más las variables `DEPLOY_HOST` (IP Tailscale de la VM, actualmente `100.64.183.123`) y `DEPLOY_KNOWN_HOSTS` (clave de host SSH verificada). La política de Tailscale debe permitir a `tag:ci` llegar por SSH a esa VM; la clave SSH debe estar autorizada en la cuenta `ubuntu`.
+
+No agregues `.env` ni claves privadas al repositorio. Los valores de aplicación permanecen en la VM.
 
 ---
 

@@ -41,7 +41,11 @@ export function EditCompanyPage() {
   const id = params.id as string
 
   const { data: company, isLoading, isError, error } = useCompany(id)
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm<CompanyFormData>({
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm<
+    z.input<typeof companySchema>,
+    unknown,
+    CompanyFormData
+  >({
     resolver: zodResolver(companySchema),
   })
 

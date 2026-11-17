@@ -1,12 +1,12 @@
 import { AiInteractionsConsumerService } from '../../infrastructure/ai-interactions-consumer.service'
-import { NatsConsumerService } from '../../../../common/nats/nats-consumer.service'
+import { NatsConsumerService, type DomainEventHandler } from '../../../../common/nats/nats-consumer.service'
 import { OutboxService } from '../../../../common/outbox/outbox.service'
 
 describe('AiInteractionsConsumerService', () => {
   let service: AiInteractionsConsumerService
   let mockNatsConsumer: jest.Mocked<Partial<NatsConsumerService>>
   let mockOutbox: jest.Mocked<Partial<OutboxService>>
-  const subscriptions: Record<string, Function> = {}
+  const subscriptions: Record<string, DomainEventHandler> = {}
 
   beforeEach(() => {
     mockNatsConsumer = {

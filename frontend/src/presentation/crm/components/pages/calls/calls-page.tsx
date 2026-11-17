@@ -38,7 +38,11 @@ export function CallsListPage() {
 
   const { startCall } = useCall()
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<CallFormData>({
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<
+    z.input<typeof callSchema>,
+    unknown,
+    CallFormData
+  >({
     resolver: zodResolver(callSchema),
     defaultValues: { callType: "OUTBOUND", happenedAt: new Date().toISOString().slice(0, 10), sentiment: "NEUTRAL" },
   })
