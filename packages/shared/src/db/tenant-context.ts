@@ -1,4 +1,10 @@
-export async function setTenantContext(db: any, tenantId: string): Promise<void> {
+type TenantContextDatabase = {
+  session?: {
+    client?: (strings: TemplateStringsArray, ...values: string[]) => PromiseLike<unknown>
+  }
+}
+
+export async function setTenantContext(db: TenantContextDatabase, tenantId: string): Promise<void> {
   try {
     const sql = db?.session?.client
     if (sql) {
@@ -10,7 +16,7 @@ export async function setTenantContext(db: any, tenantId: string): Promise<void>
 }
 
 export async function withTenant<T>(
-  db: any,
+  db: TenantContextDatabase,
   tenantId: string | null | undefined,
   fn: () => Promise<T>,
 ): Promise<T> {
