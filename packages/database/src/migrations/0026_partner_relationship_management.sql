@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS "partner_tiers" (
 CREATE INDEX IF NOT EXISTS "partner_tiers_tenant_idx" ON "partner_tiers" ("tenant_id");
 CREATE INDEX IF NOT EXISTS "partner_tiers_code_idx" ON "partner_tiers" ("tenant_id", "code");
 
-CREATE TABLE IF NOT EXISTS "partners" (
+CREATE TABLE IF NOT EXISTS "prm_partners" (
   "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   "tenant_id" uuid NOT NULL,
   "company_id" uuid,
@@ -28,9 +28,9 @@ CREATE TABLE IF NOT EXISTS "partners" (
   "updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 
-CREATE INDEX IF NOT EXISTS "partners_tenant_idx" ON "partners" ("tenant_id");
-CREATE INDEX IF NOT EXISTS "partners_tier_idx" ON "partners" ("tenant_id", "tier_id");
-CREATE INDEX IF NOT EXISTS "partners_status_idx" ON "partners" ("tenant_id", "status");
+CREATE INDEX IF NOT EXISTS "prm_partners_tenant_idx" ON "prm_partners" ("tenant_id");
+CREATE INDEX IF NOT EXISTS "prm_partners_tier_idx" ON "prm_partners" ("tenant_id", "tier_id");
+CREATE INDEX IF NOT EXISTS "prm_partners_status_idx" ON "prm_partners" ("tenant_id", "status");
 
 CREATE TABLE IF NOT EXISTS "partner_deal_registrations" (
   "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),

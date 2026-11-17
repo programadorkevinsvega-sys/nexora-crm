@@ -21,7 +21,7 @@ export const partnerTiers = pgTable(
 )
 
 export const partners = pgTable(
-  'partners',
+  'prm_partners',
   {
     id: uuid('id').defaultRandom().primaryKey(),
     tenantId: uuid('tenant_id').notNull(),
