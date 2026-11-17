@@ -1,13 +1,13 @@
 import { AiSdrConsumerService } from '../../infrastructure/ai-sdr-consumer.service'
 import { QualifyLeadBantHandler } from '../../application/commands/qualify-bant.handler'
-import { NatsConsumerService } from '../../../../common/nats/nats-consumer.service'
+import { NatsConsumerService, type DomainEventHandler } from '../../../../common/nats/nats-consumer.service'
 import { BantQualification } from '../../domain/entities/bant-qualification.entity'
 
 describe('AiSdrConsumerService', () => {
   let service: AiSdrConsumerService
   let mockNatsConsumer: jest.Mocked<Partial<NatsConsumerService>>
   let mockQualifyBantHandler: jest.Mocked<Partial<QualifyLeadBantHandler>>
-  const subscriptions: Record<string, Function> = {}
+  const subscriptions: Record<string, DomainEventHandler> = {}
 
   beforeEach(() => {
     mockNatsConsumer = {

@@ -1,6 +1,6 @@
 "use client"
 
-import { type ReactNode } from "react"
+import { type InputHTMLAttributes, type ReactNode } from "react"
 import { type FieldError, type UseFormRegisterReturn } from "react-hook-form"
 import { Input } from "./Input"
 import { Select } from "./Select"
@@ -29,19 +29,16 @@ export function FormFieldWrapper({ label, error, required, children }: FormField
 
 export const FormField = FormFieldWrapper
 
-interface FormInputProps {
+interface FormInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "name"> {
   label: string
-  registration: UseFormRegisterReturn
+  registration?: UseFormRegisterReturn
   error?: FieldError
-  required?: boolean
-  type?: string
-  placeholder?: string
 }
 
-export function FormInput({ label, registration, error, required, type, placeholder }: FormInputProps) {
+export function FormInput({ label, registration, error, required, ...inputProps }: FormInputProps) {
   return (
     <FormFieldWrapper label={label} error={error} required={required}>
-      <Input type={type} placeholder={placeholder} {...registration} />
+      <Input required={required} {...inputProps} {...registration} />
     </FormFieldWrapper>
   )
 }

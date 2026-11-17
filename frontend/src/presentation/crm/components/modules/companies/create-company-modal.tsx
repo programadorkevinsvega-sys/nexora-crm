@@ -43,7 +43,7 @@ export function CreateCompanyModal({ onClose, onSuccess }: CreateCompanyModalPro
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<CompanyFormData>({
+  } = useForm<z.input<typeof companySchema>, unknown, CompanyFormData>({
     resolver: zodResolver(companySchema),
     defaultValues: {
       name: "",

@@ -1,6 +1,10 @@
 import { api, qs } from "../../api/api-client"
 import type { PaginatedResult } from "@/src/domain/crm/common/results/paginated-result"
 import type { Pagination } from "@/src/domain/crm/common/value-objects/Pagination"
+import type {
+  CompanyCreateInput,
+  CompanyUpdateInput,
+} from "@/src/domain/crm/companies/company.entity"
 
 export interface Company {
   id: string
@@ -15,29 +19,6 @@ export interface Company {
   parentCompanyId: string | null
   createdAt: string
   updatedAt: string
-}
-
-export interface CompanyCreateInput {
-  tenantId: string
-  name: string
-  industry?: string | null
-  website?: string | null
-  taxId?: string | null
-  numberOfEmployees?: number | null
-  annualRevenue?: number | null
-  description?: string | null
-  parentCompanyId?: string | null
-}
-
-export interface CompanyUpdateInput {
-  name?: string
-  industry?: string | null
-  website?: string | null
-  taxId?: string | null
-  numberOfEmployees?: number | null
-  annualRevenue?: number | null
-  description?: string | null
-  parentCompanyId?: string | null
 }
 
 export interface CompanyFilters {

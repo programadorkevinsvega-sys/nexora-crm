@@ -1,12 +1,12 @@
 import { InteractionsConsumerService } from '../../infrastructure/interactions-consumer.service'
 import { CreateCallHandler } from '../../application/commands/interactions.handlers'
-import { NatsConsumerService } from '../../../../common/nats/nats-consumer.service'
+import { NatsConsumerService, type DomainEventHandler } from '../../../../common/nats/nats-consumer.service'
 
 describe('InteractionsConsumerService', () => {
   let service: InteractionsConsumerService
   let mockNatsConsumer: jest.Mocked<Partial<NatsConsumerService>>
   let mockCreateCallHandler: jest.Mocked<Partial<CreateCallHandler>>
-  const subscriptions: Record<string, Function> = {}
+  const subscriptions: Record<string, DomainEventHandler> = {}
 
   beforeEach(() => {
     mockNatsConsumer = {

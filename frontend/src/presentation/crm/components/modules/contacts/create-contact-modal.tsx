@@ -36,7 +36,11 @@ export function CreateContactModal({ onClose, onSuccess }: { onClose: () => void
   const { tenantId } = useAuth()
   const [showAdvanced, setShowAdvanced] = useState(false)
 
-  const { register, handleSubmit, formState: { errors } } = useForm<ContactFormData>({
+  const { register, handleSubmit, formState: { errors } } = useForm<
+    z.input<typeof contactSchema>,
+    unknown,
+    ContactFormData
+  >({
     resolver: zodResolver(contactSchema),
     defaultValues: {
       firstName: "",

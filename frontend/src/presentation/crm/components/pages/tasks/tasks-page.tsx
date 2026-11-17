@@ -33,7 +33,11 @@ export function TasksListPage() {
   const [search, setSearch] = useState("")
   const [showCreate, setShowCreate] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<TaskFormData>({
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<
+    z.input<typeof taskSchema>,
+    unknown,
+    TaskFormData
+  >({
     resolver: zodResolver(taskSchema),
     defaultValues: { priority: "MEDIUM", taskType: "TODO" },
   })

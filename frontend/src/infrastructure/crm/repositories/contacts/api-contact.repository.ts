@@ -1,6 +1,10 @@
 import { api, qs } from "../../api/api-client"
 import type { PaginatedResult } from "@/src/domain/crm/common/results/paginated-result"
 import type { Pagination } from "@/src/domain/crm/common/value-objects/Pagination"
+import type {
+  ContactCreateInput,
+  ContactUpdateInput,
+} from "@/src/domain/crm/contacts/contact.entity"
 
 export interface Contact {
   id: string
@@ -37,73 +41,6 @@ export interface Contact {
   metadata: Record<string, any>
   createdAt: string
   updatedAt: string
-}
-
-export interface ContactCreateInput {
-  tenantId: string
-  firstName: string
-  lastName?: string | null
-  companyId?: string | null
-  identificationType?: string | null
-  identificationNumber?: string | null
-  verificationDigit?: string | null
-  email?: string | null
-  phone?: string | null
-  birthDate?: string | null
-  streetAddress?: string | null
-  city?: string | null
-  stateProvince?: string | null
-  postalCode?: string | null
-  country?: string | null
-  latitude?: string | null
-  longitude?: string | null
-  nickname?: string | null
-  gender?: string | null
-  isStarred?: boolean
-  isDeceased?: boolean
-  stayInTouchFrequencyDays?: number | null
-  lastTalkedToAt?: string | null
-  taxRegime?: string | null
-  isTaxLiable?: boolean
-  jobTitle?: string | null
-  leadSource?: string | null
-  leadStatus?: string
-  loyaltyPoints?: number
-  avatarUrl?: string | null
-  metadata?: Record<string, any>
-}
-
-export interface ContactUpdateInput {
-  firstName?: string
-  lastName?: string | null
-  companyId?: string | null
-  identificationType?: string | null
-  identificationNumber?: string | null
-  verificationDigit?: string | null
-  email?: string | null
-  phone?: string | null
-  birthDate?: string | null
-  streetAddress?: string | null
-  city?: string | null
-  stateProvince?: string | null
-  postalCode?: string | null
-  country?: string | null
-  latitude?: string | null
-  longitude?: string | null
-  nickname?: string | null
-  gender?: string | null
-  isStarred?: boolean
-  isDeceased?: boolean
-  stayInTouchFrequencyDays?: number | null
-  lastTalkedToAt?: string | null
-  taxRegime?: string | null
-  isTaxLiable?: boolean
-  jobTitle?: string | null
-  leadSource?: string | null
-  leadStatus?: string
-  loyaltyPoints?: number
-  avatarUrl?: string | null
-  metadata?: Record<string, any>
 }
 
 export interface ContactFilters {
