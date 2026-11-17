@@ -1,0 +1,5 @@
+export { Customer360Module } from './interfaces/http/customer-360.module'
+export { Customer360 } from './domain/entities/customer-360.entity'
+export { Customer360Repository } from './domain/repositories/customer-360.repository'
+export { GetCustomer360Handler } from './application/queries/customer-360.handlers'
+export { GetCustomer360Query } from './application/queries/customer-360.queries'

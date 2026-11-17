@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package crm.affiliates;
+
+option go_package = "github.com/ultra-erp/crm/grpc/affiliates";
+
+import "common.proto";
+
+message ProgramResponse { string json = 1; }
+message AffiliateResponse { string json = 1; }
+message CommissionResponse { string json = 1; }
+message PayoutResponse { string json = 1; }
+
+message CreateProgramRequest {
+  string tenant_id = 1; string name = 2; string commission_type = 3; double commission_value = 4;
+  optional int32 cookie_duration_days = 5; optional bool is_multi_level = 6;
+  optional int32 max_mlm_levels = 7; optional bool is_active = 8;
+}
+
+message UpdateProgramRequest {
+  string tenant_id = 1; string id = 2;
+  optional string name = 3; optional string commission_type = 4; optional double commission_value = 5;
+  optional int32 cookie_duration_days = 6; optional bool is_multi_level = 7;
+  optional int32 max_mlm_levels = 8; optional bool is_active = 9;
+}
+
+message RegisterAffiliateRequest {
+  string tenant_id = 1; string program_id = 2; string customer_id = 3;
+  string referral_code = 4; string referral_link = 5;
+  optional string parent_affiliate_id = 6; optional int32 mlm_level = 7; optional string status = 8;
+}
+
+message RecordCommissionRequest {
+  string tenant_id = 1; string affiliate_id = 2; string source_order_id = 3; double commission_amount = 4;
+  optional int32 mlm_level_earned = 5; optional string status = 6; optional string approved_at = 7;
+}
+
+message ProcessPayoutRequest {
+  string tenant_id = 1; string affiliate_id = 2; double amount = 3;
+  optional string payment_method = 4; optional string payment_reference = 5;
+  optional string status = 6; optional string paid_at = 7;
+}
+
+message ListProgramsRequest {
+  string tenant_id = 1; optional bool is_active = 2; optional string cursor = 3; optional int32 limit = 4;
+}
+
+message ListAffiliatesRequest {
+  string tenant_id = 1; optional string program_id = 2; optional string status = 3;
+  optional string cursor = 4; optional int32 limit = 5;
+}
+
+message ListCommissionsRequest {
+  string tenant_id = 1; string affiliate_id = 2;
+  optional string status = 3; optional string cursor = 4; optional int32 limit = 5;
+}
+
+message ListPayoutsRequest {
+  string tenant_id = 1; string affiliate_id = 2;
+  optional string status = 3; optional string cursor = 4; optional int32 limit = 5;
+}
+
+service AffiliateService {
+  rpc CreateProgram(CreateProgramRequest) returns (ProgramResponse);
+  rpc GetProgram(crm.common.IdRequest) returns (ProgramResponse);
+  rpc ListPrograms(ListProgramsRequest) returns (crm.common.PaginatedResponse);
+  rpc UpdateProgram(UpdateProgramRequest) returns (crm.common.Empty);
+  rpc RegisterAffiliate(RegisterAffiliateRequest) returns (AffiliateResponse);
+  rpc GetAffiliate(crm.common.IdRequest) returns (AffiliateResponse);
+  rpc ListAffiliates(ListAffiliatesRequest) returns (crm.common.PaginatedResponse);
+  rpc RecordCommission(RecordCommissionRequest) returns (CommissionResponse);
+  rpc ListCommissions(ListCommissionsRequest) returns (crm.common.PaginatedResponse);
+  rpc ProcessPayout(ProcessPayoutRequest) returns (PayoutResponse);
+  rpc ListPayouts(ListPayoutsRequest) returns (crm.common.PaginatedResponse);
+}

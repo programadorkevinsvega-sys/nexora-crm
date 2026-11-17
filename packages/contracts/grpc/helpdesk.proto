@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package crm.helpdesk;
+
+option go_package = "github.com/ultra-erp/crm/grpc/helpdesk";
+
+import "common.proto";
+
+message ConversationResponse { string json = 1; }
+message ThreadResponse { string json = 1; }
+message MailboxResponse { string json = 1; }
+message AgentProfileResponse { string json = 1; }
+
+message CreateConversationRequest {
+  string tenant_id = 1; string mailbox_id = 2; string subject = 3; string customer_email = 4;
+  optional string customer_id = 5; optional string assignee_user_id = 6; optional string status = 7;
+  optional string priority = 8; optional string source_channel = 9; optional string preview_text = 10;
+  optional double estimated_hours = 11; optional string due_date = 12;
+  optional bool is_internal = 13; optional bool requires_approval = 14;
+}
+
+message AssignConversationRequest {
+  string tenant_id = 1; string conversation_id = 2; string assignee_user_id = 3;
+}
+
+message ChangeConversationStatusRequest {
+  string tenant_id = 1; string conversation_id = 2; string status = 3;
+}
+
+message ResolveConversationRequest {
+  string tenant_id = 1; string conversation_id = 2; optional string resolved_by_user_id = 3;
+}
+
+message AddThreadRequest {
+  string tenant_id = 1; string conversation_id = 2; string thread_type = 3;
+  optional string body_html = 4; optional string body_text = 5;
+  optional string created_by_user_id = 6; optional string created_by_customer_id = 7;
+  optional bool is_draft = 8; optional string message_id_header = 9;
+  optional string to_addresses = 10; optional string cc_addresses = 11;
+}
+
+message CreateMailboxRequest {
+  string tenant_id = 1; string name = 2; string email_address = 3; optional bool is_active = 4;
+}
+
+message UpdateAgentAvailabilityRequest {
+  string tenant_id = 1; string user_id = 2; bool is_available = 3; optional string agent_status = 4;
+}
+
+message ListConversationsRequest {
+  string tenant_id = 1; optional string mailbox_id = 2; optional string status = 3;
+  optional string assignee_user_id = 4; optional string priority = 5;
+  optional string cursor = 6; optional int32 limit = 7;
+}
+
+service HelpdeskService {
+  rpc CreateConversation(CreateConversationRequest) returns (ConversationResponse);
+  rpc GetConversation(crm.common.IdRequest) returns (ConversationResponse);
+  rpc ListConversations(ListConversationsRequest) returns (crm.common.PaginatedResponse);
+  rpc AssignConversation(AssignConversationRequest) returns (crm.common.Empty);
+  rpc ChangeConversationStatus(ChangeConversationStatusRequest) returns (crm.common.Empty);
+  rpc ResolveConversation(ResolveConversationRequest) returns (crm.common.Empty);
+  rpc ListThreads(crm.common.IdRequest) returns (crm.common.PaginatedResponse);
+  rpc AddThread(AddThreadRequest) returns (ThreadResponse);
+  rpc ListMailboxes(crm.common.TenantRequest) returns (crm.common.PaginatedResponse);
+  rpc CreateMailbox(CreateMailboxRequest) returns (MailboxResponse);
+  rpc GetAgentProfile(crm.common.TenantRequest) returns (AgentProfileResponse);
+  rpc UpdateAgentAvailability(UpdateAgentAvailabilityRequest) returns (crm.common.Empty);
+}

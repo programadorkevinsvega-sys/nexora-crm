@@ -1,0 +1,403 @@
+syntax = "proto3";
+
+package crm.tenants;
+
+option go_package = "github.com/ultra-erp/crm/grpc/tenants";
+
+import "common.proto";
+
+message TenantResponse { string json = 1; }
+message BranchResponse { string json = 1; }
+message BrandingResponse { string json = 1; }
+
+message CreateTenantRequest {
+  string name = 1;
+  optional string legal_name = 2;
+  optional string tax_id = 3;
+  optional string tax_regime = 4;
+  optional string legal_address = 5;
+  optional string city = 6;
+  optional string postal_code = 7;
+  string industry_type = 8;
+  optional string timezone = 9;
+  optional string currency_code = 10;
+  string owner_user_id = 11;
+}
+
+message UpdateTenantRequest {
+  string id = 1;
+  optional string name = 2;
+  optional string legal_name = 3;
+  optional string tax_id = 4;
+  optional string tax_regime = 5;
+  optional string legal_address = 6;
+  optional string city = 7;
+  optional string postal_code = 8;
+  optional string industry_type = 9;
+  optional string status = 10;
+  optional string timezone = 11;
+  optional string currency_code = 12;
+}
+
+message ListTenantsRequest {
+  optional string search = 1;
+  optional string status = 2;
+  optional string cursor = 3;
+  optional int32 limit = 4;
+}
+
+message CreateBranchRequest {
+  string tenant_id = 1;
+  string name = 2;
+  optional string code = 3;
+  optional string address = 4;
+  optional string city = 5;
+  optional string country = 6;
+  optional bool is_headquarters = 7;
+}
+
+message UpdateBranchRequest {
+  string tenant_id = 1;
+  string id = 2;
+  optional string name = 3;
+  optional string code = 4;
+  optional string address = 5;
+  optional string city = 6;
+  optional string country = 7;
+  optional bool is_active = 8;
+  optional bool is_headquarters = 9;
+}
+
+message ListBranchesRequest {
+  string tenant_id = 1;
+}
+
+message UpdateBrandingRequest {
+  string tenant_id = 1;
+  optional string logo_url = 2;
+  optional string favicon_url = 3;
+  optional string primary_color = 4;
+  optional string secondary_color = 5;
+  optional string custom_domain = 6;
+}
+
+message ListFeaturesRequest {
+  string tenant_id = 1;
+}
+
+message ToggleFeatureRequest {
+  string tenant_id = 1;
+  string feature_code = 2;
+  bool is_enabled = 3;
+}
+
+message CreateDomainRequest {
+  string tenant_id = 1;
+  string domain = 2;
+  optional bool is_primary = 3;
+}
+
+message ListDomainsRequest {
+  string tenant_id = 1;
+}
+
+message SetPrimaryDomainRequest {
+  string tenant_id = 1;
+  string domain_id = 2;
+}
+
+message ListMetricsRequest {
+  string tenant_id = 1;
+}
+
+message UpsertMetricRequest {
+  string tenant_id = 1;
+  string metric_name = 2;
+  int64 current_value = 3;
+  optional int64 limit_value = 4;
+  string period_start = 5;
+  string period_end = 6;
+}
+
+message ListSystemModulesRequest {
+  optional string category = 1;
+}
+
+message InstallModuleRequest {
+  string tenant_id = 1;
+  string module_id = 2;
+}
+
+message UninstallModuleRequest {
+  string tenant_id = 1;
+  string module_id = 2;
+}
+
+message ListInstalledModulesRequest {
+  string tenant_id = 1;
+}
+
+message FeatureResponse {
+  repeated string json_items = 1;
+}
+
+message MetricResponse { string json = 1; }
+
+message CreateTaxConfigRequest {
+  string tenant_id = 1;
+  string tax_name = 2;
+  double tax_percentage = 3;
+  optional string description = 4;
+  optional string tax_type = 5;
+}
+
+message UpdateTaxConfigRequest {
+  string id = 1;
+  string tenant_id = 2;
+  optional string tax_name = 3;
+  optional double tax_percentage = 4;
+  optional string description = 5;
+  optional string tax_type = 6;
+  optional bool is_active = 7;
+}
+
+message ListTaxConfigsRequest {
+  string tenant_id = 1;
+}
+
+message CreateLanguageRequest {
+  string tenant_id = 1;
+  string iso_code = 2;
+  string name = 3;
+  optional bool is_default = 4;
+}
+
+message UpdateLanguageRequest {
+  string id = 1;
+  string tenant_id = 2;
+  optional string iso_code = 3;
+  optional string name = 4;
+  optional bool is_default = 5;
+  optional bool is_active = 6;
+}
+
+message ListLanguagesRequest {
+  string tenant_id = 1;
+}
+
+message SetDefaultLanguageRequest {
+  string tenant_id = 1;
+  string language_id = 2;
+}
+
+message CreateCurrencyRequest {
+  string tenant_id = 1;
+  string iso_code = 2;
+  string name = 3;
+  string symbol = 4;
+  optional bool is_base_currency = 5;
+}
+
+message UpdateCurrencyRequest {
+  string id = 1;
+  string tenant_id = 2;
+  optional string iso_code = 3;
+  optional string name = 4;
+  optional string symbol = 5;
+  optional bool is_base_currency = 6;
+  optional bool is_active = 7;
+}
+
+message ListCurrenciesRequest {
+  string tenant_id = 1;
+}
+
+message SetBaseCurrencyRequest {
+  string tenant_id = 1;
+  string currency_id = 2;
+}
+
+message CreateApiKeyRequest {
+  string tenant_id = 1;
+  string name = 2;
+  repeated string scopes = 3;
+  optional int64 expires_at = 4;
+}
+
+message CreateApiKeyResponse {
+  string json = 1;
+  string raw_token = 2;
+}
+
+message ListApiKeysRequest {
+  string tenant_id = 1;
+}
+
+message RevokeApiKeyRequest {
+  string tenant_id = 1;
+  string id = 2;
+}
+
+message CreateWebhookRequest {
+  string tenant_id = 1;
+  string name = 2;
+  string endpoint_url = 3;
+  repeated string event_types = 4;
+}
+
+message UpdateWebhookRequest {
+  string id = 1;
+  string tenant_id = 2;
+  optional string name = 3;
+  optional string endpoint_url = 4;
+  optional bool is_active = 5;
+  optional int32 max_retries = 6;
+  repeated string event_types = 7;
+}
+
+message ListWebhooksRequest {
+  string tenant_id = 1;
+}
+
+message CreateExchangeRateRequest {
+  string tenant_id = 1;
+  string from_currency_id = 2;
+  string to_currency_id = 3;
+  double rate = 4;
+  optional string effective_date = 5;
+}
+
+message ListExchangeRatesRequest {
+  string tenant_id = 1;
+}
+
+message CreateTranslationRequest {
+  string tenant_id = 1;
+  string language_id = 2;
+  string translation_key = 3;
+  string translation_value = 4;
+}
+
+message UpdateTranslationRequest {
+  string id = 1;
+  string tenant_id = 2;
+  optional string translation_value = 3;
+}
+
+message ListTranslationsRequest {
+  string tenant_id = 1;
+  optional string language_id = 2;
+}
+
+message DeleteTranslationRequest {
+  string tenant_id = 1;
+  string id = 2;
+}
+
+message ListAuditLogsRequest {
+  string tenant_id = 1;
+  optional string module_name = 2;
+  optional string cursor = 3;
+  optional int32 limit = 4;
+}
+
+message GetParameterRequest {
+  string param_key = 1;
+}
+
+message SetParameterRequest {
+  string param_key = 1;
+  string param_value = 2;
+  optional string description = 3;
+  optional string data_type = 4;
+  optional bool is_public = 5;
+}
+
+service TenantService {
+  // Tenants
+  rpc CreateTenant(CreateTenantRequest) returns (TenantResponse);
+  rpc GetTenant(crm.common.IdRequest) returns (TenantResponse);
+  rpc ListTenants(ListTenantsRequest) returns (crm.common.PaginatedResponse);
+  rpc UpdateTenant(UpdateTenantRequest) returns (crm.common.Empty);
+  rpc DeleteTenant(crm.common.IdRequest) returns (crm.common.Empty);
+
+  // Branches
+  rpc CreateBranch(CreateBranchRequest) returns (BranchResponse);
+  rpc GetBranch(crm.common.IdRequest) returns (BranchResponse);
+  rpc ListBranches(ListBranchesRequest) returns (crm.common.PaginatedResponse);
+  rpc UpdateBranch(UpdateBranchRequest) returns (crm.common.Empty);
+  rpc DeleteBranch(crm.common.IdRequest) returns (crm.common.Empty);
+
+  // Branding
+  rpc GetBranding(crm.common.IdRequest) returns (BrandingResponse);
+  rpc UpdateBranding(UpdateBrandingRequest) returns (crm.common.Empty);
+
+  // Features
+  rpc ListFeatures(ListFeaturesRequest) returns (FeatureResponse);
+  rpc ToggleFeature(ToggleFeatureRequest) returns (crm.common.Empty);
+
+  // Domains
+  rpc CreateDomain(CreateDomainRequest) returns (crm.common.Empty);
+  rpc ListDomains(ListDomainsRequest) returns (crm.common.PaginatedResponse);
+  rpc DeleteDomain(crm.common.IdRequest) returns (crm.common.Empty);
+  rpc SetPrimaryDomain(SetPrimaryDomainRequest) returns (crm.common.Empty);
+
+  // Usage metrics
+  rpc ListMetrics(ListMetricsRequest) returns (crm.common.PaginatedResponse);
+  rpc UpsertMetric(UpsertMetricRequest) returns (MetricResponse);
+
+  // System & installed modules
+  rpc ListSystemModules(ListSystemModulesRequest) returns (crm.common.PaginatedResponse);
+  rpc ListInstalledModules(ListInstalledModulesRequest) returns (crm.common.PaginatedResponse);
+  rpc InstallModule(InstallModuleRequest) returns (crm.common.Empty);
+  rpc UninstallModule(UninstallModuleRequest) returns (crm.common.Empty);
+
+  // Tax configurations
+  rpc CreateTaxConfig(CreateTaxConfigRequest) returns (crm.common.Empty);
+  rpc ListTaxConfigs(ListTaxConfigsRequest) returns (crm.common.PaginatedResponse);
+  rpc UpdateTaxConfig(UpdateTaxConfigRequest) returns (crm.common.Empty);
+  rpc DeleteTaxConfig(crm.common.IdRequest) returns (crm.common.Empty);
+
+  // Languages
+  rpc CreateLanguage(CreateLanguageRequest) returns (crm.common.Empty);
+  rpc ListLanguages(ListLanguagesRequest) returns (crm.common.PaginatedResponse);
+  rpc UpdateLanguage(UpdateLanguageRequest) returns (crm.common.Empty);
+  rpc DeleteLanguage(crm.common.IdRequest) returns (crm.common.Empty);
+  rpc SetDefaultLanguage(SetDefaultLanguageRequest) returns (crm.common.Empty);
+
+  // Currencies
+  rpc CreateCurrency(CreateCurrencyRequest) returns (crm.common.Empty);
+  rpc ListCurrencies(ListCurrenciesRequest) returns (crm.common.PaginatedResponse);
+  rpc UpdateCurrency(UpdateCurrencyRequest) returns (crm.common.Empty);
+  rpc DeleteCurrency(crm.common.IdRequest) returns (crm.common.Empty);
+  rpc SetBaseCurrency(SetBaseCurrencyRequest) returns (crm.common.Empty);
+
+  // API Keys
+  rpc CreateApiKey(CreateApiKeyRequest) returns (CreateApiKeyResponse);
+  rpc ListApiKeys(ListApiKeysRequest) returns (crm.common.PaginatedResponse);
+  rpc RevokeApiKey(RevokeApiKeyRequest) returns (crm.common.Empty);
+
+  // Webhooks
+  rpc CreateWebhook(CreateWebhookRequest) returns (crm.common.Empty);
+  rpc GetWebhook(crm.common.IdRequest) returns (crm.common.Empty);
+  rpc ListWebhooks(ListWebhooksRequest) returns (crm.common.PaginatedResponse);
+  rpc UpdateWebhook(UpdateWebhookRequest) returns (crm.common.Empty);
+  rpc DeleteWebhook(crm.common.IdRequest) returns (crm.common.Empty);
+
+  // Exchange rates
+  rpc CreateExchangeRate(CreateExchangeRateRequest) returns (crm.common.Empty);
+  rpc ListExchangeRates(ListExchangeRatesRequest) returns (crm.common.PaginatedResponse);
+
+  // Translations
+  rpc CreateTranslation(CreateTranslationRequest) returns (crm.common.Empty);
+  rpc ListTranslations(ListTranslationsRequest) returns (crm.common.PaginatedResponse);
+  rpc UpdateTranslation(UpdateTranslationRequest) returns (crm.common.Empty);
+  rpc DeleteTranslation(DeleteTranslationRequest) returns (crm.common.Empty);
+
+  // Audit logs
+  rpc ListAuditLogs(ListAuditLogsRequest) returns (crm.common.PaginatedResponse);
+
+  // System parameters
+  rpc GetParameter(GetParameterRequest) returns (crm.common.Empty);
+  rpc SetParameter(SetParameterRequest) returns (crm.common.Empty);
+}

@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package crm.support_tickets;
+
+option go_package = "github.com/ultra-erp/crm/grpc/support_tickets";
+
+import "common.proto";
+
+message TicketResponse { string json = 1; }
+message ReplyResponse { string json = 1; }
+
+message CreateTicketRequest {
+  string tenant_id = 1; string subject = 2; string description = 3;
+  optional string contact_id = 4; optional string priority = 5; optional string assigned_user_id = 6; optional string sla_id = 7;
+}
+
+message UpdateTicketStatusRequest {
+  string tenant_id = 1; string id = 2; string status = 3;
+}
+
+message AssignTicketRequest {
+  string tenant_id = 1; string id = 2; string assigned_user_id = 3;
+}
+
+message AddReplyRequest {
+  string tenant_id = 1; string ticket_id = 2; string author_type = 3; string author_id = 4; string message = 5;
+  optional bool is_internal_note = 6;
+}
+
+message ListTicketsRequest {
+  string tenant_id = 1; optional string status = 2; optional string priority = 3;
+  optional string assigned_user_id = 4; optional string contact_id = 5;
+  optional string cursor = 6; optional int32 limit = 7;
+}
+
+service SupportTicketService {
+  rpc CreateTicket(CreateTicketRequest) returns (TicketResponse);
+  rpc GetTicket(crm.common.IdRequest) returns (TicketResponse);
+  rpc ListTickets(ListTicketsRequest) returns (crm.common.PaginatedResponse);
+  rpc UpdateTicketStatus(UpdateTicketStatusRequest) returns (crm.common.Empty);
+  rpc AssignTicket(AssignTicketRequest) returns (crm.common.Empty);
+  rpc AddTicketReply(AddReplyRequest) returns (ReplyResponse);
+  rpc GetTicketReplies(crm.common.IdRequest) returns (crm.common.PaginatedResponse);
+}

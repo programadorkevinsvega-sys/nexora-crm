@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package crm.storage;
+
+option go_package = "github.com/ultra-erp/crm/grpc/storage";
+
+import "common.proto";
+
+message FileResponse { string json = 1; }
+
+message UploadFileRequest {
+  optional string tenant_id = 1;
+  string file_name = 2;
+  string mime_type = 3;
+  bytes content = 4;
+  optional string uploaded_by_user_id = 5;
+  optional string entity_type = 6;
+  optional string entity_id = 7;
+  optional string metadata_json = 8;
+  optional bool is_public = 9;
+}
+
+message GetFileRequest {
+  string id = 1;
+  optional string tenant_id = 2;
+}
+
+message DeleteFileRequest {
+  string id = 1;
+  optional string tenant_id = 2;
+}
+
+message ListFilesRequest {
+  optional string tenant_id = 1;
+  optional string entity_type = 2;
+  optional string entity_id = 3;
+  optional string mime_type = 4;
+  optional string uploaded_by_user_id = 5;
+  optional string cursor = 6;
+  optional int32 limit = 7;
+}
+
+message GetFileUrlRequest {
+  string id = 1;
+  optional string tenant_id = 2;
+  optional int32 expires_in_seconds = 3;
+}
+
+message FileUrlResponse { string json = 1; }
+
+message UpdateFileMetadataRequest {
+  string id = 1;
+  optional string tenant_id = 2;
+  optional string entity_type = 3;
+  optional string entity_id = 4;
+  optional string metadata_json = 5;
+  optional bool is_public = 6;
+}
+
+service StorageService {
+  rpc UploadFile(UploadFileRequest) returns (FileResponse);
+  rpc GetFile(GetFileRequest) returns (FileResponse);
+  rpc DeleteFile(DeleteFileRequest) returns (crm.common.IdResponse);
+  rpc ListFiles(ListFilesRequest) returns (crm.common.PaginatedResponse);
+  rpc GetFileUrl(GetFileUrlRequest) returns (FileUrlResponse);
+  rpc UpdateFileMetadata(UpdateFileMetadataRequest) returns (FileResponse);
+}

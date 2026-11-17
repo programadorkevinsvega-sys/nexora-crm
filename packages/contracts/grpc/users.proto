@@ -1,0 +1,182 @@
+syntax = "proto3";
+
+package crm.users;
+
+option go_package = "github.com/ultra-erp/crm/grpc/users";
+
+import "common.proto";
+
+message CreateUserRequest {
+  string tenant_id = 1;
+  string email = 2;
+  optional string password_hash = 3;
+  string profile_type = 4;
+  optional string first_name = 5;
+  optional string last_name = 6;
+  optional string identification_number = 7;
+  optional string phone = 8;
+  optional string country_code = 9;
+  optional string preferred_language = 10;
+  optional string timezone = 11;
+  optional string avatar_url = 12;
+  optional string legal_name = 13;
+  optional string commercial_name = 14;
+  optional string tax_id = 15;
+  optional string legal_address = 16;
+  optional string manager_id = 17;
+}
+
+message UpdateUserRequest {
+  string tenant_id = 1;
+  string id = 2;
+  optional string email = 3;
+  optional string password_hash = 4;
+  optional string status = 5;
+  optional string manager_id = 6;
+}
+
+message GetUserRequest {
+  string tenant_id = 1;
+  string id = 2;
+}
+
+message FindByEmailRequest {
+  string tenant_id = 1;
+  string email = 2;
+}
+
+message ListUsersRequest {
+  string tenant_id = 1;
+  optional string cursor = 2;
+  optional int32 limit = 3;
+  optional string search = 4;
+  optional string status = 5;
+  optional string profile_type = 6;
+}
+
+message DeleteUserRequest {
+  string tenant_id = 1;
+  string id = 2;
+}
+
+message UpdateNaturalPersonProfileRequest {
+  string tenant_id = 1;
+  string user_id = 2;
+  optional string first_name = 3;
+  optional string last_name = 4;
+  optional string identification_number = 5;
+  optional string phone = 6;
+  optional string country_code = 7;
+  optional string preferred_language = 8;
+  optional string timezone = 9;
+  optional string avatar_url = 10;
+}
+
+message UpdateLegalEntityProfileRequest {
+  string tenant_id = 1;
+  string user_id = 2;
+  optional string legal_name = 3;
+  optional string commercial_name = 4;
+  optional string tax_id = 5;
+  optional string legal_address = 6;
+  optional string country_code = 7;
+  optional bool is_active = 8;
+}
+
+message GetProfileRequest {
+  string tenant_id = 1;
+  string user_id = 2;
+}
+
+message LinkOAuthRequest {
+  string tenant_id = 1;
+  string user_id = 2;
+  string provider_name = 3;
+  string provider_user_id = 4;
+}
+
+message UnlinkOAuthRequest {
+  string tenant_id = 1;
+  string user_id = 2;
+  string provider_name = 3;
+}
+
+message ListOAuthLinksRequest {
+  string tenant_id = 1;
+  string user_id = 2;
+}
+
+message RegisterDeviceRequest {
+  string tenant_id = 1;
+  string user_id = 2;
+  string device_identifier = 3;
+  string platform = 4;
+  optional string device_model = 5;
+  optional string os_version = 6;
+  optional string push_notification_token = 7;
+  optional bool is_trusted_device = 8;
+}
+
+message UpdateDeviceRequest {
+  string tenant_id = 1;
+  string user_id = 2;
+  string device_id = 3;
+  optional string device_model = 4;
+  optional string os_version = 5;
+  optional string push_notification_token = 6;
+  optional bool is_trusted_device = 7;
+}
+
+message RemoveDeviceRequest {
+  string tenant_id = 1;
+  string user_id = 2;
+  string device_id = 3;
+}
+
+message ListDevicesRequest {
+  string tenant_id = 1;
+  string user_id = 2;
+}
+
+message UserResponse {
+  string json = 1;
+}
+
+message UserListResponse {
+  repeated string json_items = 1;
+  optional string next_cursor = 2;
+}
+
+message ProfileResponse {
+  string json = 1;
+}
+
+message OAuthLinksResponse {
+  repeated string json_items = 1;
+}
+
+message DevicesResponse {
+  repeated string json_items = 1;
+}
+
+service UserService {
+  rpc CreateUser(CreateUserRequest) returns (UserResponse);
+  rpc GetUser(GetUserRequest) returns (UserResponse);
+  rpc FindByEmail(FindByEmailRequest) returns (UserResponse);
+  rpc ListUsers(ListUsersRequest) returns (UserListResponse);
+  rpc UpdateUser(UpdateUserRequest) returns (crm.common.Empty);
+  rpc DeleteUser(DeleteUserRequest) returns (crm.common.Empty);
+
+  rpc GetProfile(GetProfileRequest) returns (ProfileResponse);
+  rpc UpdateNaturalPersonProfile(UpdateNaturalPersonProfileRequest) returns (crm.common.Empty);
+  rpc UpdateLegalEntityProfile(UpdateLegalEntityProfileRequest) returns (crm.common.Empty);
+
+  rpc LinkOAuth(LinkOAuthRequest) returns (crm.common.Empty);
+  rpc UnlinkOAuth(UnlinkOAuthRequest) returns (crm.common.Empty);
+  rpc ListOAuthLinks(ListOAuthLinksRequest) returns (OAuthLinksResponse);
+
+  rpc RegisterDevice(RegisterDeviceRequest) returns (crm.common.Empty);
+  rpc UpdateDevice(UpdateDeviceRequest) returns (crm.common.Empty);
+  rpc RemoveDevice(RemoveDeviceRequest) returns (crm.common.Empty);
+  rpc ListDevices(ListDevicesRequest) returns (DevicesResponse);
+}

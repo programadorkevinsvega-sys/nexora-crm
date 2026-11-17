@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package crm.loyalty;
+
+option go_package = "github.com/ultra-erp/crm/grpc/loyalty";
+
+import "common.proto";
+
+message ProfileResponse { string json = 1; }
+message SegmentResponse { string json = 1; }
+message MetricsResponse { string json = 1; }
+
+message EarnPointsRequest {
+  string tenant_id = 1; string contact_id = 2; int32 points = 3;
+}
+
+message RedeemPointsRequest {
+  string tenant_id = 1; string contact_id = 2; int32 points = 3;
+}
+
+message CreateSegmentRequest {
+  string tenant_id = 1; string name = 2;
+  optional string description = 3; optional bool is_dynamic = 4; optional string rules_json = 5;
+}
+
+message AssignToSegmentRequest {
+  string tenant_id = 1; string segment_id = 2; string contact_id = 3;
+}
+
+service LoyaltyService {
+  rpc GetProfile(crm.common.IdRequest) returns (ProfileResponse);
+  rpc EarnPoints(EarnPointsRequest) returns (ProfileResponse);
+  rpc RedeemPoints(RedeemPointsRequest) returns (ProfileResponse);
+  rpc ListSegments(crm.common.TenantRequest) returns (crm.common.PaginatedResponse);
+  rpc CreateSegment(CreateSegmentRequest) returns (SegmentResponse);
+  rpc AssignToSegment(AssignToSegmentRequest) returns (crm.common.Empty);
+  rpc GetMetrics(crm.common.IdRequest) returns (MetricsResponse);
+}

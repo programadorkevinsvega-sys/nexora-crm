@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package crm.inbox;
+
+import "common.proto";
+
+message ListInboxConversationsRequest {
+  string tenant_id = 1;
+  optional string channel = 2;
+  optional string status = 3;
+}
+
+message GetInboxConversationRequest {
+  string tenant_id = 1;
+  string id = 2;
+}
+
+message SendInboxMessageRequest {
+  string tenant_id = 1;
+  optional string conversation_id = 2;
+  optional string contact_id = 3;
+  string channel = 4;
+  string recipient_identifier = 5;
+  optional string subject = 6;
+  string body_text = 7;
+}
+
+message InboxConversationResponse {
+  string json = 1;
+}
+
+message InboxMessageResponse {
+  string json = 1;
+}
+
+service InboxService {
+  rpc ListConversations(ListInboxConversationsRequest) returns (crm.common.PaginatedResponse);
+  rpc GetConversation(GetInboxConversationRequest) returns (InboxConversationResponse);
+  rpc SendMessage(SendInboxMessageRequest) returns (InboxMessageResponse);
+}

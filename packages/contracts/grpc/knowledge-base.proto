@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package crm.knowledge_base;
+
+import "common.proto";
+
+message CategoryResponse {
+  string json = 1;
+}
+
+message ArticleResponse {
+  string json = 1;
+}
+
+message PortalOverviewResponse {
+  string json = 1;
+}
+
+message CreateCategoryRequest {
+  string tenant_id = 1;
+  string name = 2;
+  optional string slug = 3;
+  optional string description = 4;
+  optional string icon = 5;
+  optional int32 sort_order = 6;
+  optional bool is_public = 7;
+}
+
+message ListArticlesRequest {
+  string tenant_id = 1;
+  optional string category_id = 2;
+  optional string query = 3;
+  optional bool public_only = 4;
+}
+
+message GetArticleRequest {
+  string tenant_id = 1;
+  string id_or_slug = 2;
+}
+
+message CreateArticleRequest {
+  string tenant_id = 1;
+  optional string category_id = 2;
+  string title = 3;
+  optional string slug = 4;
+  optional string summary = 5;
+  string content_markdown = 6;
+  optional bool is_published = 7;
+  repeated string tags = 8;
+  optional string author_name = 9;
+}
+
+message VoteArticleRequest {
+  string tenant_id = 1;
+  string article_id = 2;
+  bool is_helpful = 3;
+}
+
+message PortalOverviewRequest {
+  string tenant_id = 1;
+  string contact_id = 2;
+}
+
+service KnowledgeBaseService {
+  rpc ListCategories(crm.common.TenantRequest) returns (crm.common.PaginatedResponse);
+  rpc CreateCategory(CreateCategoryRequest) returns (CategoryResponse);
+  rpc ListArticles(ListArticlesRequest) returns (crm.common.PaginatedResponse);
+  rpc GetArticle(GetArticleRequest) returns (ArticleResponse);
+  rpc CreateArticle(CreateArticleRequest) returns (ArticleResponse);
+  rpc VoteArticle(VoteArticleRequest) returns (ArticleResponse);
+  rpc GetPortalOverview(PortalOverviewRequest) returns (PortalOverviewResponse);
+}

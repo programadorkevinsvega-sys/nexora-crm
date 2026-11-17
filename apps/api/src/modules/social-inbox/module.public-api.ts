@@ -1,0 +1,5 @@
+export { SocialInboxModule } from './module.config'
+export { SocialComment } from './domain/entities/social-comment.entity'
+export { SocialAutoResponderRule } from './domain/entities/social-rule.entity'
+export { SocialInboxRepository } from './domain/repositories/social-inbox.repository'
+export { SocialInboxGrpcController } from './interfaces/grpc/social-inbox-grpc.controller'

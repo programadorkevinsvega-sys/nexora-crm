@@ -1,0 +1,28 @@
+services:
+  nats:
+    image: nats:2.10-alpine
+    container_name: crm-nats
+    restart: unless-stopped
+    env_file:
+      - .env
+    command:
+      - "-js"
+      - "-m"
+      - "8222"
+      - "--user"
+      - "${NATS_USER:?Set NATS_USER in .env}"
+      - "--pass"
+      - "${NATS_PASSWORD:?Set NATS_PASSWORD in .env}"
+    ports:
+      - "10.0.2.97:4222:4222"
+      - "100.121.121.12:4222:4222"
+    volumes:
+      - nats_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:8222/varz || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  nats_data:

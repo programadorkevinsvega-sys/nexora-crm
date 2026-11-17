@@ -1,0 +1,9 @@
+node_modules
+.turbo
+dist
+.next
+.git
+.env.local
+*.log
+.DS_Store
+coverage

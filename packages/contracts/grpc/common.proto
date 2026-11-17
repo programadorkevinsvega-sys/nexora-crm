@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package crm.common;
+
+option go_package = "github.com/ultra-erp/crm/grpc/common";
+
+message TenantRequest {
+  string tenant_id = 1;
+  string user_id = 2;
+}
+
+message IdRequest {
+  string tenant_id = 1;
+  string id = 2;
+}
+
+message IdResponse {
+  string id = 1;
+}
+
+message PaginatedQuery {
+  string tenant_id = 1;
+  optional string cursor = 2;
+  optional int32 limit = 3;
+}
+
+message PaginatedResponse {
+  repeated string json_items = 1;
+  optional string next_cursor = 2;
+}
+
+message ListResponse {
+  repeated string json_items = 1;
+}
+
+message JsonRequest {
+  string json_input = 1;
+}
+
+message JsonResponse {
+  string json = 1;
+}
+
+message Empty {}

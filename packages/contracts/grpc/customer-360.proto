@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package crm.customer_360;
+
+import "common.proto";
+
+message GetCustomer360Request {
+  string tenant_id = 1;
+  string contact_id = 2;
+}
+
+message Customer360Response {
+  string json = 1;
+}
+
+service Customer360Service {
+  rpc GetCustomer360(GetCustomer360Request) returns (Customer360Response);
+}

@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+package crm.contacts;
+
+option go_package = "github.com/ultra-erp/crm/grpc/contacts";
+
+import "common.proto";
+
+message ContactResponse {
+  string json = 1;
+}
+
+message CreateContactRequest {
+  string tenant_id = 1;
+  string first_name = 2;
+  optional string last_name = 3;
+  optional string email = 4;
+  optional string phone = 5;
+  optional string company_id = 6;
+  optional string job_title = 7;
+  optional string lead_source = 8;
+  optional string lead_status = 9;
+  optional string identification_type = 10;
+  optional string identification_number = 11;
+  optional string verification_digit = 12;
+  optional string birth_date = 13;
+  optional string street_address = 14;
+  optional string city = 15;
+  optional string state_province = 16;
+  optional string postal_code = 17;
+  optional string country = 18;
+  optional string nickname = 19;
+  optional string gender = 20;
+  optional bool is_starred = 21;
+  optional bool is_deceased = 22;
+  optional int32 stay_in_touch_frequency_days = 23;
+  optional string tax_regime = 24;
+  optional bool is_tax_liable = 25;
+  optional int32 loyalty_points = 26;
+  optional string avatar_url = 27;
+  optional string last_talked_to_at = 28;
+}
+
+message UpdateContactRequest {
+  string tenant_id = 1;
+  string id = 2;
+  optional string first_name = 3;
+  optional string last_name = 4;
+  optional string email = 5;
+  optional string phone = 6;
+  optional string company_id = 7;
+  optional string job_title = 8;
+  optional string lead_source = 9;
+  optional string lead_status = 10;
+  optional string identification_type = 11;
+  optional string identification_number = 12;
+  optional string verification_digit = 13;
+  optional string birth_date = 14;
+  optional string street_address = 15;
+  optional string city = 16;
+  optional string state_province = 17;
+  optional string postal_code = 18;
+  optional string country = 19;
+  optional string nickname = 20;
+  optional string gender = 21;
+  optional bool is_starred = 22;
+  optional bool is_deceased = 23;
+  optional int32 stay_in_touch_frequency_days = 24;
+  optional string tax_regime = 25;
+  optional bool is_tax_liable = 26;
+  optional int32 loyalty_points = 27;
+  optional string avatar_url = 28;
+  optional string last_talked_to_at = 29;
+}
+
+message ListContactsRequest {
+  string tenant_id = 1;
+  optional string cursor = 2;
+  optional int32 limit = 3;
+  optional string search = 4;
+  optional string lead_status = 5;
+  optional string company_id = 6;
+  optional bool is_starred = 7;
+}
+
+service ContactService {
+  rpc CreateContact(CreateContactRequest) returns (ContactResponse);
+  rpc GetContact(crm.common.IdRequest) returns (ContactResponse);
+  rpc ListContacts(ListContactsRequest) returns (crm.common.PaginatedResponse);
+  rpc UpdateContact(UpdateContactRequest) returns (crm.common.Empty);
+  rpc DeleteContact(crm.common.IdRequest) returns (crm.common.Empty);
+}

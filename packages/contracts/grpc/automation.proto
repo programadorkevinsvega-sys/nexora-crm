@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package crm.automation;
+
+import "common.proto";
+
+message WorkflowResponse {
+  string json = 1;
+}
+
+message TriggerEventResponse {
+  string json = 1;
+}
+
+message WorkflowExecutionResponse {
+  string json = 1;
+  repeated string steps_json = 2;
+}
+
+message CreateWorkflowRequest {
+  string tenant_id = 1;
+  string name = 2;
+  optional string description = 3;
+  string trigger_event = 4;
+  optional string trigger_filter_json = 5;
+  string steps_graph_json = 6;
+}
+
+message TriggerEventRequest {
+  string tenant_id = 1;
+  string event_name = 2;
+  string entity_type = 3;
+  string entity_id = 4;
+  string payload_json = 5;
+}
+
+message ExecutionIdRequest {
+  string tenant_id = 1;
+  string execution_id = 2;
+  optional string reason = 3;
+}
+
+message ListExecutionsRequest {
+  string tenant_id = 1;
+  optional string workflow_id = 2;
+  optional string status = 3;
+}
+
+service AutomationService {
+  rpc CreateWorkflow(CreateWorkflowRequest) returns (WorkflowResponse);
+  rpc GetWorkflow(crm.common.IdRequest) returns (WorkflowResponse);
+  rpc ListWorkflows(crm.common.TenantRequest) returns (crm.common.PaginatedResponse);
+  rpc ActivateWorkflow(crm.common.IdRequest) returns (WorkflowResponse);
+  rpc PauseWorkflow(crm.common.IdRequest) returns (WorkflowResponse);
+  rpc TriggerEvent(TriggerEventRequest) returns (TriggerEventResponse);
+  rpc GetWorkflowExecution(ExecutionIdRequest) returns (WorkflowExecutionResponse);
+  rpc ListWorkflowExecutions(ListExecutionsRequest) returns (crm.common.PaginatedResponse);
+  rpc CancelExecution(ExecutionIdRequest) returns (crm.common.Empty);
+}

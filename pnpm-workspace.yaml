@@ -1,0 +1,13 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+  - 'frontend'
+
+allowBuilds:
+  sharp: true
+  bcrypt: true
+  esbuild: true
+  '@nestjs/core': false
+  '@scarf/scarf': false
+  es5-ext: false
+  protobufjs: false

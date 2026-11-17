@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.turbo/
+coverage/
+*.log
+.env
+.env.local
+.env.production
+.next/
+*.tsbuildinfo
+*.pem
+.env
+.env.example
+interserver_vault.pem
+servidor-07.pem

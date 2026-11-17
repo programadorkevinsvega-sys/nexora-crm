@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package crm.sales_teams;
+
+option go_package = "github.com/ultra-erp/crm/grpc/sales_teams";
+
+import "common.proto";
+
+message TeamResponse { string json = 1; }
+message MemberResponse { string json = 1; }
+message QuotaResponse { string json = 1; }
+message TeamWithMembersResponse { string json = 1; }
+
+message CreateTeamRequest {
+  string tenant_id = 1; string name = 2;
+  optional string manager_user_id = 3; optional double monthly_target = 4;
+}
+
+message UpdateTeamRequest {
+  string tenant_id = 1; string id = 2;
+  optional string name = 3; optional string manager_user_id = 4; optional double monthly_target = 5;
+}
+
+message AddMemberRequest {
+  string tenant_id = 1; string team_id = 2; string user_id = 3;
+}
+
+message RemoveMemberRequest {
+  string tenant_id = 1; string team_id = 2; string user_id = 3;
+}
+
+message SetQuotaRequest {
+  string tenant_id = 1; string team_id = 2; string user_id = 3;
+  int32 period_month = 4; int32 period_year = 5; double target_amount = 6;
+}
+
+message UpdateAchievedRequest {
+  string tenant_id = 1; string quota_id = 2; double achieved_amount = 3;
+}
+
+message ListTeamsRequest {
+  string tenant_id = 1; optional string search = 2; optional string cursor = 3; optional int32 limit = 4;
+}
+
+message ListQuotasRequest {
+  string tenant_id = 1; string team_id = 2;
+  optional int32 period_month = 3; optional int32 period_year = 4;
+}
+
+service SalesTeamService {
+  rpc CreateTeam(CreateTeamRequest) returns (TeamResponse);
+  rpc GetTeam(crm.common.IdRequest) returns (TeamWithMembersResponse);
+  rpc ListTeams(ListTeamsRequest) returns (crm.common.PaginatedResponse);
+  rpc UpdateTeam(UpdateTeamRequest) returns (crm.common.Empty);
+  rpc DeleteTeam(crm.common.IdRequest) returns (crm.common.Empty);
+  rpc AddMember(AddMemberRequest) returns (crm.common.Empty);
+  rpc RemoveMember(RemoveMemberRequest) returns (crm.common.Empty);
+  rpc ListMembers(crm.common.IdRequest) returns (crm.common.PaginatedResponse);
+  rpc SetQuota(SetQuotaRequest) returns (QuotaResponse);
+  rpc GetQuota(crm.common.IdRequest) returns (QuotaResponse);
+  rpc ListQuotas(ListQuotasRequest) returns (crm.common.PaginatedResponse);
+  rpc UpdateAchieved(UpdateAchievedRequest) returns (crm.common.Empty);
+}

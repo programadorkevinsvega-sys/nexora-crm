@@ -1,0 +1,158 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  /* Linear Design Dynamic Color Tokens */
+  --color-void: var(--background);
+  --color-carbon: var(--card);
+  --color-obsidian: var(--obsidian);
+  --color-graphite: var(--graphite);
+  --color-smoke: var(--smoke);
+  --color-ash: var(--ash);
+  --color-fog: var(--fog);
+  --color-mist: var(--mist);
+  --color-bone: var(--bone);
+  --color-paper: var(--paper);
+  --color-acid-lime: #e4f222;
+  --color-pulse-green: #27a644;
+  --color-coral-red: #eb5757;
+  --color-signal-teal: #02b8cc;
+  --color-iris-violet: #6366f1;
+  --color-lavender: #8b5cf6;
+
+  /* Fonts */
+  --font-sans: var(--font-inter), 'Inter Variable', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-mono-jb), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Shadows (Linear system — hairline borders, not ambient shadows) */
+  --shadow-sm: rgba(0, 0, 0, 0.05) 0px 1px 2px 0px;
+  --shadow-subtle: rgb(35, 37, 42) 0px 0px 0px 1px inset;
+  --shadow-xl: rgba(8, 9, 10, 0.6) 0px 4px 32px 0px;
+
+  /* shadcn token mapping */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+}
+
+:root, .dark, html.dark {
+  color-scheme: dark;
+  --background: #08090a;
+  --foreground: #d0d6e0;
+  --card: #0f1011;
+  --card-foreground: #d0d6e0;
+  --popover: #161718;
+  --popover-foreground: #d0d6e0;
+  --primary: #e4f222;
+  --primary-foreground: #08090a;
+  --secondary: #161718;
+  --secondary-foreground: #d0d6e0;
+  --muted: #23252a;
+  --muted-foreground: #8a8f98;
+  --accent: #23252a;
+  --accent-foreground: #d0d6e0;
+  --destructive: #eb5757;
+  --border: #23252a;
+  --input: #161718;
+  --ring: #e4f222;
+  --radius: 0.375rem;
+
+  /* Linear color palette tokens for Dark mode */
+  --paper: #ffffff;
+  --bone: #e5e5e6;
+  --mist: #d0d6e0;
+  --fog: #8a8f98;
+  --ash: #62666d;
+  --smoke: #383b3f;
+  --graphite: #23252a;
+  --obsidian: #161718;
+}
+
+.light, html.light, :root.light {
+  color-scheme: light;
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #0f172a;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #f1f5f9;
+  --accent-foreground: #0f172a;
+  --destructive: #dc2626;
+  --border: #e2e8f0;
+  --input: #ffffff;
+  --ring: #0f172a;
+
+  /* Linear color palette tokens for Light mode */
+  --paper: #0f172a;
+  --bone: #1e293b;
+  --mist: #1e293b;
+  --fog: #475569;
+  --ash: #64748b;
+  --smoke: #cbd5e1;
+  --graphite: #e2e8f0;
+  --obsidian: #f1f5f9;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: 'cv01' on, 'ss03' on, 'zero' on;
+  }
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted-foreground); }
+
+/* Linear precision utilities */
+.linear-card {
+  background: var(--card);
+  color: var(--card-foreground);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+.linear-card-elevated {
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+.linear-surface {
+  background: var(--popover);
+  color: var(--popover-foreground);
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}

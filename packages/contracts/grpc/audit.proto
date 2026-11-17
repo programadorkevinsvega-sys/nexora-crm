@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+package crm.audit;
+
+option go_package = "github.com/ultra-erp/crm/grpc/audit";
+
+import "common.proto";
+
+message AuditLogResponse { string json = 1; }
+
+message ListAuditLogsRequest {
+  optional string tenant_id = 1;
+  optional string entity_type = 2;
+  optional string entity_id = 3;
+  optional string action = 4;
+  optional string module_name = 5;
+  optional string user_id = 6;
+  optional string from_date = 7;
+  optional string to_date = 8;
+  optional string cursor = 9;
+  optional int32 limit = 10;
+}
+
+message CreateAuditLogRequest {
+  optional string tenant_id = 1;
+  string entity_type = 2;
+  string entity_id = 3;
+  string action = 4;
+  optional string field_name = 5;
+  optional string old_value = 6;
+  optional string new_value = 7;
+  optional string changed_by_user_id = 8;
+  optional string module_name = 9;
+  optional string correlation_id = 10;
+  optional string ip_address = 11;
+  optional string user_agent = 12;
+  optional string metadata_json = 13;
+}
+
+message EntityAuditSummaryResponse { string json = 1; }
+
+message GetEntityAuditRequest {
+  string entity_type = 1;
+  string entity_id = 2;
+  optional string tenant_id = 3;
+}
+
+message GetEntityAuditSummaryRequest {
+  string entity_type = 1;
+  string entity_id = 2;
+  optional string tenant_id = 3;
+}
+
+message GetAuditStatsRequest {
+  optional string tenant_id = 1;
+  optional string from_date = 2;
+  optional string to_date = 3;
+}
+
+message GetAuditModuleStatsRequest {
+  optional string tenant_id = 1;
+  optional string from_date = 2;
+  optional string to_date = 3;
+}
+
+service AuditService {
+  rpc ListAuditLogs(ListAuditLogsRequest) returns (crm.common.PaginatedResponse);
+  rpc GetAuditLog(crm.common.IdRequest) returns (AuditLogResponse);
+  rpc CreateAuditLog(CreateAuditLogRequest) returns (AuditLogResponse);
+  rpc GetEntityAudit(GetEntityAuditRequest) returns (crm.common.PaginatedResponse);
+  rpc GetEntityAuditSummary(GetEntityAuditSummaryRequest) returns (AuditLogResponse);
+  rpc GetAuditStats(GetAuditStatsRequest) returns (AuditLogResponse);
+  rpc GetAuditModuleStats(GetAuditModuleStatsRequest) returns (AuditLogResponse);
+}

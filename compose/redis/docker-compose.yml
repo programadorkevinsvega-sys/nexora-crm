@@ -1,0 +1,40 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: crm-redis
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      REDIS_PASSWORD: "${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}"
+    command:
+      - sh
+      - -c
+      - 'exec redis-server --requirepass "$$REDIS_PASSWORD"'
+    ports:
+      - "10.0.2.65:6379:6379"
+      - "100.88.251.53:6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "REDISCLI_AUTH=\"$$REDIS_PASSWORD\" redis-cli ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redisinsight:
+    image: redis/redisinsight:latest
+    container_name: crm-redisinsight
+    restart: unless-stopped
+    ports:
+      - "10.0.2.65:${REDISINSIGHT_PORT:-5540}:5540"
+      - "100.88.251.53:${REDISINSIGHT_PORT:-5540}:5540"
+    volumes:
+      - redisinsight_data:/data
+    depends_on:
+      redis:
+        condition: service_healthy
+
+volumes:
+  redis_data:
+  redisinsight_data:

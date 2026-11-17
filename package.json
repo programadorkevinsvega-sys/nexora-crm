@@ -1,0 +1,38 @@
+{
+  "name": "crm-service",
+  "private": true,
+  "scripts": {
+    "dev": "NODE_NO_WARNINGS=1 turbo run dev --concurrency=20",
+    "dev:api": "NODE_NO_WARNINGS=1 turbo run dev --filter=api",
+    "dev:bff": "NODE_NO_WARNINGS=1 turbo run dev --filter=bff",
+    "start": "NODE_ENV=production turbo run start --concurrency=20",
+    "start:api": "NODE_ENV=production turbo run start --filter=api",
+    "start:bff": "NODE_ENV=production turbo run start --filter=bff",
+    "build": "turbo run build",
+    "build:api": "turbo run build --filter=api",
+    "build:bff": "turbo run build --filter=bff",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "test:api": "turbo run test --filter=api",
+    "db:generate": "turbo run db:generate --filter=@crm/database",
+    "db:push": "turbo run db:push --filter=@crm/database",
+    "db:seed": "turbo run db:seed --filter=@crm/database",
+    "db:migrate": "turbo run db:migrate --filter=@crm/database",
+    "db:truncate": "turbo run db:truncate --filter=@crm/database",
+    "db:studio": "turbo run db:studio --filter=@crm/database",
+    "audit": "pnpm audit"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.0",
+    "typescript": "^5.4.0",
+    "turbo": "^2.0.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@12.21.0"
+}
