@@ -1,34 +1,23 @@
 import type {
   DiscountApprovalRule,
-  CreateDiscountApprovalRuleDto,
   QuoteApprovalRequest,
   RequestQuoteApprovalDto,
   CustomerQuoteAcceptance,
   SubmitCustomerQuoteAcceptanceDto,
 } from '@crm/contracts'
+import { api } from '../../api/api-client'
 
 export class ApiQuotesApprovalRepository {
   static async listRules(): Promise<DiscountApprovalRule[]> {
-    const res = await fetch('/api/quotes-approval/rules', { credentials: 'include' })
-    if (!res.ok) throw new Error('Error al listar reglas de descuento')
-    return res.json()
+    return api.get<DiscountApprovalRule[]>('/api/quotes-approval/rules')
   }
 
   static async listRequests(): Promise<QuoteApprovalRequest[]> {
-    const res = await fetch('/api/quotes-approval/requests', { credentials: 'include' })
-    if (!res.ok) throw new Error('Error al listar solicitudes de aprobación')
-    return res.json()
+    return api.get<QuoteApprovalRequest[]>('/api/quotes-approval/requests')
   }
 
   static async requestApproval(dto: RequestQuoteApprovalDto): Promise<QuoteApprovalRequest> {
-    const res = await fetch('/api/quotes-approval/request', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify(dto),
-    })
-    if (!res.ok) throw new Error('Error al solicitar aprobación')
-    return res.json()
+    return api.post<QuoteApprovalRequest>('/api/quotes-approval/request', dto)
   }
 
   static async reviewApproval(
@@ -36,23 +25,11 @@ export class ApiQuotesApprovalRepository {
     status: 'APPROVED' | 'REJECTED',
     notes?: string,
   ): Promise<QuoteApprovalRequest> {
-    const res = await fetch(`/api/quotes-approval/requests/${requestId}/review`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ status, notes }),
-    })
-    if (!res.ok) throw new Error('Error al evaluar aprobación')
-    return res.json()
+    return api.post<QuoteApprovalRequest>(`/api/quotes-approval/requests/${requestId}/review`, { status, notes })
   }
 
   static async generateToken(quoteId: string): Promise<CustomerQuoteAcceptance> {
-    const res = await fetch(`/api/quotes-approval/quotes/${quoteId}/token`, {
-      method: 'POST',
-      credentials: 'include',
-    })
-    if (!res.ok) throw new Error('Error al generar enlace público de cotización')
-    return res.json()
+    return api.post<CustomerQuoteAcceptance>(`/api/quotes-approval/quotes/${quoteId}/token`)
   }
 
   static async getPublicQuote(token: string): Promise<CustomerQuoteAcceptance> {

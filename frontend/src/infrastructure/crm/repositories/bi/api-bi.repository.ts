@@ -1,31 +1,17 @@
 import type { BiReport, CreateBiReportDto } from '@crm/contracts'
+import { api } from '../../api/api-client'
 
 export class ApiBiRepository {
   static async listReports(): Promise<BiReport[]> {
-    const res = await fetch('/api/bi/reports', {
-      credentials: 'include',
-    })
-    if (!res.ok) throw new Error('Error al obtener reportes de Power BI')
-    return res.json()
+    return api.get<BiReport[]>('/api/bi/reports')
   }
 
   static async createReport(dto: CreateBiReportDto): Promise<BiReport> {
-    const res = await fetch('/api/bi/reports', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify(dto),
-    })
-    if (!res.ok) throw new Error('Error al conectar reporte de Power BI')
-    return res.json()
+    return api.post<BiReport>('/api/bi/reports', dto)
   }
 
   static async deleteReport(id: string): Promise<void> {
-    const res = await fetch(`/api/bi/reports/${id}`, {
-      method: 'DELETE',
-      credentials: 'include',
-    })
-    if (!res.ok) throw new Error('Error al eliminar reporte de Power BI')
+    await api.delete<void>(`/api/bi/reports/${id}`)
   }
 
   static getDataFeedUrl(entity: string): string {

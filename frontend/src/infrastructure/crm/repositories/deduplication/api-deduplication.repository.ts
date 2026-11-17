@@ -6,47 +6,26 @@ import type {
   DeduplicationAuditLog,
   DeduplicationEntityType,
 } from '@crm/contracts'
+import { api, qs } from '../../api/api-client'
 
 export class ApiDeduplicationRepository {
   static async listRules(): Promise<DeduplicationRule[]> {
-    const res = await fetch('/api/deduplication/rules', { credentials: 'include' })
-    if (!res.ok) throw new Error('Error al listar reglas de deduplicación')
-    return res.json()
+    return api.get<DeduplicationRule[]>('/api/deduplication/rules')
   }
 
   static async createRule(dto: CreateDeduplicationRuleDto): Promise<DeduplicationRule> {
-    const res = await fetch('/api/deduplication/rules', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify(dto),
-    })
-    if (!res.ok) throw new Error('Error al crear regla de deduplicación')
-    return res.json()
+    return api.post<DeduplicationRule>('/api/deduplication/rules', dto)
   }
 
   static async scanDuplicates(entityType: DeduplicationEntityType): Promise<DuplicateGroup[]> {
-    const res = await fetch(`/api/deduplication/scan?entityType=${entityType}`, {
-      credentials: 'include',
-    })
-    if (!res.ok) throw new Error('Error al escanear duplicados')
-    return res.json()
+    return api.get<DuplicateGroup[]>(`/api/deduplication/scan${qs({ entityType })}`)
   }
 
   static async mergeRecords(dto: MergeRecordsDto): Promise<DeduplicationAuditLog> {
-    const res = await fetch('/api/deduplication/merge', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify(dto),
-    })
-    if (!res.ok) throw new Error('Error al fusionar registros')
-    return res.json()
+    return api.post<DeduplicationAuditLog>('/api/deduplication/merge', dto)
   }
 
   static async listAuditLogs(): Promise<DeduplicationAuditLog[]> {
-    const res = await fetch('/api/deduplication/audit-logs', { credentials: 'include' })
-    if (!res.ok) throw new Error('Error al listar auditorías de merge')
-    return res.json()
+    return api.get<DeduplicationAuditLog[]>('/api/deduplication/audit-logs')
   }
 }
