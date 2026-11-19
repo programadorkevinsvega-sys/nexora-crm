@@ -72,7 +72,7 @@ export class CustomerPortalBffService {
     const identity = resolveCustomerPortalIdentity(user)
     await this.assertContactBelongsToTenant(identity.tenantId, identity.contactId)
 
-    const [overview, ticketsPage, quoteRows] = await Promise.all([
+    const [overview, ticketsPage, quoteRows, categories, publishedArticles] = await Promise.all([
       this.api.getCustomerPortalOverview(identity.tenantId, identity.contactId),
       this.api.listTickets({
         tenantId: identity.tenantId,
@@ -100,10 +100,19 @@ export class CustomerPortalBffService {
         ))
         .orderBy(desc(quotes.createdAt))
         .limit(50),
+      this.api.listKbCategories(identity.tenantId),
+      this.api.listKbArticles(identity.tenantId, { publicOnly: true }),
     ])
 
+    const publicCategoryIds = new Set(
+      categories.filter((category) => category.isPublic).map((category) => category.id),
+    )
+    const publicFeaturedArticles = publishedArticles
+      .filter((article) => !article.categoryId || publicCategoryIds.has(article.categoryId))
+      .slice(0, 4)
+
     return {
-      overview,
+      overview: { ...overview, featuredArticles: publicFeaturedArticles },
       tickets: ticketsPage.data.map((ticket) => this.toPortalTicket(ticket)),
       quotes: quoteRows.map((quote) => ({
         ...quote,
