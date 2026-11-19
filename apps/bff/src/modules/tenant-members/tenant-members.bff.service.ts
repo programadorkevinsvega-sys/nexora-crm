@@ -19,6 +19,7 @@ interface IamGrpcService {
   listRoles(data: { tenantId: string; cursor?: string; limit?: number }): Observable<{ jsonItems: string[]; nextCursor?: string }>
   listUserRoles(data: { tenantId: string; userId: string }): Observable<{ jsonItems: string[] }>
   assignRole(data: { tenantId: string; userId: string; roleId: string; branchId?: string }): Observable<Record<string, never>>
+  replaceUserRole(data: { tenantId: string; userId: string; roleId: string; branchId?: string }): Observable<Record<string, never>>
   removeRole(data: { tenantId: string; userId: string; roleId: string }): Observable<Record<string, never>>
 }
 
@@ -170,14 +171,11 @@ export class TenantMembersBffService implements OnModuleInit {
       }
     }
 
-    // Add the new role before removing old assignments. A transient failure can
-    // leave extra permissions, never an unassigned account with no recovery path.
-    await lastValueFrom(this.iam.assignRole({ tenantId, userId: memberId, roleId: requestedRole.id }))
-    for (const assignment of currentAssignments) {
-      if (assignment.roleId !== requestedRole.id) {
-        await lastValueFrom(this.iam.removeRole({ tenantId, userId: memberId, roleId: assignment.roleId }))
-      }
-    }
+    await lastValueFrom(this.iam.replaceUserRole({
+      tenantId,
+      userId: memberId,
+      roleId: requestedRole.id,
+    }))
 
     const refreshed = await this.listMembers(tenantId, undefined, undefined, 100)
     return refreshed.data.find((member) => member.id === memberId) ?? { id: memberId, roles: [{ id: requestedRole.id, name: requestedRole.name }] }
