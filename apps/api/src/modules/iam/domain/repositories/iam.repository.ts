@@ -34,6 +34,7 @@ export abstract class IamRepository {
   abstract findUserRoles(tenantId: string, userId: string): Promise<UserRole[]>
   abstract findUserPermissions(tenantId: string, userId: string): Promise<Permission[]>
   abstract assignRoleToUser(assignment: UserRole): Promise<void>
+  abstract replaceRolesForUser(tenantId: string, userId: string, assignment: UserRole): Promise<UserRole[]>
   abstract removeRoleFromUser(tenantId: string, userId: string, roleId: string): Promise<void>
 
   // Policy evaluation

@@ -7,7 +7,7 @@ import {
   CreateRoleCommand, UpdateRoleCommand, DeleteRoleCommand,
   CreatePermissionCommand,
   AssignPermissionCommand, RemovePermissionCommand,
-  AssignRoleCommand, RemoveRoleCommand,
+  AssignRoleCommand, RemoveRoleCommand, ReplaceUserRoleCommand,
 } from './iam.commands'
 import {
   RoleCreatedEvent, RoleUpdatedEvent, RoleDeletedEvent,
@@ -15,6 +15,7 @@ import {
   UserRoleAssignedEvent, UserRoleRemovedEvent,
 } from '../../domain/events/iam.events'
 import { OutboxService } from '../../../../common/outbox/outbox.service'
+import { UserRepository } from '../../../users/domain/repositories/user.repository'
 
 @Injectable()
 export class CreateRoleHandler {
@@ -48,7 +49,7 @@ export class UpdateRoleHandler {
 
   async execute(command: UpdateRoleCommand): Promise<Role> {
     const role = await this.repo.findRoleById(command.id)
-    if (!role) throw new NotFoundException('Role not found')
+    if (!role || role.tenantId !== command.tenantId) throw new NotFoundException('Role not found')
 
     const updated = role.update({ name: command.name, description: command.description })
     await this.repo.saveRole(updated)
@@ -66,7 +67,7 @@ export class DeleteRoleHandler {
 
   async execute(command: DeleteRoleCommand): Promise<void> {
     const role = await this.repo.findRoleById(command.id)
-    if (!role) throw new NotFoundException('Role not found')
+    if (!role || role.tenantId !== command.tenantId) throw new NotFoundException('Role not found')
     if (role.isSystemRole) throw new BadRequestException('Cannot delete system role')
 
     await this.repo.deleteRole(command.tenantId, command.id)
@@ -129,12 +130,17 @@ export class RemovePermissionHandler {
 export class AssignRoleHandler {
   constructor(
     private readonly repo: IamRepository,
+    private readonly users: UserRepository,
     private readonly outbox: OutboxService,
   ) {}
 
   async execute(command: AssignRoleCommand): Promise<void> {
     const role = await this.repo.findRoleById(command.roleId)
-    if (!role) throw new NotFoundException('Role not found')
+    if (!role || role.tenantId !== command.tenantId) throw new NotFoundException('Role not found')
+    if (role.name === 'super_admin') throw new BadRequestException('The platform administrator role cannot be assigned to tenant users')
+
+    const user = await this.users.findById(command.tenantId, command.userId)
+    if (!user) throw new NotFoundException('User not found')
 
     const assignment = UserRole.create({
       userId: command.userId,
@@ -151,13 +157,64 @@ export class AssignRoleHandler {
 }
 
 @Injectable()
+export class ReplaceUserRoleHandler {
+  constructor(
+    private readonly repo: IamRepository,
+    private readonly users: UserRepository,
+    private readonly outbox: OutboxService,
+  ) {}
+
+  async execute(command: ReplaceUserRoleCommand): Promise<void> {
+    const role = await this.repo.findRoleById(command.roleId)
+    if (!role || role.tenantId !== command.tenantId) throw new NotFoundException('Role not found')
+    if (role.name.toLowerCase() === 'super_admin') {
+      throw new BadRequestException('The platform administrator role cannot be assigned to tenant users')
+    }
+
+    const user = await this.users.findById(command.tenantId, command.userId)
+    if (!user) throw new NotFoundException('User not found')
+
+    const assignment = UserRole.create({
+      userId: command.userId,
+      roleId: command.roleId,
+      tenantId: command.tenantId,
+      branchId: command.branchId,
+    })
+    const previous = await this.repo.replaceRolesForUser(command.tenantId, command.userId, assignment)
+
+    for (const existing of previous) {
+      if (existing.roleId !== command.roleId) {
+        await this.outbox.publish(new UserRoleRemovedEvent(
+          `${command.userId}:${existing.roleId}`,
+          command.tenantId,
+          command.userId,
+          existing.roleId,
+        ))
+      }
+    }
+    await this.outbox.publish(new UserRoleAssignedEvent(
+      `${command.userId}:${command.roleId}`,
+      command.tenantId,
+      command.userId,
+      command.roleId,
+    ))
+  }
+}
+
+@Injectable()
 export class RemoveRoleHandler {
   constructor(
     private readonly repo: IamRepository,
+    private readonly users: UserRepository,
     private readonly outbox: OutboxService,
   ) {}
 
   async execute(command: RemoveRoleCommand): Promise<void> {
+    const role = await this.repo.findRoleById(command.roleId)
+    if (!role || role.tenantId !== command.tenantId) throw new NotFoundException('Role not found')
+    const user = await this.users.findById(command.tenantId, command.userId)
+    if (!user) throw new NotFoundException('User not found')
+
     await this.repo.removeRoleFromUser(command.tenantId, command.userId, command.roleId)
     await this.outbox.publish(new UserRoleRemovedEvent(
       `${command.userId}:${command.roleId}`, command.tenantId, command.userId, command.roleId,

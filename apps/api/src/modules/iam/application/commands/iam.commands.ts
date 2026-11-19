@@ -53,6 +53,15 @@ export class AssignRoleCommand {
   ) {}
 }
 
+export class ReplaceUserRoleCommand {
+  constructor(
+    readonly tenantId: string,
+    readonly userId: string,
+    readonly roleId: string,
+    readonly branchId?: string,
+  ) {}
+}
+
 export class RemoveRoleCommand {
   constructor(
     readonly tenantId: string,
