@@ -13,7 +13,6 @@ import type {
   KnowledgeBaseArticle,
   CreateKnowledgeBaseArticle,
   VoteArticle,
-  CustomerPortalOverview,
 } from '@crm/contracts'
 
 @ApiTags('Base de Conocimiento (Knowledge Base & RAG)')
