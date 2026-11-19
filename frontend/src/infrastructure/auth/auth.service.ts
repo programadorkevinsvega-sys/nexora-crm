@@ -88,7 +88,7 @@ export const AuthService = {
     if (companyName) sessionStorage.setItem("crm_company_name", companyName)
 
     return { token, tenantId, userId, userName, userEmail, companyName, userRole }
-  }
+  },
 
   async logout(): Promise<void> {
     await fetch("/api/auth/logout", {
