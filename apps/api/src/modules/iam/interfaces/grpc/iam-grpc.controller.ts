@@ -5,7 +5,7 @@ import {
   CreateRoleHandler, UpdateRoleHandler, DeleteRoleHandler,
   CreatePermissionHandler,
   AssignPermissionHandler, RemovePermissionHandler,
-  AssignRoleHandler, RemoveRoleHandler,
+  AssignRoleHandler, RemoveRoleHandler, ReplaceUserRoleHandler,
 } from '../../application/commands/iam.handlers'
 import {
   GetRoleHandler, ListRolesHandler,
@@ -16,7 +16,7 @@ import {
   CreateRoleCommand, UpdateRoleCommand, DeleteRoleCommand,
   CreatePermissionCommand,
   AssignPermissionCommand, RemovePermissionCommand,
-  AssignRoleCommand, RemoveRoleCommand,
+  AssignRoleCommand, RemoveRoleCommand, ReplaceUserRoleCommand,
 } from '../../application/commands/iam.commands'
 import {
   GetRoleQuery, ListRolesQuery,
@@ -40,6 +40,7 @@ export class IamGrpcController {
     private readonly listRolePermissionsHandler: ListRolePermissionsHandler,
     private readonly assignRoleHandler: AssignRoleHandler,
     private readonly removeRoleHandler: RemoveRoleHandler,
+    private readonly replaceUserRoleHandler: ReplaceUserRoleHandler,
     private readonly listUserRolesHandler: ListUserRolesHandler,
     private readonly checkPermissionHandler: CheckPermissionHandler,
     private readonly getUserPermissionsHandler: GetUserPermissionsHandler,
@@ -140,6 +141,14 @@ export class IamGrpcController {
   async removeRole(data: { tenantId: string; userId: string; roleId: string }) {
     await this.removeRoleHandler.execute(
       new RemoveRoleCommand(data.tenantId, data.userId, data.roleId),
+    )
+    return {}
+  }
+
+  @GrpcMethod('IamService', 'ReplaceUserRole')
+  async replaceUserRole(data: any) {
+    await this.replaceUserRoleHandler.execute(
+      new ReplaceUserRoleCommand(data.tenantId, data.userId, data.roleId, data.branchId),
     )
     return {}
   }
