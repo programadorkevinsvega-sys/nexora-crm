@@ -7,7 +7,7 @@ import {
   CreateRoleCommand, UpdateRoleCommand, DeleteRoleCommand,
   CreatePermissionCommand,
   AssignPermissionCommand, RemovePermissionCommand,
-  AssignRoleCommand, RemoveRoleCommand,
+  AssignRoleCommand, RemoveRoleCommand, ReplaceUserRoleCommand,
 } from './iam.commands'
 import {
   RoleCreatedEvent, RoleUpdatedEvent, RoleDeletedEvent,
@@ -152,6 +152,51 @@ export class AssignRoleHandler {
     await this.repo.assignRoleToUser(assignment)
     await this.outbox.publish(new UserRoleAssignedEvent(
       `${command.userId}:${command.roleId}`, command.tenantId, command.userId, command.roleId,
+    ))
+  }
+}
+
+@Injectable()
+export class ReplaceUserRoleHandler {
+  constructor(
+    private readonly repo: IamRepository,
+    private readonly users: UserRepository,
+    private readonly outbox: OutboxService,
+  ) {}
+
+  async execute(command: ReplaceUserRoleCommand): Promise<void> {
+    const role = await this.repo.findRoleById(command.roleId)
+    if (!role || role.tenantId !== command.tenantId) throw new NotFoundException('Role not found')
+    if (role.name.toLowerCase() === 'super_admin') {
+      throw new BadRequestException('The platform administrator role cannot be assigned to tenant users')
+    }
+
+    const user = await this.users.findById(command.tenantId, command.userId)
+    if (!user) throw new NotFoundException('User not found')
+
+    const assignment = UserRole.create({
+      userId: command.userId,
+      roleId: command.roleId,
+      tenantId: command.tenantId,
+      branchId: command.branchId,
+    })
+    const previous = await this.repo.replaceRolesForUser(command.tenantId, command.userId, assignment)
+
+    for (const existing of previous) {
+      if (existing.roleId !== command.roleId) {
+        await this.outbox.publish(new UserRoleRemovedEvent(
+          `${command.userId}:${existing.roleId}`,
+          command.tenantId,
+          command.userId,
+          existing.roleId,
+        ))
+      }
+    }
+    await this.outbox.publish(new UserRoleAssignedEvent(
+      `${command.userId}:${command.roleId}`,
+      command.tenantId,
+      command.userId,
+      command.roleId,
     ))
   }
 }
