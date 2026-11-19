@@ -118,7 +118,8 @@ export class TenantMembersBffService implements OnModuleInit {
   }
 
   async listAssignableRoles(tenantId: string) {
-    return this.getRoles(tenantId).map((role) => ({
+    const roles = await this.getRoles(tenantId)
+    return roles.map((role) => ({
       id: role.id,
       name: role.name,
       description: role.description ?? null,
