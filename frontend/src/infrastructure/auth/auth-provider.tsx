@@ -34,7 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const token = sessionStorage.getItem("crm_token")
     const tenantId = sessionStorage.getItem("crm_tenant_id")
     const userId = sessionStorage.getItem("crm_user_id")
-    const userRole = sessionStorage.getItem("crm_user_role") ?? "admin"
+    const userRole = sessionStorage.getItem("crm_user_role") ?? undefined
     const userName = sessionStorage.getItem("crm_user_name") ?? undefined
     const userEmail = sessionStorage.getItem("crm_user_email") ?? undefined
     const companyName = sessionStorage.getItem("crm_company_name") ?? undefined
@@ -70,6 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     sessionStorage.setItem("crm_tenant_id", s.tenantId)
     sessionStorage.setItem("crm_user_id", s.userId)
     if (s.userRole) sessionStorage.setItem("crm_user_role", s.userRole)
+    else sessionStorage.removeItem("crm_user_role")
     if (s.userName) sessionStorage.setItem("crm_user_name", s.userName)
     if (s.userEmail) sessionStorage.setItem("crm_user_email", s.userEmail)
     if (s.companyName) sessionStorage.setItem("crm_company_name", s.companyName)
