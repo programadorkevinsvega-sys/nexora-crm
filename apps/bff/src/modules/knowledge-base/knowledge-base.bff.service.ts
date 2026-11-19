@@ -6,7 +6,6 @@ import type {
   CreateKnowledgeBaseCategory,
   KnowledgeBaseArticle,
   CreateKnowledgeBaseArticle,
-  CustomerPortalOverview,
 } from '@crm/contracts'
 
 const CACHE_TTL_MS = 20_000
@@ -68,10 +67,4 @@ export class KnowledgeBaseBffService {
     return this.api.voteKbArticle({ tenantId, articleId, isHelpful })
   }
 
-  async getPortalOverview(
-    contactId: string,
-    tenantId: string = '00000000-0000-0000-0000-000000000001',
-  ): Promise<CustomerPortalOverview> {
-    return this.api.getCustomerPortalOverview(tenantId, contactId)
-  }
 }

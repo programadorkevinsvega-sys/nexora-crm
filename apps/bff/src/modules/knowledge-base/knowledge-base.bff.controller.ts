@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Query, Body, Headers, ParseUUIDPipe } from '@nestjs/common'
+import { Controller, Get, Post, Param, Query, Body, Headers, ParseUUIDPipe, NotFoundException } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiBody, ApiParam, ApiQuery, ApiHeader } from '@nestjs/swagger'
 import { KnowledgeBaseBffService } from './knowledge-base.bff.service'
 import {
@@ -7,13 +7,13 @@ import {
   VoteArticleSchema,
 } from '@crm/contracts'
 import { createZodPipe } from '../../common/pipes/zod-validation.pipe'
+import { CurrentUser, AuthenticatedUser } from '../../common/decorators/current-user.decorator'
 import type {
   KnowledgeBaseCategory,
   CreateKnowledgeBaseCategory,
   KnowledgeBaseArticle,
   CreateKnowledgeBaseArticle,
   VoteArticle,
-  CustomerPortalOverview,
 } from '@crm/contracts'
 
 @ApiTags('Base de Conocimiento (Knowledge Base & RAG)')
@@ -24,8 +24,14 @@ export class KnowledgeBaseBffController {
 
   @Get('categories')
   @ApiOperation({ summary: 'Listar categorías de la base de conocimiento' })
-  async listCategories(@Headers('X-Tenant-Id') tenantId?: string): Promise<KnowledgeBaseCategory[]> {
-    return this.service.listCategories(tenantId || '00000000-0000-0000-0000-000000000001')
+  async listCategories(
+    @Headers('X-Tenant-Id') tenantId?: string,
+    @CurrentUser() user?: AuthenticatedUser,
+  ): Promise<KnowledgeBaseCategory[]> {
+    const categories = await this.service.listCategories(tenantId || '00000000-0000-0000-0000-000000000001')
+    return user?.customerPortal === true
+      ? categories.filter((category) => category.isPublic)
+      : categories
   }
 
   @Post('categories')
@@ -57,10 +63,26 @@ export class KnowledgeBaseBffController {
     @Query('query') query?: string,
     @Query('publicOnly') publicOnly?: string,
     @Headers('X-Tenant-Id') tenantId?: string,
+    @CurrentUser() user?: AuthenticatedUser,
   ): Promise<KnowledgeBaseArticle[]> {
-    return this.service.listArticles(
-      { categoryId, query, publicOnly: publicOnly !== 'false' },
-      tenantId || '00000000-0000-0000-0000-000000000001',
+    const resolvedTenantId = tenantId || '00000000-0000-0000-0000-000000000001'
+    const articles = await this.service.listArticles(
+      {
+        categoryId,
+        query,
+        publicOnly: user?.customerPortal === true ? true : publicOnly !== 'false',
+      },
+      resolvedTenantId,
+    )
+
+    if (user?.customerPortal !== true || articles.length === 0) return articles
+
+    const categories = await this.service.listCategories(resolvedTenantId)
+    const publicCategoryIds = new Set(
+      categories.filter((category) => category.isPublic).map((category) => category.id),
+    )
+    return articles.filter((article) =>
+      !article.categoryId || publicCategoryIds.has(article.categoryId),
     )
   }
 
@@ -70,8 +92,26 @@ export class KnowledgeBaseBffController {
   async getArticle(
     @Param('idOrSlug') idOrSlug: string,
     @Headers('X-Tenant-Id') tenantId?: string,
+    @CurrentUser() user?: AuthenticatedUser,
   ): Promise<KnowledgeBaseArticle> {
-    return this.service.getArticle(idOrSlug, tenantId || '00000000-0000-0000-0000-000000000001')
+    const article = await this.service.getArticle(
+      idOrSlug,
+      tenantId || '00000000-0000-0000-0000-000000000001',
+    )
+    if (user?.customerPortal === true) {
+      if (!article.isPublished) {
+        throw new NotFoundException('Artículo no encontrado')
+      }
+      if (article.categoryId) {
+        const categories = await this.service.listCategories(
+          tenantId || '00000000-0000-0000-0000-000000000001',
+        )
+        if (!categories.some((category) => category.id === article.categoryId && category.isPublic)) {
+          throw new NotFoundException('Artículo no encontrado')
+        }
+      }
+    }
+    return article
   }
 
   @Post('articles')
@@ -116,13 +156,5 @@ export class KnowledgeBaseBffController {
     return this.service.voteArticle(id, dto.isHelpful, tenantId || '00000000-0000-0000-0000-000000000001')
   }
 
-  @Get('portal/overview/:contactId')
-  @ApiOperation({ summary: 'Obtener resumen del portal del cliente con tickets y cotizaciones' })
-  @ApiParam({ name: 'contactId', description: 'UUID del contacto' })
-  async getPortalOverview(
-    @Param('contactId', ParseUUIDPipe) contactId: string,
-    @Headers('X-Tenant-Id') tenantId?: string,
-  ): Promise<CustomerPortalOverview> {
-    return this.service.getPortalOverview(contactId, tenantId || '00000000-0000-0000-0000-000000000001')
-  }
+
 }

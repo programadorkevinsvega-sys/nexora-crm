@@ -259,7 +259,7 @@ describe('DrizzleKnowledgeBaseRepository — Integration', () => {
 
   // ────────────────────────── getPortalOverview ───────────────────────────────
 
-  it('10. getPortalOverview — returns overview with ticket and contract counts', async () => {
+  it('10. getPortalOverview — returns only this contact company active contract count', async () => {
     let selectCall = 0
     mockDb.select.mockImplementation(() => {
       selectCall++
@@ -268,23 +268,28 @@ describe('DrizzleKnowledgeBaseRepository — Integration', () => {
       chain.where = jest.fn().mockReturnValue(chain)
 
       if (selectCall === 1) {
-        // contacts.select().from().where().limit()
+        // Contact identity must be scoped by both contact ID and tenant ID.
         chain.limit = jest.fn().mockResolvedValue([
-          { id: 'contact-1', firstName: 'Ana', lastName: 'García', email: 'ana@example.com', companyId: null },
+          { id: 'contact-1', firstName: 'Ana', lastName: 'García', email: 'ana@example.com', companyId: 'company-1' },
         ])
       } else if (selectCall === 2) {
-        // supportTickets — parallel Promise.all element
+        // Company lookup is also tenant-scoped.
+        chain.limit = jest.fn().mockResolvedValue([
+          { id: 'company-1', tenantId: TENANT, name: 'Empresa Ana' },
+        ])
+      } else if (selectCall === 3) {
+        // Tickets are scoped by tenant and contact.
         chain.then = (res: any) =>
           Promise.resolve([{ status: 'OPEN' }, { status: 'RESOLVED' }]).then(res)
-      } else if (selectCall === 3) {
-        // contracts — parallel Promise.all element
+      } else if (selectCall === 4) {
+        // Only ACTIVE contracts for this contact's company are requested.
         chain.then = (res: any) =>
           Promise.resolve([{ id: 'c1' }, { id: 'c2' }]).then(res)
-      } else if (selectCall === 4) {
-        // listArticles — articles query
+      } else if (selectCall === 5) {
+        // Featured published articles.
         chain.orderBy = jest.fn().mockResolvedValue([makeArticleRow()])
       } else {
-        // listArticles — categories for name mapping
+        // Category-name lookup used by the article mapper.
         chain.then = (res: any) => Promise.resolve([]).then(res)
       }
 
@@ -296,6 +301,7 @@ describe('DrizzleKnowledgeBaseRepository — Integration', () => {
     expect(result.contactId).toBe('contact-1')
     expect(result.contactName).toBe('Ana García')
     expect(result.contactEmail).toBe('ana@example.com')
+    expect(result.companyName).toBe('Empresa Ana')
     expect(result.openTicketsCount).toBe(1)
     expect(result.activeContractsCount).toBe(2)
     expect(result.featuredArticles).toHaveLength(1)
