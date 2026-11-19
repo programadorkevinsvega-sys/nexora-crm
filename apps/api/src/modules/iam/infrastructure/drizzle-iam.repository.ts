@@ -70,15 +70,25 @@ export class DrizzleIamRepository extends IamRepository {
   }
 
   async deleteRole(tenantId: string, id: string): Promise<void> {
-    await this.db.delete(rolePermissionsTable).where(
-      eq(rolePermissionsTable.roleId, id) as any,
-    )
-    await this.db.delete(userRolesTable).where(
-      eq(userRolesTable.roleId, id) as any,
-    )
-    await this.db.delete(rolesTable).where(
-      and(eq(rolesTable.tenantId, tenantId), eq(rolesTable.id, id)) as any,
-    )
+    await this.db.transaction(async (tx) => {
+      const role = await tx.query.roles.findFirst({
+        where: and(eq(rolesTable.tenantId, tenantId), eq(rolesTable.id, id)) as any,
+      })
+      if (!role) return
+
+      await tx.delete(rolePermissionsTable).where(
+        eq(rolePermissionsTable.roleId, id) as any,
+      )
+      await tx.delete(userRolesTable).where(
+        and(
+          eq(userRolesTable.tenantId, tenantId) as any,
+          eq(userRolesTable.roleId, id) as any,
+        ) as any,
+      )
+      await tx.delete(rolesTable).where(
+        and(eq(rolesTable.tenantId, tenantId), eq(rolesTable.id, id)) as any,
+      )
+    })
   }
 
   // ── Permissions ─────────────────────────────────────
@@ -155,22 +165,34 @@ export class DrizzleIamRepository extends IamRepository {
   // ── User-Role assignments ───────────────────────────
 
   async findUserRoles(tenantId: string, userId: string): Promise<UserRole[]> {
-    const rows = await this.db.query.userRoles.findMany({
-      where: and(
+    const rows = await this.db
+      .select({
+        userId: userRolesTable.userId,
+        roleId: userRolesTable.roleId,
+        tenantId: userRolesTable.tenantId,
+        branchId: userRolesTable.branchId,
+        grantedAt: userRolesTable.grantedAt,
+      })
+      .from(userRolesTable)
+      .innerJoin(rolesTable, eq(userRolesTable.roleId, rolesTable.id))
+      .where(and(
         eq(userRolesTable.tenantId, tenantId) as any,
         eq(userRolesTable.userId, userId) as any,
-      ) as any,
-    })
+        eq(rolesTable.tenantId, tenantId) as any,
+      ) as any)
     return rows.map(r => IamMapper.userRoleToDomain(r as any))
   }
 
   async findUserPermissions(tenantId: string, userId: string): Promise<Permission[]> {
-    const urRows = await this.db.query.userRoles.findMany({
-      where: and(
+    const urRows = await this.db
+      .select({ roleId: userRolesTable.roleId })
+      .from(userRolesTable)
+      .innerJoin(rolesTable, eq(userRolesTable.roleId, rolesTable.id))
+      .where(and(
         eq(userRolesTable.tenantId, tenantId) as any,
         eq(userRolesTable.userId, userId) as any,
-      ) as any,
-    })
+        eq(rolesTable.tenantId, tenantId) as any,
+      ) as any)
     if (!urRows.length) return []
 
     const roleIds = urRows.map(r => r.roleId)
