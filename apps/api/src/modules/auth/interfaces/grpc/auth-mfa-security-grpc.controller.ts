@@ -2,13 +2,13 @@
 import { Controller } from '@nestjs/common'
 import { GrpcMethod } from '@nestjs/microservices'
 import {
-  SetupMfaHandler, VerifyMfaHandler, GetRecoveryCodesHandler, RegenerateRecoveryCodesHandler,
+  SetupMfaHandler, VerifyMfaHandler, DisableMfaHandler, GetRecoveryCodesHandler, RegenerateRecoveryCodesHandler,
   UpdatePasswordPolicyHandler, CreateIpRestrictionHandler, DeleteIpRestrictionHandler,
   RevokeSessionHandler, CreateOAuthProviderHandler, DeleteOAuthProviderHandler,
 } from '../../application/commands/auth.handlers'
 import {
   GetPasswordPolicyHandler, ListSessionsHandler, ListIpRestrictionsHandler,
-  ListOAuthProvidersHandler,
+  ListOAuthProvidersHandler, ListMfaMethodsHandler,
 } from '../../application/queries/auth.handlers'
 import {
   SetupMfaCommand, VerifyMfaCommand, GetRecoveryCodesCommand, RegenerateRecoveryCodesCommand,
@@ -17,7 +17,7 @@ import {
 } from '../../application/commands/auth.commands'
 import {
   GetPasswordPolicyQuery, ListSessionsQuery, ListIpRestrictionsQuery,
-  ListOAuthProvidersQuery,
+  ListOAuthProvidersQuery, ListMfaMethodsQuery,
 } from '../../application/queries/auth.queries'
 import { AuthMapper } from '../../infrastructure/auth.mapper'
 import { validateOrThrow } from '../../../../common/validation/validate'
@@ -31,6 +31,8 @@ export class AuthMfaSecurityGrpcController {
   constructor(
     private readonly setupMfaHandler: SetupMfaHandler,
     private readonly verifyMfaHandler: VerifyMfaHandler,
+    private readonly disableMfaHandler: DisableMfaHandler,
+    private readonly listMfaMethodsHandler: ListMfaMethodsHandler,
     private readonly getRecoveryCodesHandler: GetRecoveryCodesHandler,
     private readonly regenerateRecoveryCodesHandler: RegenerateRecoveryCodesHandler,
     private readonly getPasswordPolicyHandler: GetPasswordPolicyHandler,
@@ -72,6 +74,28 @@ export class AuthMfaSecurityGrpcController {
       new VerifyMfaCommand(input.tenantId, input.userId, input.code, input.methodId),
     )
     return { json: JSON.stringify(result) }
+  }
+
+  @GrpcMethod('AuthService', 'DisableMfa')
+  async disableMfa(data: any) {
+    const input = validateOrThrow(VerifyMfaSchema, {
+      tenantId: data.tenantId,
+      userId: data.userId,
+      code: data.code,
+      methodId: data.methodId,
+    })
+    const result = await this.disableMfaHandler.execute(
+      new VerifyMfaCommand(input.tenantId, input.userId, input.code, input.methodId),
+    )
+    return { json: JSON.stringify(result) }
+  }
+
+  @GrpcMethod('AuthService', 'ListMfaMethods')
+  async listMfaMethods(data: { tenantId: string; userId: string }) {
+    const methods = await this.listMfaMethodsHandler.execute(
+      new ListMfaMethodsQuery(data.tenantId, data.userId),
+    )
+    return { jsonItems: methods.map((method) => JSON.stringify(method)) }
   }
 
   @GrpcMethod('AuthService', 'GetRecoveryCodes')

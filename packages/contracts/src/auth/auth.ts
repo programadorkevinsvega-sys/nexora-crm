@@ -13,7 +13,7 @@ export const LoginSchema = z.object({
   ipAddress: z.string().max(50).optional(),
   userAgent: z.string().optional(),
   deviceId: z.string().max(255).optional(),
-  mfaCode: z.string().max(10).optional(),
+  mfaCode: z.string().min(1).max(32).optional(),
 })
 export type LoginInput = z.infer<typeof LoginSchema>
 

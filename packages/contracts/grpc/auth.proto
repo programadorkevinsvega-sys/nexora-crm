@@ -83,6 +83,15 @@ message VerifyMfaResponse {
   string json = 1;
 }
 
+message ListMfaMethodsRequest {
+  string tenant_id = 1;
+  string user_id = 2;
+}
+
+message MfaMethodsResponse {
+  repeated string json_items = 1;
+}
+
 message GetRecoveryCodesRequest {
   string tenant_id = 1;
   string user_id = 2;
@@ -189,6 +198,8 @@ service AuthService {
 
   rpc SetupMfa(SetupMfaRequest) returns (SetupMfaResponse);
   rpc VerifyMfa(VerifyMfaRequest) returns (VerifyMfaResponse);
+  rpc DisableMfa(VerifyMfaRequest) returns (VerifyMfaResponse);
+  rpc ListMfaMethods(ListMfaMethodsRequest) returns (MfaMethodsResponse);
   rpc GetRecoveryCodes(GetRecoveryCodesRequest) returns (RecoveryCodesResponse);
   rpc RegenerateRecoveryCodes(RegenerateRecoveryCodesRequest) returns (RecoveryCodesResponse);
 

@@ -23,3 +23,10 @@ export class ListOAuthProvidersQuery {
 export class VerifyTokenQuery {
   constructor(readonly token: string) {}
 }
+
+export class ListMfaMethodsQuery {
+  constructor(
+    readonly tenantId: string,
+    readonly userId: string,
+  ) {}
+}

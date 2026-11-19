@@ -19,10 +19,9 @@ export class SetupMfaHandler {
 
   async execute(command: SetupMfaCommand) {
     const existing = await this.repo.findMfaMethodsByUser(command.tenantId, command.userId)
-    for (const m of existing) {
-      if (m.type === command.type && m.isActive) {
-        throw new ConflictError(`MFA method ${command.type} already active`)
-      }
+    const existingMethod = existing.find((method) => method.type === command.type)
+    if (existingMethod?.isActive) {
+      throw new ConflictError(`MFA method ${command.type} already active`)
     }
 
     let secret: string
@@ -37,13 +36,24 @@ export class SetupMfaHandler {
       throw new BadRequestException(`Unsupported MFA type: ${command.type}`)
     }
 
-    const method = MfaMethod.create({
-      tenantId: command.tenantId,
-      userId: command.userId,
-      type: command.type,
-      secret,
-      isPrimary: existing.length === 0,
-    })
+    const method = existingMethod
+      ? new MfaMethod(
+          existingMethod.id,
+          command.tenantId,
+          command.userId,
+          command.type,
+          secret,
+          existingMethod.isPrimary,
+          false,
+          new Date(),
+        )
+      : MfaMethod.create({
+          tenantId: command.tenantId,
+          userId: command.userId,
+          type: command.type,
+          secret,
+          isPrimary: existing.length === 0,
+        })
     await this.repo.saveMfaMethod(method)
     await this.outbox.publish(new MfaSetupEvent(command.userId, command.type))
 

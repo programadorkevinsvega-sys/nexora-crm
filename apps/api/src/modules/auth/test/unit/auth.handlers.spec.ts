@@ -83,7 +83,7 @@ describe('LoginHandler', () => {
     })
     jest.spyOn(bcrypt, 'compare').mockResolvedValue(true as never)
     mockRepo.findMfaMethodsByUser.mockResolvedValue([
-      MfaMethod.create({ tenantId: TENANT_ID, userId: USER_ID, type: 'TOTP', secret: 'secret', isPrimary: true }),
+      MfaMethod.create({ tenantId: TENANT_ID, userId: USER_ID, type: 'TOTP', secret: 'secret', isPrimary: true }).activate(),
     ])
 
     const result = await handler.execute(
@@ -91,7 +91,10 @@ describe('LoginHandler', () => {
     )
 
     expect(result.mfaRequired).toBe(true)
-    expect(result.accessToken).toBeDefined()
+    expect(result.accessToken).toBeUndefined()
+    expect(result.refreshToken).toBeUndefined()
+    expect(result.sessionId).toBeUndefined()
+    expect(mockRepo.saveSession).not.toHaveBeenCalled()
   })
 })
 
@@ -129,7 +132,7 @@ describe('MfaMethod', () => {
       secret: 'JBSWY3DPEHPK3PXP',
     })
     expect(method.type).toBe('TOTP')
-    expect(method.isActive).toBe(true)
+    expect(method.isActive).toBe(false)
     expect(method.isPrimary).toBe(false)
   })
 

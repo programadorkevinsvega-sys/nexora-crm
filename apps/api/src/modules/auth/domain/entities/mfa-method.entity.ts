@@ -26,8 +26,15 @@ export class MfaMethod {
       props.type,
       props.secret,
       props.isPrimary ?? false,
-      true,
+      false,
       new Date(),
+    )
+  }
+
+  activate(): MfaMethod {
+    return new MfaMethod(
+      this.id, this.tenantId, this.userId, this.type,
+      this.secret, this.isPrimary, true, this.createdAt,
     )
   }
 
@@ -41,7 +48,7 @@ export class MfaMethod {
   deactivate(): MfaMethod {
     return new MfaMethod(
       this.id, this.tenantId, this.userId, this.type,
-      this.secret, false, false, this.createdAt,
+      this.secret, this.isPrimary, false, this.createdAt,
     )
   }
 }

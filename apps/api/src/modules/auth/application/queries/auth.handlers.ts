@@ -4,7 +4,7 @@ import { AuthRepository } from '../../domain/repositories/auth.repository'
 import { PasswordPolicy } from '../../domain/entities/password-policy.entity'
 import {
   GetPasswordPolicyQuery, ListSessionsQuery, ListIpRestrictionsQuery,
-  ListOAuthProvidersQuery, VerifyTokenQuery,
+  ListOAuthProvidersQuery, VerifyTokenQuery, ListMfaMethodsQuery,
 } from './auth.queries'
 
 @Injectable()
@@ -61,5 +61,21 @@ export class VerifyTokenHandler {
     } catch {
       throw new UnauthorizedException('Invalid or expired token')
     }
+  }
+}
+
+@Injectable()
+export class ListMfaMethodsHandler {
+  constructor(private readonly repo: AuthRepository) {}
+
+  async execute(query: ListMfaMethodsQuery) {
+    const methods = await this.repo.findMfaMethodsByUser(query.tenantId, query.userId)
+    return methods.map((method) => ({
+      id: method.id,
+      type: method.type,
+      isPrimary: method.isPrimary,
+      isActive: method.isActive,
+      createdAt: method.createdAt.toISOString(),
+    }))
   }
 }

@@ -93,3 +93,19 @@ export class MfaVerifiedEvent extends DomainEvent {
     return { userId: this.aggregateId, methodId: this.methodId }
   }
 }
+
+export class MfaDisabledEvent extends DomainEvent {
+  readonly aggregateType = 'auth'
+  readonly eventName = 'auth.mfa.disabled'
+
+  constructor(
+    readonly aggregateId: string,
+    readonly methodId: string,
+  ) {
+    super()
+  }
+
+  toPrimitives() {
+    return { userId: this.aggregateId, methodId: this.methodId }
+  }
+}
