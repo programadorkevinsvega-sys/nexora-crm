@@ -116,13 +116,5 @@ export class KnowledgeBaseBffController {
     return this.service.voteArticle(id, dto.isHelpful, tenantId || '00000000-0000-0000-0000-000000000001')
   }
 
-  @Get('portal/overview/:contactId')
-  @ApiOperation({ summary: 'Obtener resumen del portal del cliente con tickets y cotizaciones' })
-  @ApiParam({ name: 'contactId', description: 'UUID del contacto' })
-  async getPortalOverview(
-    @Param('contactId', ParseUUIDPipe) contactId: string,
-    @Headers('X-Tenant-Id') tenantId?: string,
-  ): Promise<CustomerPortalOverview> {
-    return this.service.getPortalOverview(contactId, tenantId || '00000000-0000-0000-0000-000000000001')
-  }
+
 }
