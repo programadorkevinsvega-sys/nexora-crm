@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { and, desc, eq } from 'drizzle-orm'
 import { contacts, deals, getDb, quotes } from '@crm/database'
-import type { CustomerPortalOverview, SupportTicket } from '@crm/contracts'
+import type { SupportTicket } from '@crm/contracts'
 import { ApiCoreGrpcClient } from '../../common/grpc/api-core-grpc.client'
 import type { AuthenticatedUser } from '../../common/decorators/current-user.decorator'
 import { resolveCustomerPortalIdentity } from './customer-portal.identity'
