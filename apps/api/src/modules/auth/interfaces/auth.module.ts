@@ -6,14 +6,14 @@ import { AuthHttpController } from './http/auth-http.controller'
 import { RegisterHandler } from '../application/commands/register.handler'
 import {
   LoginHandler, RefreshTokenHandler, LogoutHandler, ChangePasswordHandler,
-  SetupMfaHandler, VerifyMfaHandler, GetRecoveryCodesHandler, RegenerateRecoveryCodesHandler,
+  SetupMfaHandler, VerifyMfaHandler, DisableMfaHandler, GetRecoveryCodesHandler, RegenerateRecoveryCodesHandler,
   UpdatePasswordPolicyHandler, CreateIpRestrictionHandler, DeleteIpRestrictionHandler,
   RevokeSessionHandler, CreateOAuthProviderHandler, DeleteOAuthProviderHandler,
   UserLookupService,
 } from '../application/commands/auth.handlers'
 import {
   GetPasswordPolicyHandler, ListSessionsHandler, ListIpRestrictionsHandler,
-  ListOAuthProvidersHandler, VerifyTokenHandler,
+  ListOAuthProvidersHandler, VerifyTokenHandler, ListMfaMethodsHandler,
 } from '../application/queries/auth.handlers'
 import { AuthRepository } from '../domain/repositories/auth.repository'
 import { DrizzleAuthRepository } from '../infrastructure/drizzle-auth.repository'
@@ -41,6 +41,7 @@ import { GrpcUserLookupService } from '../infrastructure/grpc-user-lookup.servic
     ChangePasswordHandler,
     SetupMfaHandler,
     VerifyMfaHandler,
+    DisableMfaHandler,
     GetRecoveryCodesHandler,
     RegenerateRecoveryCodesHandler,
     UpdatePasswordPolicyHandler,
@@ -54,6 +55,7 @@ import { GrpcUserLookupService } from '../infrastructure/grpc-user-lookup.servic
     ListIpRestrictionsHandler,
     ListOAuthProvidersHandler,
     VerifyTokenHandler,
+    ListMfaMethodsHandler,
     { provide: AuthRepository, useClass: DrizzleAuthRepository },
     { provide: UserLookupService, useClass: GrpcUserLookupService },
   ],
