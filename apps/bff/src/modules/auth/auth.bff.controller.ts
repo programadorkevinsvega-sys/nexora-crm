@@ -1,6 +1,7 @@
 import {
   Controller,
   Post,
+  Get,
   Body,
   Ip,
   Req,
@@ -15,6 +16,7 @@ import { Observable, lastValueFrom } from 'rxjs'
 import { Request } from 'express'
 import { Public } from '../../common/decorators/public.decorator'
 import { Throttle } from '../../common/decorators/throttle.decorator'
+import { CurrentUser, AuthenticatedUser } from '../../common/decorators/current-user.decorator'
 
 interface GrpcAuthService {
   register(data: any): Observable<{ json: string }>
@@ -22,6 +24,10 @@ interface GrpcAuthService {
   verifyToken(data: { token: string }): Observable<{ json: string }>
   refreshToken(data: any): Observable<{ json: string }>
   logout(data: { tenantId: string; sessionId: string }): Observable<any>
+  setupMfa(data: { tenantId: string; userId: string; type: string }): Observable<{ json: string }>
+  verifyMfa(data: { tenantId: string; userId: string; code: string; methodId: string }): Observable<{ json: string }>
+  disableMfa(data: { tenantId: string; userId: string; code: string; methodId: string }): Observable<{ json: string }>
+  listMfaMethods(data: { tenantId: string; userId: string }): Observable<{ jsonItems: string[] }>
 }
 
 @ApiTags('Autenticación (Auth & JWT)')
@@ -123,6 +129,77 @@ export class AuthBffController implements OnModuleInit {
     } catch (error: any) {
       throw new HttpException(error.message || 'Authentication failed', error.status || HttpStatus.UNAUTHORIZED)
     }
+  }
+
+  @Get('mfa/methods')
+  @ApiOperation({ summary: 'Listar métodos MFA de la sesión autenticada sin revelar secretos' })
+  async listMfaMethods(@CurrentUser() user: AuthenticatedUser) {
+    if (!user?.tenantId || !user.userId) {
+      throw new HttpException('Authenticated user context is required', HttpStatus.UNAUTHORIZED)
+    }
+    const result = await lastValueFrom(this.grpcService.listMfaMethods({
+      tenantId: user.tenantId,
+      userId: user.userId,
+    }))
+    return result.jsonItems.map((item) => JSON.parse(item))
+  }
+
+  @Post('mfa/setup')
+  @ApiOperation({ summary: 'Iniciar enrolamiento TOTP para el usuario autenticado' })
+  async setupMfa(@CurrentUser() user: AuthenticatedUser) {
+    if (!user?.tenantId || !user.userId) {
+      throw new HttpException('Authenticated user context is required', HttpStatus.UNAUTHORIZED)
+    }
+    const result = await lastValueFrom(this.grpcService.setupMfa({
+      tenantId: user.tenantId,
+      userId: user.userId,
+      type: 'TOTP',
+    }))
+    return JSON.parse(result.json)
+  }
+
+  @Post('mfa/verify')
+  @ApiOperation({ summary: 'Verificar el código TOTP y activar el método MFA' })
+  @ApiBody({ schema: { type: 'object', required: ['methodId', 'code'], properties: {
+    methodId: { type: 'string', format: 'uuid' },
+    code: { type: 'string', minLength: 6, maxLength: 6 },
+  } } })
+  async verifyMfa(
+    @Body() body: { methodId: string; code: string },
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    if (!user?.tenantId || !user.userId) {
+      throw new HttpException('Authenticated user context is required', HttpStatus.UNAUTHORIZED)
+    }
+    const result = await lastValueFrom(this.grpcService.verifyMfa({
+      tenantId: user.tenantId,
+      userId: user.userId,
+      methodId: body.methodId,
+      code: body.code,
+    }))
+    return JSON.parse(result.json)
+  }
+
+  @Post('mfa/disable')
+  @ApiOperation({ summary: 'Desactivar MFA con prueba TOTP reciente' })
+  @ApiBody({ schema: { type: 'object', required: ['methodId', 'code'], properties: {
+    methodId: { type: 'string', format: 'uuid' },
+    code: { type: 'string', minLength: 6, maxLength: 6 },
+  } } })
+  async disableMfa(
+    @Body() body: { methodId: string; code: string },
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    if (!user?.tenantId || !user.userId) {
+      throw new HttpException('Authenticated user context is required', HttpStatus.UNAUTHORIZED)
+    }
+    const result = await lastValueFrom(this.grpcService.disableMfa({
+      tenantId: user.tenantId,
+      userId: user.userId,
+      methodId: body.methodId,
+      code: body.code,
+    }))
+    return JSON.parse(result.json)
   }
 
   @Public()
