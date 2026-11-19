@@ -17,7 +17,8 @@ export class VerifyMfaHandler {
   ) {}
 
   async execute(command: VerifyMfaCommand) {
-    const method = await this.repo.findMfaMethodById(command.methodId)
+    const methods = await this.repo.findMfaMethodsByUser(command.tenantId, command.userId)
+    const method = methods.find((candidate) => candidate.id === command.methodId)
     if (!method) throw new NotFoundError('MfaMethod', command.methodId)
 
     let verified = false
@@ -35,6 +36,10 @@ export class VerifyMfaHandler {
 
     if (!verified) {
       return { verified: false }
+    }
+
+    if (!method.isActive) {
+      await this.repo.saveMfaMethod(method.activate())
     }
 
     await this.outbox.publish(new MfaVerifiedEvent(command.userId, command.methodId))
