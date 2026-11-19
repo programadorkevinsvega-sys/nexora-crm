@@ -71,8 +71,20 @@ export class LoginHandler {
     const activeMfa = mfaMethods.find((m) => m.isActive)
     const mfaRequired = !!activeMfa
 
-    if (mfaRequired && command.mfaCode) {
-      const verified = await this.verifyMfaCode(activeMfa!, command.mfaCode, actualTenantId, user.id)
+    if (activeMfa && !command.mfaCode) {
+      return {
+        mfaRequired: true,
+        mfaType: activeMfa.type,
+        user: {
+          id: user.id,
+          email: user.email,
+          tenantId: actualTenantId,
+        },
+      }
+    }
+
+    if (activeMfa && command.mfaCode) {
+      const verified = await this.verifyMfaCode(activeMfa, command.mfaCode, actualTenantId, user.id)
       if (!verified) throw new UnauthorizedException('Invalid MFA code')
     }
 
@@ -124,13 +136,15 @@ export class LoginHandler {
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
       sessionId: session.id,
-      mfaRequired: mfaRequired && !command.mfaCode,
+      mfaRequired: false,
       user: {
         id: user.id,
         email: user.email,
         name: userName,
         tenantId: actualTenantId,
         companyName,
+        roles: userRoleNames,
+        role: userRoleNames.length === 1 ? userRoleNames[0] : undefined,
       },
     }
   }
@@ -156,15 +170,12 @@ export class LoginHandler {
   private async verifyMfaCode(method: MfaMethod, code: string, tenantId: string, userId: string): Promise<boolean> {
     if (method.type === 'TOTP') {
       try {
-        return authenticator.verify({ token: code, secret: method.secret })
+        if (authenticator.verify({ token: code, secret: method.secret })) return true
       } catch (error) {
         this.logger.error(`TOTP verification failed for user ${userId}: ${error}`)
-        return false
       }
-    }
-
-    if (method.type === 'SMS' || method.type === 'EMAIL') {
-      return bcrypt.compare(code, method.secret)
+    } else if (method.type === 'SMS' || method.type === 'EMAIL') {
+      if (await bcrypt.compare(code, method.secret)) return true
     }
 
     const codes = await this.repo.findUnusedRecoveryCodesByUser(userId)
