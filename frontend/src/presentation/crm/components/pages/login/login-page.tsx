@@ -11,12 +11,16 @@ export function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
+  const [mfaRequired, setMfaRequired] = useState(false)
+  const [mfaCode, setMfaCode] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleFillDemo = (demoEmail = "demo@nexoracrm.com", demoPass = "Password123!") => {
     setEmail(demoEmail)
     setPassword(demoPass)
+    setMfaRequired(false)
+    setMfaCode("")
     setError(null)
   }
 
@@ -32,7 +36,15 @@ export function LoginPage() {
           ? rawRedirect
           : "/crm"
 
-      await AuthService.login(email, password)
+      const response = await AuthService.login(email, password, mfaRequired ? mfaCode : undefined)
+      if (response.mfaRequired) {
+        setMfaRequired(true)
+        setMfaCode("")
+        return
+      }
+      if (!response.token) {
+        throw new Error("El servicio de autenticación no devolvió una sesión válida.")
+      }
       router.replace(redirectTarget)
     } catch (err) {
       if (err instanceof ApiError) {
@@ -163,12 +175,36 @@ export function LoginPage() {
               </div>
             </div>
 
+            {mfaRequired && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-foreground" htmlFor="mfa-code">
+                  Código de autenticación
+                </label>
+                <input
+                  id="mfa-code"
+                  type="text"
+                  inputMode="text"
+                  autoComplete="one-time-code"
+                  placeholder="Código de 6 dígitos o código de recuperación"
+                  value={mfaCode}
+                  onChange={(e) => setMfaCode(e.target.value.replace(/\\s/g, "").slice(0, 32))}
+                  className="block w-full rounded-lg border border-border bg-input py-2.5 px-3 text-sm font-mono tracking-widest text-foreground placeholder:text-muted-foreground outline-none transition-all hover:border-muted-foreground focus:border-primary"
+                  required
+                  maxLength={32}
+                  autoFocus
+                />
+                <p className="text-xs text-muted-foreground">
+                  Confirma tu identidad con tu aplicación TOTP. También puedes usar un código de recuperación.
+                </p>
+              </div>
+            )}
+
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || (mfaRequired && !mfaCode.trim())}
               className="flex w-full items-center justify-center rounded-lg bg-primary py-2.5 px-4 text-sm font-semibold text-primary-foreground transition-all hover:opacity-90 disabled:opacity-50 shadow-xs cursor-pointer"
             >
-              {isSubmitting ? "Iniciando sesión..." : "Acceder"}
+              {isSubmitting ? "Verificando..." : mfaRequired ? "Verificar y acceder" : "Acceder"}
             </button>
           </form>
 
