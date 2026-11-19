@@ -5,7 +5,7 @@ import {
   CreateRoleHandler, UpdateRoleHandler, DeleteRoleHandler,
   CreatePermissionHandler,
   AssignPermissionHandler, RemovePermissionHandler,
-  AssignRoleHandler, RemoveRoleHandler,
+  AssignRoleHandler, RemoveRoleHandler, ReplaceUserRoleHandler,
 } from '../application/commands/iam.handlers'
 import {
   GetRoleHandler, ListRolesHandler,
@@ -27,6 +27,7 @@ import { DrizzleIamRepository } from '../infrastructure/drizzle-iam.repository'
     RemovePermissionHandler,
     AssignRoleHandler,
     RemoveRoleHandler,
+    ReplaceUserRoleHandler,
     GetRoleHandler,
     ListRolesHandler,
     ListPermissionsHandler,
