@@ -7,6 +7,8 @@ export interface AuthenticatedUser {
   email?: string
   role?: string
   roles?: string[]
+  customerPortal?: boolean
+  contactId?: string
   [key: string]: unknown
 }
 
@@ -21,6 +23,8 @@ export const CurrentUser = createParamDecorator(
           email: request.user.email,
           role: request.user.role,
           roles: request.user.roles,
+          customerPortal: request.user.customerPortal === true,
+          contactId: request.user.contactId,
         }
       : undefined
 

@@ -54,6 +54,7 @@ import { SecurityAuditBffModule } from './modules/security-audit/security-audit.
 import { SurveysBffModule } from './modules/surveys/surveys.bff.module'
 import { TenantConfigBffModule } from './modules/tenant-config/tenant-config.bff.module'
 import { TenantMembersBffModule } from './modules/tenant-members/tenant-members.bff.module'
+import { CustomerPortalBffModule } from './modules/customer-portal/customer-portal.bff.module'
 import { IdempotencyInterceptor } from './common/idempotency/idempotency.interceptor'
 import { RateLimiterGuard } from './common/guards/rate-limiter.guard'
 import { SecurityHeadersMiddleware } from './common/middleware/security-headers.middleware'
@@ -111,6 +112,7 @@ import { SecurityHeadersMiddleware } from './common/middleware/security-headers.
     SurveysBffModule,
     TenantConfigBffModule,
     TenantMembersBffModule,
+    CustomerPortalBffModule,
   ],
   providers: [
     CacheService,

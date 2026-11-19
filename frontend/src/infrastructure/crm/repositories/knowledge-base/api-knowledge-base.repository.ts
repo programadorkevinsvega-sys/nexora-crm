@@ -4,7 +4,6 @@ import type {
   CreateKnowledgeBaseCategory,
   KnowledgeBaseArticle,
   CreateKnowledgeBaseArticle,
-  CustomerPortalOverview,
 } from "@crm/contracts"
 
 export const ApiKnowledgeBaseRepository = {
@@ -39,7 +38,5 @@ export const ApiKnowledgeBaseRepository = {
     return api.post<KnowledgeBaseArticle>(`/api/kb/articles/${articleId}/vote`, { isHelpful })
   },
 
-  async getPortalOverview(contactId: string): Promise<CustomerPortalOverview> {
-    return api.get<CustomerPortalOverview>(`/api/kb/portal/overview/${contactId}`)
-  },
+
 }
