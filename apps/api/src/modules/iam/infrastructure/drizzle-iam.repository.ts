@@ -218,6 +218,41 @@ export class DrizzleIamRepository extends IamRepository {
     } as any).onConflictDoNothing()
   }
 
+  async replaceRolesForUser(tenantId: string, userId: string, assignment: UserRole): Promise<UserRole[]> {
+    return this.db.transaction(async (tx) => {
+      const previousRows = await tx
+        .select({
+          userId: userRolesTable.userId,
+          roleId: userRolesTable.roleId,
+          tenantId: userRolesTable.tenantId,
+          branchId: userRolesTable.branchId,
+          grantedAt: userRolesTable.grantedAt,
+        })
+        .from(userRolesTable)
+        .innerJoin(rolesTable, eq(userRolesTable.roleId, rolesTable.id))
+        .where(and(
+          eq(userRolesTable.tenantId, tenantId) as any,
+          eq(userRolesTable.userId, userId) as any,
+          eq(rolesTable.tenantId, tenantId) as any,
+        ) as any)
+
+      await tx.delete(userRolesTable).where(and(
+        eq(userRolesTable.tenantId, tenantId) as any,
+        eq(userRolesTable.userId, userId) as any,
+      ) as any)
+
+      await tx.insert(userRolesTable).values({
+        userId: assignment.userId,
+        roleId: assignment.roleId,
+        tenantId: assignment.tenantId,
+        branchId: assignment.branchId,
+        grantedAt: assignment.grantedAt,
+      } as any)
+
+      return previousRows.map((row) => IamMapper.userRoleToDomain(row as any))
+    })
+  }
+
   async removeRoleFromUser(tenantId: string, userId: string, roleId: string): Promise<void> {
     await this.db.delete(userRolesTable).where(
       and(
