@@ -69,7 +69,6 @@ export class LoginHandler {
 
     const mfaMethods = await this.repo.findMfaMethodsByUser(actualTenantId, user.id)
     const activeMfa = mfaMethods.find((m) => m.isActive)
-    const mfaRequired = !!activeMfa
 
     if (activeMfa && !command.mfaCode) {
       return {
