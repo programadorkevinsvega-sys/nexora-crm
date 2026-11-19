@@ -15,6 +15,14 @@ type JwtPayload = {
 
 const PUBLIC_PATHS = ['/api/v1', '/api/webhooks/whatsapp']
 
+export function isAllowedCustomerPortalPath(method: string, path: string): boolean {
+  if (path === '/api/customer-portal/me') return method === 'GET'
+  if (path === '/api/customer-portal/tickets') return method === 'POST'
+  if (path === '/api/kb/categories' || path === '/api/kb/articles') return method === 'GET'
+  if (path.startsWith('/api/kb/articles/')) return method === 'GET'
+  return false
+}
+
 @Injectable()
 export class BffJwtAuthGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
@@ -40,7 +48,7 @@ export class BffJwtAuthGuard implements CanActivate {
 
     // Customer portal JWTs are deliberately least-privilege. They cannot reuse
     // a contact-scoped token against CRM-wide tenant endpoints.
-    if (payload.customerPortal === true && !this.isAllowedCustomerPortalPath(request.method, request.path)) {
+    if (payload.customerPortal === true && !isAllowedCustomerPortalPath(request.method, request.path)) {
       throw new ForbiddenException('Customer portal credentials cannot access this resource')
     }
 
@@ -58,14 +66,6 @@ export class BffJwtAuthGuard implements CanActivate {
 
   private isPublicPath(path: string): boolean {
     return PUBLIC_PATHS.some((publicPath) => path === publicPath || path.startsWith(`${publicPath}/`))
-  }
-
-  private isAllowedCustomerPortalPath(method: string, path: string): boolean {
-    if (path === '/api/customer-portal/me') return method === 'GET'
-    if (path === '/api/customer-portal/tickets') return method === 'GET' || method === 'POST'
-    if (path === '/api/kb/categories' || path === '/api/kb/articles') return method === 'GET'
-    if (path.startsWith('/api/kb/articles/')) return method === 'GET'
-    return false
   }
 
   private extractBearerToken(header?: string): string {
