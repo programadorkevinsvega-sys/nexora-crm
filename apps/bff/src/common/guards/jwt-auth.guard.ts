@@ -1,5 +1,5 @@
 import { createHmac, timingSafeEqual } from 'crypto'
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common'
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException, ForbiddenException } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator'
 
@@ -38,6 +38,12 @@ export class BffJwtAuthGuard implements CanActivate {
       throw new UnauthorizedException('Token is missing required identity claims')
     }
 
+    // Customer portal JWTs are deliberately least-privilege. They cannot reuse
+    // a contact-scoped token against CRM-wide tenant endpoints.
+    if (payload.customerPortal === true && !this.isAllowedCustomerPortalPath(request.method, request.path)) {
+      throw new ForbiddenException('Customer portal credentials cannot access this resource')
+    }
+
     request.user = payload
     request.userId = payload.sub
     request.tenantId = payload.tenantId
@@ -52,6 +58,14 @@ export class BffJwtAuthGuard implements CanActivate {
 
   private isPublicPath(path: string): boolean {
     return PUBLIC_PATHS.some((publicPath) => path === publicPath || path.startsWith(`${publicPath}/`))
+  }
+
+  private isAllowedCustomerPortalPath(method: string, path: string): boolean {
+    if (path === '/api/customer-portal/me') return method === 'GET'
+    if (path === '/api/customer-portal/tickets') return method === 'GET' || method === 'POST'
+    if (path === '/api/kb/categories' || path === '/api/kb/articles') return method === 'GET'
+    if (path.startsWith('/api/kb/articles/')) return method === 'GET'
+    return false
   }
 
   private extractBearerToken(header?: string): string {
