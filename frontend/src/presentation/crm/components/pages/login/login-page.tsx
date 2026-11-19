@@ -187,7 +187,7 @@ export function LoginPage() {
                   autoComplete="one-time-code"
                   placeholder="Código de 6 dígitos o código de recuperación"
                   value={mfaCode}
-                  onChange={(e) => setMfaCode(e.target.value.replace(/\\s/g, "").slice(0, 32))}
+                  onChange={(e) => setMfaCode(e.target.value.replace(/\s/g, "").slice(0, 32))}
                   className="block w-full rounded-lg border border-border bg-input py-2.5 px-3 text-sm font-mono tracking-widest text-foreground placeholder:text-muted-foreground outline-none transition-all hover:border-muted-foreground focus:border-primary"
                   required
                   maxLength={32}
