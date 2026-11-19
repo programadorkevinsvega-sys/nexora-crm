@@ -68,6 +68,49 @@ describe('KnowledgeBaseBffController', () => {
     )
   })
 
+  it('filters published articles assigned to private categories for portal users', async () => {
+    const articles = [
+      { id: 'a-public', tenantId: portalUser.tenantId, categoryId: 'category-public', title: 'Public', isPublished: true },
+      { id: 'a-private', tenantId: portalUser.tenantId, categoryId: 'category-private', title: 'Internal', isPublished: true },
+      { id: 'a-uncategorized', tenantId: portalUser.tenantId, categoryId: null, title: 'General', isPublished: true },
+    ] as KnowledgeBaseArticle[]
+    mockService.listArticles.mockResolvedValue(articles)
+    mockService.listCategories.mockResolvedValue([
+      { id: 'category-public', tenantId: portalUser.tenantId, name: 'Pública', slug: 'publica', isPublic: true },
+      { id: 'category-private', tenantId: portalUser.tenantId, name: 'Privada', slug: 'privada', isPublic: false },
+    ] as KnowledgeBaseCategory[])
+
+    const result = await controller.listArticles(
+      undefined,
+      undefined,
+      'false',
+      portalUser.tenantId,
+      portalUser,
+    )
+
+    expect(result.map((article) => article.id)).toEqual(['a-public', 'a-uncategorized'])
+  })
+
+  it('does not expose published articles assigned to private categories by ID or slug', async () => {
+    const article = {
+      id: '44444444-4444-4444-8444-444444444444',
+      tenantId: portalUser.tenantId,
+      categoryId: 'category-private',
+      title: 'Internal category article',
+      slug: 'internal-category',
+      contentMarkdown: 'not for customers',
+      isPublished: true,
+    } as KnowledgeBaseArticle
+    mockService.getArticle.mockResolvedValue(article)
+    mockService.listCategories.mockResolvedValue([
+      { id: 'category-private', tenantId: portalUser.tenantId, name: 'Privada', slug: 'privada', isPublic: false },
+    ] as KnowledgeBaseCategory[])
+
+    await expect(
+      controller.getArticle(article.slug, portalUser.tenantId, portalUser),
+    ).rejects.toBeInstanceOf(NotFoundException)
+  })
+
   it('does not expose unpublished articles to customer portal identities', async () => {
     const article = {
       id: '44444444-4444-4444-8444-444444444444',
