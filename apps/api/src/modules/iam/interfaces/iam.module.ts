@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common'
+import { UsersModule } from '../../users/module.public-api'
 import { IamGrpcController } from './grpc/iam-grpc.controller'
 import {
   CreateRoleHandler, UpdateRoleHandler, DeleteRoleHandler,
@@ -15,6 +16,7 @@ import { IamRepository } from '../domain/repositories/iam.repository'
 import { DrizzleIamRepository } from '../infrastructure/drizzle-iam.repository'
 
 @Module({
+  imports: [UsersModule],
   controllers: [IamGrpcController],
   providers: [
     CreateRoleHandler,
