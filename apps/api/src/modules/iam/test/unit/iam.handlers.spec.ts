@@ -5,6 +5,7 @@ import { ConflictException } from '@nestjs/common'
 describe('IAM Module - Unit Tests', () => {
   let mockRepo: any
   let mockOutbox: any
+  let mockUsers: any
 
   beforeEach(() => {
     mockRepo = {
@@ -16,6 +17,9 @@ describe('IAM Module - Unit Tests', () => {
     }
     mockOutbox = {
       publish: jest.fn().mockResolvedValue(undefined),
+    }
+    mockUsers = {
+      findById: jest.fn().mockResolvedValue({ id: 'user-99', tenantId: 'tenant-1' }),
     }
   })
 
@@ -68,15 +72,32 @@ describe('IAM Module - Unit Tests', () => {
       mockRepo.findRoleById.mockResolvedValue(role)
       mockRepo.findUserRole.mockResolvedValue(null)
 
-      const handler = new AssignRoleHandler(mockRepo, mockOutbox)
+      const handler = new AssignRoleHandler(mockRepo, mockUsers, mockOutbox)
       await handler.execute({
         tenantId: 'tenant-1',
         userId: 'user-99',
         roleId: role.id,
       })
 
+      expect(mockUsers.findById).toHaveBeenCalledWith('tenant-1', 'user-99')
       expect(mockRepo.assignRoleToUser).toHaveBeenCalled()
       expect(mockOutbox.publish).toHaveBeenCalled()
+    })
+
+    it('should reject assignment when the user does not belong to the tenant', async () => {
+      const role = Role.create({ tenantId: 'tenant-1', name: 'Rep' })
+      mockRepo.findRoleById.mockResolvedValue(role)
+      mockUsers.findById.mockResolvedValue(null)
+
+      const handler = new AssignRoleHandler(mockRepo, mockUsers, mockOutbox)
+      await expect(handler.execute({
+        tenantId: 'tenant-1',
+        userId: 'user-99',
+        roleId: role.id,
+      })).rejects.toThrow('User not found')
+
+      expect(mockRepo.assignRoleToUser).not.toHaveBeenCalled()
+      expect(mockOutbox.publish).not.toHaveBeenCalled()
     })
   })
 })
