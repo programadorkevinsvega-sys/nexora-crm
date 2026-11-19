@@ -75,7 +75,7 @@ export class KnowledgeBaseBffController {
       resolvedTenantId,
     )
 
-    if (user?.customerPortal !== true) return articles
+    if (user?.customerPortal !== true || articles.length === 0) return articles
 
     const categories = await this.service.listCategories(resolvedTenantId)
     const publicCategoryIds = new Set(
