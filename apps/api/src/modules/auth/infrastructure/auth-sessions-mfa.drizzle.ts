@@ -89,7 +89,14 @@ export class AuthSessionsMfaDrizzleHelper {
       isPrimary: method.isPrimary,
       isActive: method.isActive,
       createdAt: method.createdAt,
-    } as any)
+    } as any).onConflictDoUpdate({
+      target: mfaMethodsTable.id,
+      set: {
+        secret: method.secret,
+        isPrimary: method.isPrimary,
+        isActive: method.isActive,
+      } as any,
+    })
   }
 
   static async findRecoveryCodesByUser(userId: string): Promise<MfaRecoveryCode[]> {
