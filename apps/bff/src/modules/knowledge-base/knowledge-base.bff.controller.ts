@@ -65,13 +65,24 @@ export class KnowledgeBaseBffController {
     @Headers('X-Tenant-Id') tenantId?: string,
     @CurrentUser() user?: AuthenticatedUser,
   ): Promise<KnowledgeBaseArticle[]> {
-    return this.service.listArticles(
+    const resolvedTenantId = tenantId || '00000000-0000-0000-0000-000000000001'
+    const articles = await this.service.listArticles(
       {
         categoryId,
         query,
         publicOnly: user?.customerPortal === true ? true : publicOnly !== 'false',
       },
-      tenantId || '00000000-0000-0000-0000-000000000001',
+      resolvedTenantId,
+    )
+
+    if (user?.customerPortal !== true) return articles
+
+    const categories = await this.service.listCategories(resolvedTenantId)
+    const publicCategoryIds = new Set(
+      categories.filter((category) => category.isPublic).map((category) => category.id),
+    )
+    return articles.filter((article) =>
+      !article.categoryId || publicCategoryIds.has(article.categoryId),
     )
   }
 
@@ -87,8 +98,18 @@ export class KnowledgeBaseBffController {
       idOrSlug,
       tenantId || '00000000-0000-0000-0000-000000000001',
     )
-    if (user?.customerPortal === true && !article.isPublished) {
-      throw new NotFoundException('Artículo no encontrado')
+    if (user?.customerPortal === true) {
+      if (!article.isPublished) {
+        throw new NotFoundException('Artículo no encontrado')
+      }
+      if (article.categoryId) {
+        const categories = await this.service.listCategories(
+          tenantId || '00000000-0000-0000-0000-000000000001',
+        )
+        if (!categories.some((category) => category.id === article.categoryId && category.isPublic)) {
+          throw new NotFoundException('Artículo no encontrado')
+        }
+      }
     }
     return article
   }
