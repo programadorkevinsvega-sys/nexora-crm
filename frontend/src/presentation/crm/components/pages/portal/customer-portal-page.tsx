@@ -8,7 +8,6 @@ import {
   FileCheck,
   BookOpen,
   Plus,
-  ExternalLink,
   Send,
   ShieldCheck,
   ShieldAlert,
@@ -19,7 +18,6 @@ import { Badge } from "@/src/presentation/crm/components/ui/Badge"
 import { Modal } from "@/src/presentation/crm/components/ui/Modal"
 import { Skeleton } from "@/src/presentation/crm/components/ui/Skeleton"
 import { Avatar } from "@/src/presentation/crm/components/ui/Avatar"
-import { ApiKnowledgeBaseRepository } from "@/src/infrastructure/crm/repositories/knowledge-base/api-knowledge-base.repository"
 import { api } from "@/src/infrastructure/crm/api/api-client"
 import type { CustomerPortalOverview } from "@crm/contracts"
 
