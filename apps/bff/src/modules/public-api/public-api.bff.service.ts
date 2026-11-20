@@ -106,7 +106,14 @@ export class PublicApiBffService {
     return this.getTicket(tenantId, id)
   }
   async addTicketReply(tenantId: string, ticketId: string, message: string): Promise<any> {
-    return this.grpc.addTicketReply({ tenantId, ticketId, message })
+    return this.grpc.addTicketReply({
+      tenantId,
+      ticketId,
+      authorType: 'SYSTEM',
+      authorId: '00000000-0000-0000-0000-000000000002',
+      message,
+      isInternalNote: false,
+    })
   }
 
   // ── CPQ & Quotes ──────────────────────────────────────

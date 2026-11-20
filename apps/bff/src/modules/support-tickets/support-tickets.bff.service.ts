@@ -67,7 +67,7 @@ export class SupportTicketsBffService {
     return this.api.getTicket(tenantId, id)
   }
 
-  async addReply(ticketId: string, dto: CreateReply & { authorType: string; authorId: string; isInternalNote?: boolean }, tenantId: string): Promise<TicketReply> {
+  async addReply(ticketId: string, dto: CreateReply & { authorType: TicketReply['authorType']; authorId: string; isInternalNote?: boolean }, tenantId: string): Promise<TicketReply> {
     const reply = await this.api.addTicketReply({ tenantId, ticketId, ...dto })
     this.cache.invalidate(CACHE_KEY_PREFIX)
     return reply

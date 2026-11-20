@@ -21,6 +21,10 @@ import type { CreateTicket, SupportTicket, TicketReply } from '@crm/contracts'
 const AssignTicketBodySchema = z.object({
   assignedUserId: z.string().uuid(),
 })
+const AddTicketReplyBodySchema = z.object({
+  message: z.string().trim().min(1).max(10000),
+  isInternalNote: z.boolean().optional(),
+})
 
 @ApiTags('Tickets & Soporte (Support Tickets)')
 @ApiHeader({ name: 'X-Tenant-Id', required: false, description: 'ID del inquilino' })
@@ -147,20 +151,19 @@ export class SupportTicketsBffController {
   })
   async addReply(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() body: any,
+    @Body(createZodPipe(AddTicketReplyBodySchema)) body: z.infer<typeof AddTicketReplyBodySchema>,
     @CurrentUser() user?: AuthenticatedUser,
     @Headers('X-Tenant-Id') headerTenantId?: string,
   ): Promise<TicketReply> {
     const tenantId = user?.tenantId || headerTenantId
-    const authorId = user?.userId || body.authorId || '00000000-0000-0000-0000-000000000002'
-    const authorType = body.authorType || 'AGENT'
+    const authorId = user?.userId || '00000000-0000-0000-0000-000000000002'
     return this.service.addReply(
       id,
       {
         message: body.message,
-        authorType,
+        authorType: 'AGENT',
         authorId,
-        isInternalNote: Boolean(body.isInternalNote),
+        isInternalNote: body.isInternalNote ?? false,
       },
       tenantId!,
     )
