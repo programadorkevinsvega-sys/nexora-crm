@@ -5,8 +5,23 @@ import * as dbModule from '@crm/database'
 describe('DrizzleIamRepository - Persistence Integration Tests', () => {
   let repository: DrizzleIamRepository
   let mockDb: any
+  let mockTx: any
 
   beforeEach(() => {
+    const insert = jest.fn().mockReturnValue({
+      values: jest.fn().mockReturnValue({
+        onConflictDoUpdate: jest.fn().mockResolvedValue(undefined),
+      }),
+    })
+    mockTx = {
+      query: {
+        roles: {
+          findFirst: jest.fn().mockResolvedValue(null),
+        },
+      },
+      execute: jest.fn().mockResolvedValue(undefined),
+      insert,
+    }
     mockDb = {
       query: {
         roles: {
@@ -20,11 +35,8 @@ describe('DrizzleIamRepository - Persistence Integration Tests', () => {
           findFirst: jest.fn(),
         },
       },
-      insert: jest.fn().mockReturnValue({
-        values: jest.fn().mockReturnValue({
-          onConflictDoUpdate: jest.fn().mockResolvedValue(undefined),
-        }),
-      }),
+      insert,
+      transaction: jest.fn(async (callback: (tx: any) => Promise<unknown>) => callback(mockTx)),
     }
 
     jest.spyOn(dbModule, 'getDb').mockReturnValue(mockDb)
@@ -56,6 +68,8 @@ describe('DrizzleIamRepository - Persistence Integration Tests', () => {
 
     await repository.saveRole(role)
 
+    expect(mockDb.transaction).toHaveBeenCalledTimes(1)
+    expect(mockTx.execute).toHaveBeenCalledTimes(1)
     expect(mockDb.insert).toHaveBeenCalled()
   })
 })
