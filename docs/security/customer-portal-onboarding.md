@@ -38,6 +38,17 @@ Tenant-admin endpoints (regular CRM JWT plus live tenant-admin authorization):
 - POST /api/tenant/customer-portal/invitations/:id/resend
 - DELETE /api/tenant/customer-portal/invitations/:id
 
+## Customer self-service (P0.6)
+
+The authenticated portal can retrieve one ticket only after the BFF loads it with the signed tenant claim and verifies that its contactId matches the signed contact claim. Ticket replies are checked against the same owned ticket. Replies flagged as internal notes are never returned to the customer. Customer replies are created with authorType=CUSTOMER, authorId=the portal account subject, and isInternalNote=false; the client cannot provide or override those values.
+
+Authenticated portal ticket endpoints:
+- GET /api/customer-portal/tickets/:ticketId
+- GET /api/customer-portal/tickets/:ticketId/replies
+- POST /api/customer-portal/tickets/:ticketId/replies
+
+The help center is served inside /portal/help and /portal/help/:slug. It uses the existing knowledge-base BFF read endpoints with the portal JWT; categories must be public, and only published articles in public categories are returned. The browser chooses neither tenant nor contact identity.
+
 ## Configuration and migration
 
 - Apply database migration 0039_customer_portal_access.sql.

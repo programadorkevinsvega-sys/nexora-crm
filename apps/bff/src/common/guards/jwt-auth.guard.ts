@@ -18,6 +18,10 @@ const PUBLIC_PATHS = ['/api/v1', '/api/webhooks/whatsapp']
 export function isAllowedCustomerPortalPath(method: string, path: string): boolean {
   if (path === '/api/customer-portal/me') return method === 'GET'
   if (path === '/api/customer-portal/tickets') return method === 'POST'
+  if (/^\/api\/customer-portal\/tickets\/[0-9a-f-]{36}$/i.test(path)) return method === 'GET'
+  if (/^\/api\/customer-portal\/tickets\/[0-9a-f-]{36}\/replies$/i.test(path)) {
+    return method === 'GET' || method === 'POST'
+  }
   if (path === '/api/customer-portal/auth/logout') return method === 'POST'
   if (path === '/api/kb/categories' || path === '/api/kb/articles') return method === 'GET'
   if (path.startsWith('/api/kb/articles/')) return method === 'GET'
