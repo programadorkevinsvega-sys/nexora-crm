@@ -46,3 +46,13 @@
 - `cd frontend && pnpm test:e2e` — pruebas E2E de frontend; no están incluidas en CI.
 
 Los hitos anteriores y cualquier etiqueta «completado» de versiones previas deben leerse como objetivos históricos hasta que exista una ejecución o auditoría fechada que los respalde.
+
+## P0 — Cliente y acceso al portal (estado al 20 de noviembre de 2026)
+
+- [x] P0.1 — MFA real y obligatorio para el acceso interno (PR #8, integrado).
+- [x] P0.2 — Identidad de miembros por tenant y autorización RBAC (PR #9, integrado).
+- [x] P0.3 — Aislamiento del portal del cliente por identidad firmada y contacto (PR #10, integrado).
+- [x] P0.4 — Invitaciones seguras y aceptación de miembros internos del tenant (PR #11, integrado).
+- [ ] P0.5 — Onboarding seguro de clientes externos al portal: invitación verificada desde el contacto, cuenta separada de usuarios CRM, JWT de mínimo privilegio y refresh token rotatorio. Implementación en la rama feat/p0.5-customer-portal-onboarding; pendiente de CI, revisión e integración.
+
+P0.5 está limitado al portal de clientes y no cambia la administración interna de la plataforma.

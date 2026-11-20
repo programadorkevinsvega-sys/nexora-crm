@@ -60,7 +60,7 @@ async function bootstrap() {
     transport: Transport.GRPC,
     options: {
       package: [
-        'crm.common', 'crm.companies', 'crm.contacts', 'crm.pipelines',
+        'crm.common', 'crm.customer_portal', 'crm.companies', 'crm.contacts', 'crm.pipelines',
         'crm.interactions', 'crm.support_tickets', 'crm.campaigns',
         'crm.contracts', 'crm.sales_teams', 'crm.helpdesk',
         'crm.affiliates', 'crm.personal_crm', 'crm.loyalty', 'crm.tags',
@@ -72,6 +72,7 @@ async function bootstrap() {
       ],
       protoPath: [
         resolve(protoPath(), 'common.proto'),
+        resolve(protoPath(), 'customer-portal.proto'),
         resolve(protoPath(), 'companies.proto'),
         resolve(protoPath(), 'contacts.proto'),
         resolve(protoPath(), 'pipelines.proto'),
