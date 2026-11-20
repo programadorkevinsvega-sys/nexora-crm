@@ -131,13 +131,6 @@ export class DrizzleCustomerPortalAccessRepository extends CustomerPortalAccessR
     return row ? this.toAccount(row) : null
   }
 
-  async findAccountByContact(tenantId: string, contactId: string): Promise<PortalAccount | null> {
-    const row = await this.db.query.customerPortalAccounts.findFirst({
-      where: and(eq(customerPortalAccounts.tenantId, tenantId), eq(customerPortalAccounts.contactId, contactId)),
-    })
-    return row ? this.toAccount(row) : null
-  }
-
   async findAccountById(tenantId: string, accountId: string): Promise<PortalAccount | null> {
     const row = await this.db.query.customerPortalAccounts.findFirst({
       where: and(eq(customerPortalAccounts.tenantId, tenantId), eq(customerPortalAccounts.id, accountId)),
