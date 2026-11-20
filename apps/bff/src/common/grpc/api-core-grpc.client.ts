@@ -898,6 +898,8 @@ export class ApiCoreGrpcClient implements OnModuleInit {
   async addTicketReply(data: {
     tenantId: string
     ticketId: string
+    authorType: 'CUSTOMER' | 'AGENT' | 'SYSTEM'
+    authorId: string
     message: string
     isInternalNote?: boolean
   }): Promise<TicketReply> {

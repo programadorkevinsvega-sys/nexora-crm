@@ -53,6 +53,7 @@ Los hitos anteriores y cualquier etiqueta «completado» de versiones previas de
 - [x] P0.2 — Identidad de miembros por tenant y autorización RBAC (PR #9, integrado).
 - [x] P0.3 — Aislamiento del portal del cliente por identidad firmada y contacto (PR #10, integrado).
 - [x] P0.4 — Invitaciones seguras y aceptación de miembros internos del tenant (PR #11, integrado).
-- [ ] P0.5 — Onboarding seguro de clientes externos al portal: invitación verificada desde el contacto, cuenta separada de usuarios CRM, JWT de mínimo privilegio y refresh token rotatorio. Implementación en la rama feat/p0.5-customer-portal-onboarding; pendiente de CI, revisión e integración.
+- [x] P0.5 — Onboarding seguro de clientes externos al portal: invitación verificada desde el contacto, cuenta separada de usuarios CRM, JWT de mínimo privilegio y refresh token rotatorio. PR #12 integrado en main.
+- [ ] P0.6 — Autoservicio del cliente: consulta de detalle/historial de tickets, respuestas públicas del cliente con aislamiento por contacto, ocultamiento de notas internas y centro de ayuda público dentro del portal. En implementación en feat/p0.6-customer-portal-support-self-service.
 
-P0.5 está limitado al portal de clientes y no cambia la administración interna de la plataforma.
+P0.5 y P0.6 están limitados al portal de clientes y no cambian la administración interna de la plataforma.

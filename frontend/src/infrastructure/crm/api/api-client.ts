@@ -15,7 +15,10 @@ export class ApiError extends Error {
 type HeadersInit = Record<string, string>
 
 function isPortalPath(path: string): boolean {
-  return path.startsWith("/api/customer-portal")
+  if (path.startsWith("/api/customer-portal")) return true
+  return path.startsWith("/api/kb/") &&
+    typeof window !== "undefined" &&
+    Boolean(sessionStorage.getItem("portal_access_token"))
 }
 
 function resolveRequestUrl(path: string): string {

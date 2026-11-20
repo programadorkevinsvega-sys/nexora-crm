@@ -233,7 +233,12 @@ export function CustomerPortalPage() {
           ) : (
             <div className="divide-y text-xs">
               {myTickets.map((ticket) => (
-                <div key={ticket.id} className="py-3 flex items-center justify-between hover:bg-muted/20 px-2 rounded">
+                <button
+                  key={ticket.id}
+                  type="button"
+                  onClick={() => router.push(`/portal/tickets/${ticket.id}`)}
+                  className="w-full text-left py-3 flex items-center justify-between hover:bg-muted/20 px-2 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                >
                   <div className="space-y-1">
                     <div className="font-semibold text-foreground">{ticket.subject}</div>
                     <div className="text-[11px] text-muted-foreground line-clamp-1">{ticket.description}</div>
@@ -242,7 +247,7 @@ export function CustomerPortalPage() {
                     <Badge variant={ticket.priority === "URGENT" || ticket.priority === "HIGH" ? "default" : "outline"} className="text-[10px]">{ticket.priority}</Badge>
                     <Badge variant="secondary" className="text-[10px]">{ticket.status}</Badge>
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           )}
@@ -279,7 +284,7 @@ export function CustomerPortalPage() {
         <Card className="p-5 border shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-bold text-foreground">Artículos y Guías Destacadas</h2>
-            <Button size="sm" variant="ghost" className="text-xs" onClick={() => router.push("/kb")}>
+            <Button size="sm" variant="ghost" className="text-xs" onClick={() => router.push("/portal/help")}>
               Ver Toda la Base de Conocimiento &rarr;
             </Button>
           </div>
