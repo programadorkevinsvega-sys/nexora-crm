@@ -29,6 +29,13 @@ describe('CustomerPortalBffService', () => {
           grandTotal: 119,
           validUntil: '2026-12-31',
           createdAt: '2026-11-20T10:00:00.000Z',
+        }, {
+          id: '77777777-7777-4777-8777-777777777777',
+          quoteNumber: 'Q-DRAFT',
+          status: 'DRAFT',
+          grandTotal: 200,
+          validUntil: '2026-12-31',
+          createdAt: '2026-11-20T11:00:00.000Z',
         }],
         nextCursor: null,
       }),
@@ -55,6 +62,9 @@ describe('CustomerPortalBffService', () => {
       currency: 'COP',
       grandTotal: 119,
     })])
+    expect(result.quotes).not.toContainEqual(expect.objectContaining({
+      status: 'DRAFT',
+    }))
   })
 
   it('rejects a contact response that does not belong to the signed tenant', async () => {

@@ -60,6 +60,18 @@ describe('CustomerPortalQuotesBffService', () => {
     expect(api.getDeal).toHaveBeenCalledWith(user.tenantId, quote.dealId)
   })
 
+  it('does not disclose a draft quote to the customer', async () => {
+    api.getQuote.mockResolvedValueOnce({ ...quote, status: 'DRAFT' })
+    await expect(service.getQuote(user, quote.id)).rejects.toBeInstanceOf(NotFoundException)
+    expect(api.getDeal).not.toHaveBeenCalled()
+  })
+
+  it('does not disclose a quote returned for a different tenant', async () => {
+    api.getQuote.mockResolvedValueOnce({ ...quote, tenantId: '99999999-9999-4999-8999-999999999999' })
+    await expect(service.getQuote(user, quote.id)).rejects.toBeInstanceOf(NotFoundException)
+    expect(api.getDeal).not.toHaveBeenCalled()
+  })
+
   it('does not disclose a quote linked to another contact', async () => {
     api.getDeal.mockResolvedValueOnce({ ...deal, contactId: '55555555-5555-4555-8555-555555555555' })
     await expect(service.getQuote(user, quote.id)).rejects.toBeInstanceOf(NotFoundException)

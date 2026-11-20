@@ -29,7 +29,9 @@ export class CustomerPortalQuotesBffService {
     const identity = resolveCustomerPortalIdentity(user)
     const quote = await this.api.getQuote(identity.tenantId, quoteId)
 
-    if (!quote.dealId) throw new NotFoundException('Quote not found')
+    if (quote.tenantId !== identity.tenantId || quote.status === 'DRAFT' || !quote.dealId) {
+      throw new NotFoundException('Quote not found')
+    }
 
     const deal = await this.api.getDeal(identity.tenantId, quote.dealId)
     if (deal.tenantId !== identity.tenantId || deal.contactId !== identity.contactId) {

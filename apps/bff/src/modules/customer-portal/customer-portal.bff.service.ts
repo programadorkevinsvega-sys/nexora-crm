@@ -41,6 +41,13 @@ export class CustomerPortalBffService {
     }
   }
 
+  private isQuoteExpired(validUntil: string): boolean {
+    const expiry = /^\d{4}-\d{2}-\d{2}$/.test(validUntil)
+      ? Date.parse(`${validUntil}T23:59:59.999Z`)
+      : Date.parse(validUntil)
+    return !Number.isFinite(expiry) || expiry < Date.now()
+  }
+
   private async listPortalQuotes(tenantId: string, contactId: string): Promise<CustomerPortalQuote[]> {
     const dealsPage = await this.api.listDeals({ tenantId, contactId, limit: 100 })
     const ownedDeals = dealsPage.data.filter((deal) => deal.contactId === contactId)
@@ -53,15 +60,19 @@ export class CustomerPortalBffService {
       ))
       pages.forEach((page, pageIndex) => {
         const deal = batch[pageIndex]
-        page.data.forEach((quote) => rows.push({
-          id: quote.id,
-          quoteNumber: quote.quoteNumber,
-          status: quote.status,
-          grandTotal: quote.grandTotal ?? 0,
-          currency: deal.currency || 'USD',
-          validUntil: quote.validUntil,
-          createdAt: quote.createdAt,
-        }))
+        page.data
+          .filter((quote) => quote.status !== 'DRAFT')
+          .forEach((quote) => rows.push({
+            id: quote.id,
+            quoteNumber: quote.quoteNumber,
+            status: quote.status === 'SENT' && this.isQuoteExpired(quote.validUntil)
+              ? 'EXPIRED'
+              : quote.status,
+            grandTotal: quote.grandTotal ?? 0,
+            currency: deal.currency || 'USD',
+            validUntil: quote.validUntil,
+            createdAt: quote.createdAt,
+          }))
       })
     }
 
