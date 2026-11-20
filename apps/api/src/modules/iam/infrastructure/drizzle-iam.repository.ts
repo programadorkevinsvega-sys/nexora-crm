@@ -26,13 +26,13 @@ export class DrizzleIamRepository extends IamRepository {
   }
 
   private async tenantAdminUserIds(tx: any, tenantId: string, adminRoleId: string): Promise<string[]> {
-    const rows = await tx.select({ userId: userRolesTable.userId })
+    const rows: Array<{ userId: string }> = await tx.select({ userId: userRolesTable.userId })
       .from(userRolesTable)
       .where(and(
         eq(userRolesTable.tenantId, tenantId),
         eq(userRolesTable.roleId, adminRoleId),
       ) as any)
-    return [...new Set(rows.map((row) => row.userId))]
+    return [...new Set(rows.map((row: { userId: string }) => row.userId))]
   }
 
   // ── Roles ──────────────────────────────────────────

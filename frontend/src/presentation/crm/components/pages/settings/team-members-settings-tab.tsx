@@ -191,6 +191,7 @@ export function TeamMembersSettingsTab() {
   }
 
   return (
+    <div className="space-y-6">
     <Card className="p-6 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-steel/60">
         <div className="flex items-center gap-3">
@@ -369,5 +370,6 @@ export function TeamMembersSettingsTab() {
           </table>
         </div>
       </Card>
+    </div>
   )
 }

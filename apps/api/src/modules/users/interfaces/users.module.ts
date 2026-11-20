@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common'
 import { UsersCoreGrpcController } from './grpc/users-core-grpc.controller'
 import { UsersProfileDevicesGrpcController } from './grpc/users-profile-devices-grpc.controller'
-import { UsersInvitationsGrpcController } from './grpc/users-invitations-grpc.controller'
+import { UsersInvitationsGrpcController } from './grpc/users-invitations.grpc.controller'
 import {
   CreateUserHandler, UpdateUserHandler, DeleteUserHandler,
   UpdateNaturalPersonProfileHandler, UpdateLegalEntityProfileHandler,
