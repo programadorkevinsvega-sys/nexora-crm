@@ -26,11 +26,11 @@ export class CreateRoleHandler {
 
   async execute(command: CreateRoleCommand): Promise<Role> {
     const roleName = command.name.trim()
+    const existing = await this.repo.findRoleByName(command.tenantId, roleName)
+    if (existing) throw new ConflictException(`Role "${roleName}" already exists`)
     if (roleName.toLowerCase() === 'admin' || roleName.toLowerCase() === 'super_admin') {
       throw new BadRequestException('The admin role names are reserved for tenant access control')
     }
-    const existing = await this.repo.findRoleByName(command.tenantId, roleName)
-    if (existing) throw new ConflictException(`Role "${roleName}" already exists`)
 
     const role = Role.create({
       tenantId: command.tenantId,
