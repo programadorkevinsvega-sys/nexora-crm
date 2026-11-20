@@ -9,6 +9,7 @@ import { CacheModule } from './common/cache/cache.module'
 import { ObservabilityModule } from './common/observability/observability.module'
 
 import { AuthModule } from './modules/auth/module.public-api'
+import { CustomerPortalAccessModule } from './modules/customer-portal-access/module.public-api'
 import { UsersModule } from './modules/users/module.public-api'
 import { TenantsModule } from './modules/tenants/module.public-api'
 import { IamDomainModule } from './modules/iam/module.public-api'
@@ -52,6 +53,7 @@ import { MetaLeadsModule } from './modules/meta-leads/module.public-api'
     CacheModule,
     ObservabilityModule,
     AuthModule,
+    CustomerPortalAccessModule,
     UsersModule,
     TenantsModule,
     IamDomainModule,

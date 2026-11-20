@@ -13,6 +13,7 @@ import { ConfirmDialog } from "@/src/presentation/crm/components/common/ConfirmD
 import { ErrorState } from "@/src/presentation/components/error-state"
 import { useContact, useDeleteContact } from "@src/application/crm/di/hooks"
 import { ClickToCallButton } from "@/src/presentation/crm/components/common/click-to-call-button"
+import { ContactPortalAccessCard } from "./contact-portal-access-card"
 
 export function ContactDetailPage() {
   const params = useParams()

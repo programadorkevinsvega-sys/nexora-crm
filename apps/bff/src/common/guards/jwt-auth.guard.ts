@@ -18,6 +18,7 @@ const PUBLIC_PATHS = ['/api/v1', '/api/webhooks/whatsapp']
 export function isAllowedCustomerPortalPath(method: string, path: string): boolean {
   if (path === '/api/customer-portal/me') return method === 'GET'
   if (path === '/api/customer-portal/tickets') return method === 'POST'
+  if (path === '/api/customer-portal/auth/logout') return method === 'POST'
   if (path === '/api/kb/categories' || path === '/api/kb/articles') return method === 'GET'
   if (path.startsWith('/api/kb/articles/')) return method === 'GET'
   return false
@@ -48,6 +49,15 @@ export class BffJwtAuthGuard implements CanActivate {
 
     // Customer portal JWTs are deliberately least-privilege. They cannot reuse
     // a contact-scoped token against CRM-wide tenant endpoints.
+    if (payload.customerPortal === true && (
+      payload.tokenType !== 'access' ||
+      payload.iss !== 'nexora-crm' ||
+      payload.aud !== 'nexora-customer-portal' ||
+      typeof payload.contactId !== 'string' ||
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(payload.contactId)
+    )) {
+      throw new UnauthorizedException('Customer portal token is invalid or not an access token')
+    }
     if (payload.customerPortal === true && !isAllowedCustomerPortalPath(request.method, request.path)) {
       throw new ForbiddenException('Customer portal credentials cannot access this resource')
     }

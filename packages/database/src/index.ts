@@ -77,6 +77,7 @@ export {
   userOauthLinks, userMobileDevices,
 } from './schema/users/users'
 export { userMemberInvitations } from './schema/users/users-invitations'
+export { customerPortalAccounts, customerPortalInvitations } from './schema/customer-portal/customer-portal-access'
 
 export {
   usersOutboxEvents, usersEventDeadLetters, usersInboxEvents,

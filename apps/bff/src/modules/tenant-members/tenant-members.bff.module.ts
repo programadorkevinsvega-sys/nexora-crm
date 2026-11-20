@@ -12,5 +12,6 @@ import { TenantInvitationsBffService } from './tenant-invitations.bff.service'
     TeamInvitationsPublicBffController,
   ],
   providers: [TenantMembersBffService, TenantInvitationsBffService],
+  exports: [TenantMembersBffService],
 })
 export class TenantMembersBffModule {}

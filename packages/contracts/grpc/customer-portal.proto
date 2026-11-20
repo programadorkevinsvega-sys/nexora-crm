@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package crm.customer_portal;
+
+option go_package = "github.com/ultra-erp/crm/grpc/customerportal";
+
+message PortalInvitationInput {
+  string tenant_id = 1;
+  string contact_id = 2;
+  string email = 3;
+  string invited_by = 4;
+}
+message PortalInvitationMutation {
+  string tenant_id = 1;
+  string invitation_id = 2;
+}
+message PortalInvitationListInput {
+  string tenant_id = 1;
+  optional string contact_id = 2;
+}
+message PortalTokenInput { string token = 1; }
+message PortalAcceptanceInput {
+  string token = 1;
+  string password = 2;
+}
+message PortalLoginInput {
+  string tenant_id = 1;
+  string email = 2;
+  string password = 3;
+}
+message PortalRefreshInput {
+  string tenant_id = 1;
+  string refresh_token = 2;
+}
+message PortalLogoutInput {
+  string tenant_id = 1;
+  string account_id = 2;
+}
+message PortalJsonResponse { string json = 1; }
+message PortalListResponse { repeated string json_items = 1; }
+
+service CustomerPortalAccessService {
+  rpc CreateInvitation(PortalInvitationInput) returns (PortalJsonResponse);
+  rpc ListInvitations(PortalInvitationListInput) returns (PortalListResponse);
+  rpc ResendInvitation(PortalInvitationMutation) returns (PortalJsonResponse);
+  rpc RevokeInvitation(PortalInvitationMutation) returns (PortalJsonResponse);
+  rpc PreviewInvitation(PortalTokenInput) returns (PortalJsonResponse);
+  rpc AcceptInvitation(PortalAcceptanceInput) returns (PortalJsonResponse);
+  rpc Login(PortalLoginInput) returns (PortalJsonResponse);
+  rpc Refresh(PortalRefreshInput) returns (PortalJsonResponse);
+  rpc Logout(PortalLogoutInput) returns (PortalJsonResponse);
+}

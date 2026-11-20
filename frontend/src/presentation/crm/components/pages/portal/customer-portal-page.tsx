@@ -11,6 +11,7 @@ import {
   Send,
   ShieldCheck,
   ShieldAlert,
+  LogOut,
 } from "lucide-react"
 import { Button } from "@/src/presentation/crm/components/ui/Button"
 import { Card } from "@/src/presentation/crm/components/ui/Card"
@@ -95,6 +96,15 @@ export function CustomerPortalPage() {
     void loadPortalData()
   }, [loadPortalData])
 
+  const handleLogout = async () => {
+    try { await api.post("/api/customer-portal/auth/logout", {}) } catch {}
+    sessionStorage.removeItem("portal_access_token")
+    sessionStorage.removeItem("portal_refresh_token")
+    sessionStorage.removeItem("portal_tenant_id")
+    sessionStorage.removeItem("portal_account_id")
+    window.location.href = "/portal/login"
+  }
+
   const handleCreateTicket = async () => {
     if (!ticketSubject.trim() || !ticketDesc.trim()) return
 
@@ -172,9 +182,14 @@ export function CustomerPortalPage() {
           </div>
         </div>
 
-        <Button size="sm" onClick={() => setShowNewTicket(true)}>
-          <Plus className="h-4 w-4 mr-1.5" /> Abrir Ticket de Soporte
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button size="sm" onClick={() => setShowNewTicket(true)}>
+            <Plus className="h-4 w-4 mr-1.5" /> Abrir Ticket de Soporte
+          </Button>
+          <Button size="sm" variant="outline" onClick={handleLogout} aria-label="Cerrar sesión del portal">
+            <LogOut className="h-4 w-4" />
+          </Button>
+        </div>
       </Card>
 
       <div className="grid grid-cols-3 gap-3">
