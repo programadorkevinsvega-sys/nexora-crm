@@ -49,6 +49,19 @@ Authenticated portal ticket endpoints:
 
 The help center is served inside /portal/help and /portal/help/:slug. It uses the existing knowledge-base BFF read endpoints with the portal JWT; categories must be public, and only published articles in public categories are returned. The browser chooses neither tenant nor contact identity.
 
+## Customer quote self-service (P0.7)
+
+The portal exposes quote detail and decisions only after resolving the quote through the Contracts gRPC API and resolving its related deal through the Pipelines gRPC API. The BFF compares the deal's contactId with the signed portal contact claim and returns a not-found response for quotes belonging to any other contact or tenant.
+
+Authenticated portal endpoints:
+- GET /api/customer-portal/quotes/:quoteId
+- POST /api/customer-portal/quotes/:quoteId/accept
+- POST /api/customer-portal/quotes/:quoteId/reject
+
+Only SENT quotes whose validity date has not passed can be accepted or rejected. A rejection requires a reason. The backend derives actorId from the portal JWT subject and sets actorType=CUSTOMER_PORTAL; those fields are never accepted from the browser. Quote accepted/rejected outbox events include this actor metadata.
+
+This is a commercial quote decision, not a digital signature or legal e-signature workflow. The existing signature flow remains separate and must be used where a legally binding signature or OTP verification is required. The customer portal does not receive access to tenant-wide quote or contract endpoints.
+
 ## Configuration and migration
 
 - Apply database migration 0039_customer_portal_access.sql.

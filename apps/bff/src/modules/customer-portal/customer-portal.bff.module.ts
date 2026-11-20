@@ -7,6 +7,8 @@ import { CustomerPortalInvitationsBffController } from './customer-portal-invita
 import { CustomerPortalAccessBffService } from './customer-portal-access.bff.service'
 import { CustomerPortalTicketsBffController } from './customer-portal-tickets.bff.controller'
 import { CustomerPortalTicketsBffService } from './customer-portal-tickets.bff.service'
+import { CustomerPortalQuotesBffController } from './customer-portal-quotes.bff.controller'
+import { CustomerPortalQuotesBffService } from './customer-portal-quotes.bff.service'
 
 @Module({
   imports: [TenantMembersBffModule],
@@ -15,7 +17,13 @@ import { CustomerPortalTicketsBffService } from './customer-portal-tickets.bff.s
     CustomerPortalAccessBffController,
     CustomerPortalInvitationsBffController,
     CustomerPortalTicketsBffController,
+    CustomerPortalQuotesBffController,
   ],
-  providers: [CustomerPortalBffService, CustomerPortalAccessBffService, CustomerPortalTicketsBffService],
+  providers: [
+    CustomerPortalBffService,
+    CustomerPortalAccessBffService,
+    CustomerPortalTicketsBffService,
+    CustomerPortalQuotesBffService,
+  ],
 })
 export class CustomerPortalBffModule {}

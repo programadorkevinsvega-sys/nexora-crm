@@ -1,4 +1,6 @@
 import { CreateContractHandler, RenewContractHandler } from '../../application/commands/contract.handlers'
+import { AcceptQuoteHandler, RejectQuoteHandler } from '../../application/commands/quote.handlers'
+import { Quote } from '../../domain/entities/quote.entity'
 import { Contract } from '../../domain/entities/contract.entity'
 
 describe('Contracts Module - Unit Tests', () => {
@@ -28,6 +30,58 @@ describe('Contracts Module - Unit Tests', () => {
       expect(result.id).toBeDefined()
       expect(mockRepo.save).toHaveBeenCalled()
       expect(mockOutbox.publish).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('Customer quote decisions', () => {
+    const sentQuote = Quote.create({
+      tenantId: 'tenant-1',
+      dealId: 'deal-1',
+      quoteNumber: 'Q-100',
+      validUntil: '2026-12-31',
+      subtotal: 100,
+      taxTotal: 19,
+      grandTotal: 119,
+    }).updateStatus('SENT')
+
+    it('includes the authenticated portal actor in the accepted quote event', async () => {
+      mockRepo.findById.mockResolvedValue(sentQuote)
+      const handler = new AcceptQuoteHandler(mockRepo, mockOutbox)
+
+      await handler.execute({
+        tenantId: 'tenant-1',
+        id: sentQuote.id,
+        actorId: 'portal-account-1',
+        actorType: 'CUSTOMER_PORTAL',
+      })
+
+      expect(mockRepo.save).toHaveBeenCalled()
+      expect(mockOutbox.publish).toHaveBeenCalledWith(expect.objectContaining({
+        aggregateId: sentQuote.id,
+        actorId: 'portal-account-1',
+        actorType: 'CUSTOMER_PORTAL',
+      }))
+    })
+
+    it('includes the authenticated portal actor and reason in the rejected quote event', async () => {
+      mockRepo.findById.mockResolvedValue(sentQuote)
+      const handler = new RejectQuoteHandler(mockRepo, mockOutbox)
+
+      await handler.execute({
+        tenantId: 'tenant-1',
+        id: sentQuote.id,
+        reason: 'Budget constraints',
+        actorId: 'portal-account-1',
+        actorType: 'CUSTOMER_PORTAL',
+      })
+
+      expect(mockRepo.save).toHaveBeenCalled()
+      expect(mockOutbox.publish).toHaveBeenCalledWith(expect.objectContaining({
+        aggregateId: sentQuote.id,
+        reason: 'Budget constraints',
+        actorId: 'portal-account-1',
+        actorType: 'CUSTOMER_PORTAL',
+      }))
     })
   })
 

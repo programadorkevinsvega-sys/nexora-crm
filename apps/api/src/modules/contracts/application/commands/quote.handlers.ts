@@ -64,7 +64,7 @@ export class AcceptQuoteHandler {
 
     const updated = quote.updateStatus('ACCEPTED')
     await this.repo.save(updated)
-    await this.outbox.publish(new QuoteAcceptedEvent(updated.id))
+    await this.outbox.publish(new QuoteAcceptedEvent(updated.id, command.actorId, command.actorType))
   }
 }
 
@@ -82,6 +82,6 @@ export class RejectQuoteHandler {
 
     const updated = quote.updateStatus('REJECTED')
     await this.repo.save(updated)
-    await this.outbox.publish(new QuoteRejectedEvent(updated.id, command.reason))
+    await this.outbox.publish(new QuoteRejectedEvent(updated.id, command.reason, command.actorId, command.actorType))
   }
 }

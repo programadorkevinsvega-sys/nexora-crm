@@ -30,12 +30,16 @@ export class QuoteAcceptedEvent extends DomainEvent {
   readonly aggregateType = 'quote'
   readonly eventName = 'quote.accepted'
 
-  constructor(readonly aggregateId: string) {
+  constructor(
+    readonly aggregateId: string,
+    readonly actorId?: string,
+    readonly actorType?: string,
+  ) {
     super()
   }
 
   toPrimitives() {
-    return { quoteId: this.aggregateId }
+    return { quoteId: this.aggregateId, actorId: this.actorId, actorType: this.actorType }
   }
 }
 
@@ -43,11 +47,21 @@ export class QuoteRejectedEvent extends DomainEvent {
   readonly aggregateType = 'quote'
   readonly eventName = 'quote.rejected'
 
-  constructor(readonly aggregateId: string, readonly reason: string) {
+  constructor(
+    readonly aggregateId: string,
+    readonly reason: string,
+    readonly actorId?: string,
+    readonly actorType?: string,
+  ) {
     super()
   }
 
   toPrimitives() {
-    return { quoteId: this.aggregateId, reason: this.reason }
+    return {
+      quoteId: this.aggregateId,
+      reason: this.reason,
+      actorId: this.actorId,
+      actorType: this.actorType,
+    }
   }
 }

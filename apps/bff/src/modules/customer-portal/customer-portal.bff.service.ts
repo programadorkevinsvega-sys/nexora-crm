@@ -1,6 +1,4 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
-import { and, desc, eq } from 'drizzle-orm'
-import { contacts, deals, getDb, quotes } from '@crm/database'
 import type { SupportTicket } from '@crm/contracts'
 import { ApiCoreGrpcClient } from '../../common/grpc/api-core-grpc.client'
 import type { AuthenticatedUser } from '../../common/decorators/current-user.decorator'
@@ -36,24 +34,40 @@ export interface CreateCustomerPortalTicket {
 export class CustomerPortalBffService {
   constructor(private readonly api: ApiCoreGrpcClient) {}
 
-  private get db() {
-    return getDb()
-  }
-
   private async assertContactBelongsToTenant(tenantId: string, contactId: string): Promise<void> {
-    const rows = await this.db
-      .select({ id: contacts.id })
-      .from(contacts)
-      .where(and(
-        eq(contacts.id, contactId),
-        eq(contacts.tenantId, tenantId),
-      ))
-      .limit(1)
-
-    if (rows.length === 0) {
-      // Do not reveal whether a contact exists in another tenant.
+    const contact = await this.api.getContact(tenantId, contactId)
+    if (contact.id !== contactId || contact.tenantId !== tenantId) {
       throw new NotFoundException('Customer portal identity is not available')
     }
+  }
+
+  private async listPortalQuotes(tenantId: string, contactId: string): Promise<CustomerPortalQuote[]> {
+    const dealsPage = await this.api.listDeals({ tenantId, contactId, limit: 100 })
+    const ownedDeals = dealsPage.data.filter((deal) => deal.contactId === contactId)
+    const rows: CustomerPortalQuote[] = []
+
+    for (let index = 0; index < ownedDeals.length; index += 10) {
+      const batch = ownedDeals.slice(index, index + 10)
+      const pages = await Promise.all(batch.map((deal) =>
+        this.api.listQuotes({ tenantId, dealId: deal.id, limit: 100 }),
+      ))
+      pages.forEach((page, pageIndex) => {
+        const deal = batch[pageIndex]
+        page.data.forEach((quote) => rows.push({
+          id: quote.id,
+          quoteNumber: quote.quoteNumber,
+          status: quote.status,
+          grandTotal: quote.grandTotal ?? 0,
+          currency: deal.currency || 'USD',
+          validUntil: quote.validUntil,
+          createdAt: quote.createdAt,
+        }))
+      })
+    }
+
+    return rows
+      .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
+      .slice(0, 50)
   }
 
   private toPortalTicket(ticket: SupportTicket): CustomerPortalTicket {
@@ -79,27 +93,7 @@ export class CustomerPortalBffService {
         contactId: identity.contactId,
         limit: 50,
       }),
-      this.db
-        .select({
-          id: quotes.id,
-          quoteNumber: quotes.quoteNumber,
-          status: quotes.status,
-          grandTotal: quotes.grandTotal,
-          currency: deals.currency,
-          validUntil: quotes.validUntil,
-          createdAt: quotes.createdAt,
-        })
-        .from(quotes)
-        .innerJoin(deals, and(
-          eq(quotes.dealId, deals.id),
-          eq(quotes.tenantId, deals.tenantId),
-        ))
-        .where(and(
-          eq(quotes.tenantId, identity.tenantId),
-          eq(deals.contactId, identity.contactId),
-        ))
-        .orderBy(desc(quotes.createdAt))
-        .limit(50),
+      this.listPortalQuotes(identity.tenantId, identity.contactId),
       this.api.listKbCategories(identity.tenantId),
       this.api.listKbArticles(identity.tenantId, { publicOnly: true }),
     ])
@@ -114,14 +108,7 @@ export class CustomerPortalBffService {
     return {
       overview: { ...overview, featuredArticles: publicFeaturedArticles },
       tickets: ticketsPage.data.map((ticket) => this.toPortalTicket(ticket)),
-      quotes: quoteRows.map((quote) => ({
-        ...quote,
-        status: quote.status ?? 'DRAFT',
-        grandTotal: quote.grandTotal ?? 0,
-        currency: quote.currency ?? 'USD',
-        validUntil: quote.validUntil,
-        createdAt: quote.createdAt.toISOString(),
-      })),
+      quotes: quoteRows,
     }
   }
 

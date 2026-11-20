@@ -15,8 +15,19 @@ message CreateQuoteRequest {
   optional double tax_total = 7; optional double grand_total = 8;
 }
 
+message QuoteActionRequest {
+  string tenant_id = 1;
+  string id = 2;
+  optional string actor_id = 3;
+  optional string actor_type = 4;
+}
+
 message RejectQuoteRequest {
-  string tenant_id = 1; string id = 2; string reason = 3;
+  string tenant_id = 1;
+  string id = 2;
+  string reason = 3;
+  optional string actor_id = 4;
+  optional string actor_type = 5;
 }
 
 message CreateContractRequest {
@@ -51,7 +62,7 @@ service QuoteService {
   rpc GetQuote(crm.common.IdRequest) returns (QuoteResponse);
   rpc ListQuotes(ListQuotesRequest) returns (crm.common.PaginatedResponse);
   rpc SendQuote(crm.common.IdRequest) returns (crm.common.Empty);
-  rpc AcceptQuote(crm.common.IdRequest) returns (crm.common.Empty);
+  rpc AcceptQuote(QuoteActionRequest) returns (crm.common.Empty);
   rpc RejectQuote(RejectQuoteRequest) returns (crm.common.Empty);
 }
 

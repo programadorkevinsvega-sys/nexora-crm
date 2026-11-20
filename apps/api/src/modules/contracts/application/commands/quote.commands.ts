@@ -16,9 +16,20 @@ export class SendQuoteCommand {
 }
 
 export class AcceptQuoteCommand {
-  constructor(readonly tenantId: string, readonly id: string) {}
+  constructor(
+    readonly tenantId: string,
+    readonly id: string,
+    readonly actorId?: string,
+    readonly actorType?: string,
+  ) {}
 }
 
 export class RejectQuoteCommand {
-  constructor(readonly tenantId: string, readonly id: string, readonly reason: string) {}
+  constructor(
+    readonly tenantId: string,
+    readonly id: string,
+    readonly reason: string,
+    readonly actorId?: string,
+    readonly actorType?: string,
+  ) {}
 }

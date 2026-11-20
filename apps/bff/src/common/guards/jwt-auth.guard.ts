@@ -22,6 +22,9 @@ export function isAllowedCustomerPortalPath(method: string, path: string): boole
   if (/^\/api\/customer-portal\/tickets\/[0-9a-f-]{36}\/replies$/i.test(path)) {
     return method === 'GET' || method === 'POST'
   }
+  if (/^\/api\/customer-portal\/quotes\/[0-9a-f-]{36}$/i.test(path)) return method === 'GET'
+  if (/^\/api\/customer-portal\/quotes\/[0-9a-f-]{36}\/accept$/i.test(path)) return method === 'POST'
+  if (/^\/api\/customer-portal\/quotes\/[0-9a-f-]{36}\/reject$/i.test(path)) return method === 'POST'
   if (path === '/api/customer-portal/auth/logout') return method === 'POST'
   if (path === '/api/kb/categories' || path === '/api/kb/articles') return method === 'GET'
   if (path.startsWith('/api/kb/articles/')) return method === 'GET'
