@@ -14,11 +14,26 @@ import { Permission } from '../domain/entities/permission.entity'
 import { UserRole } from '../domain/entities/user-role.entity'
 import { IamMapper } from './iam.mapper'
 import { assertTenantHasRemainingAdmin } from './tenant-admin-invariant'
+import { assertTenantHasRemainingAdmin } from './tenant-admin-invariant'
 
 @Injectable()
 export class DrizzleIamRepository extends IamRepository {
   private get db() {
     return getDb()
+  }
+
+  private async lockTenantRoleChanges(tx: any, tenantId: string): Promise<void> {
+    await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtextextended(${tenantId}, 0))`)
+  }
+
+  private async tenantAdminUserIds(tx: any, tenantId: string, adminRoleId: string): Promise<string[]> {
+    const rows = await tx.select({ userId: userRolesTable.userId })
+      .from(userRolesTable)
+      .where(and(
+        eq(userRolesTable.tenantId, tenantId),
+        eq(userRolesTable.roleId, adminRoleId),
+      ) as any)
+    return [...new Set(rows.map((row) => row.userId))]
   }
 
   private async lockTenantRoleChanges(tx: any, tenantId: string): Promise<void> {
@@ -77,10 +92,25 @@ export class DrizzleIamRepository extends IamRepository {
   }
 
   async saveRole(role: Role): Promise<void> {
-    const row = IamMapper.roleToPersistence(role)
-    await this.db.insert(rolesTable).values(row as any).onConflictDoUpdate({
-      target: rolesTable.id,
-      set: row as any,
+    await this.db.transaction(async (tx) => {
+      await this.lockTenantRoleChanges(tx, role.tenantId)
+      const existing = await tx.query.roles.findFirst({
+        where: and(
+          eq(rolesTable.tenantId, role.tenantId),
+          eq(rolesTable.id, role.id),
+        ) as any,
+      })
+      if (existing?.name.toLowerCase() === 'admin' && role.name.toLowerCase() !== 'admin') {
+        const adminUsers = await this.tenantAdminUserIds(tx, role.tenantId, role.id)
+        if (adminUsers.length > 0) {
+          throw new ConflictException('The tenant admin role cannot be renamed while it is assigned')
+        }
+      }
+      const row = IamMapper.roleToPersistence(role)
+      await tx.insert(rolesTable).values(row as any).onConflictDoUpdate({
+        target: rolesTable.id,
+        set: row as any,
+      })
     })
   }
 
@@ -231,18 +261,35 @@ export class DrizzleIamRepository extends IamRepository {
   }
 
   async assignRoleToUser(assignment: UserRole): Promise<void> {
-    await this.db.insert(userRolesTable).values({
-      userId: assignment.userId,
-      roleId: assignment.roleId,
-      tenantId: assignment.tenantId,
-      branchId: assignment.branchId,
-      grantedAt: assignment.grantedAt,
-    } as any).onConflictDoNothing()
+    await this.db.transaction(async (tx) => {
+      await this.lockTenantRoleChanges(tx, assignment.tenantId)
+      const role = await tx.query.roles.findFirst({
+        where: and(
+          eq(rolesTable.tenantId, assignment.tenantId),
+          eq(rolesTable.id, assignment.roleId),
+        ) as any,
+      })
+      if (!role) throw new NotFoundException('Role not found')
+      await tx.insert(userRolesTable).values({
+        userId: assignment.userId,
+        roleId: assignment.roleId,
+        tenantId: assignment.tenantId,
+        branchId: assignment.branchId,
+        grantedAt: assignment.grantedAt,
+      } as any).onConflictDoNothing()
+    })
   }
 
   async replaceRolesForUser(tenantId: string, userId: string, assignment: UserRole): Promise<UserRole[]> {
     return this.db.transaction(async (tx) => {
       await this.lockTenantRoleChanges(tx, tenantId)
+      const targetRole = await tx.query.roles.findFirst({
+        where: and(
+          eq(rolesTable.tenantId, tenantId),
+          eq(rolesTable.id, assignment.roleId),
+        ) as any,
+      })
+      if (!targetRole) throw new NotFoundException('Role not found')
       const previousRows = await tx
         .select({
           userId: userRolesTable.userId,

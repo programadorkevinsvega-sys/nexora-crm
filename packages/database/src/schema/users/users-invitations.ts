@@ -1,9 +1,9 @@
-import { index, pgSchema, timestamp, uniqueIndex, uuid, varchar } from 'drizzle-orm/pg-core'
+import { index, timestamp, uniqueIndex, uuid, varchar } from 'drizzle-orm/pg-core'
 import { sql } from 'drizzle-orm'
 
-export const usersInvitationsSchema = pgSchema('users')
+import { usersSchema } from './users'
 
-export const userMemberInvitations = usersInvitationsSchema.table('tenant_member_invitations', {
+export const userMemberInvitations = usersSchema.table('tenant_member_invitations', {
   id: uuid('id').defaultRandom().primaryKey(),
   tenantId: uuid('tenant_id').notNull(),
   email: varchar('email', { length: 255 }).notNull(),

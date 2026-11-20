@@ -2,8 +2,6 @@ import {
   BadRequestException,
   Body,
   Controller,
-  Get,
-  Param,
   Post,
 } from '@nestjs/common'
 import { ApiOperation, ApiTags } from '@nestjs/swagger'
@@ -18,10 +16,11 @@ export class TeamInvitationsPublicBffController {
 
   @Public()
   @Throttle({ limit: 10, ttl: 60 })
-  @Get(':token')
-  @ApiOperation({ summary: 'Consultar los datos públicos de una invitación válida' })
-  async preview(@Param('token') token: string) {
-    return this.service.getInvitationPreview(token)
+  @Post('preview')
+  @ApiOperation({ summary: 'Consultar los datos públicos de una invitación válida sin incluir el token en la URL' })
+  async preview(@Body() body: { token?: string }) {
+    if (!body?.token) throw new BadRequestException('token is required')
+    return this.service.getInvitationPreview(body.token)
   }
 
   @Public()
