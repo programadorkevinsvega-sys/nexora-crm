@@ -1,5 +1,5 @@
 import { Controller, UseFilters } from '@nestjs/common'
-import { GrpcDomainErrorFilter } from '../../../../common/filters/grpc-domain-error.filter'
+import { CustomerPortalGrpcErrorFilter } from './customer-portal-error.filter'
 import { GrpcMethod } from '@nestjs/microservices'
 import { CreatePortalInvitationHandler } from '../../application/commands/create-portal-invitation.handler'
 import { ListPortalInvitationsHandler } from '../../application/commands/list-portal-invitations.handler'
@@ -12,7 +12,7 @@ import { PortalRefreshHandler } from '../../application/commands/portal-refresh.
 import { PortalLogoutHandler } from '../../application/commands/portal-logout.handler'
 
 @Controller()
-@UseFilters(GrpcDomainErrorFilter)
+@UseFilters(CustomerPortalGrpcErrorFilter)
 export class CustomerPortalAccessGrpcController {
   constructor(
     private readonly createInvitation: CreatePortalInvitationHandler,
