@@ -194,6 +194,19 @@ export class DrizzleUserInvitationRepository extends UserInvitationRepository {
       })
       if (!invitation) throw new NotFoundException('Invitation token is invalid')
       if (invitation.status === 'ACCEPTING' && invitation.acceptedUserId) {
+        // The original token claim happened before expiry. Allow that same
+        // claimant to resume after expiry, but never create a second user.
+        const [pendingUser] = await tx.update(usersTable).set({
+          passwordHash,
+          updatedAt: new Date(),
+        }).where(and(
+          eq(usersTable.tenantId, invitation.tenantId),
+          eq(usersTable.id, invitation.acceptedUserId),
+          eq(usersTable.status, 'INACTIVE'),
+        )).returning({ id: usersTable.id })
+        if (!pendingUser) {
+          throw new ConflictException('The prepared invitation account cannot be resumed')
+        }
         return {
           tenantId: invitation.tenantId,
           invitationId: invitation.id,

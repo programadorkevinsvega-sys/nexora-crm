@@ -174,7 +174,7 @@ export class TenantInvitationsBffService implements OnModuleInit {
       (await lastValueFrom(this.users.getInvitationByToken({ token }))).json,
     )
     const validState = invitation.status === 'PENDING' || invitation.status === 'ACCEPTING'
-    if (!validState || new Date(invitation.expiresAt).getTime() <= Date.now()) {
+    if (!validState || (invitation.status === 'PENDING' && new Date(invitation.expiresAt).getTime() <= Date.now())) {
       throw new ConflictException('This invitation has expired or is no longer active')
     }
     return {
@@ -192,7 +192,7 @@ export class TenantInvitationsBffService implements OnModuleInit {
     )
     if (
       !['PENDING', 'ACCEPTING'].includes(invitation.status) ||
-      new Date(invitation.expiresAt).getTime() <= Date.now()
+      (invitation.status === 'PENDING' && new Date(invitation.expiresAt).getTime() <= Date.now())
     ) {
       throw new ConflictException('This invitation has expired or is no longer active')
     }
