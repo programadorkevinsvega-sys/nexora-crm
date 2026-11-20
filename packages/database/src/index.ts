@@ -76,6 +76,7 @@ export {
   users, naturalPersonProfiles, legalEntityProfiles,
   userOauthLinks, userMobileDevices,
 } from './schema/users/users'
+export { userMemberInvitations } from './schema/users/users-invitations'
 
 export {
   usersOutboxEvents, usersEventDeadLetters, usersInboxEvents,
