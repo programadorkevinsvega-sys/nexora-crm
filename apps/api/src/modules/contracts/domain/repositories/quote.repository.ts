@@ -1,4 +1,4 @@
-import { Quote } from '../entities/quote.entity'
+import { Quote, QuoteStatus } from '../entities/quote.entity'
 
 export interface QuoteFilter {
   status?: string
@@ -16,5 +16,11 @@ export abstract class QuoteRepository {
   abstract findById(tenantId: string, id: string): Promise<Quote | null>
   abstract list(tenantId: string, filter: QuoteFilter): Promise<PaginatedQuotes>
   abstract save(quote: Quote): Promise<void>
+  abstract transitionStatus(
+    tenantId: string,
+    id: string,
+    expectedStatus: QuoteStatus,
+    nextStatus: QuoteStatus,
+  ): Promise<boolean>
   abstract delete(tenantId: string, id: string): Promise<void>
 }

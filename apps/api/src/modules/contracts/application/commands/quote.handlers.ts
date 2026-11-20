@@ -61,10 +61,12 @@ export class AcceptQuoteHandler {
     const quote = await this.repo.findById(command.tenantId, command.id)
     if (!quote) throw new NotFoundError('Quote', command.id)
     if (quote.status !== 'SENT') throw new ConflictError('Only sent quotes can be accepted')
+    if (quote.isExpired()) throw new ConflictError('Expired quotes cannot be accepted')
 
-    const updated = quote.updateStatus('ACCEPTED')
-    await this.repo.save(updated)
-    await this.outbox.publish(new QuoteAcceptedEvent(updated.id, command.actorId, command.actorType))
+    const transitioned = await this.repo.transitionStatus(command.tenantId, command.id, 'SENT', 'ACCEPTED')
+    if (!transitioned) throw new ConflictError('Quote was already changed by another request')
+
+    await this.outbox.publish(new QuoteAcceptedEvent(quote.id, command.actorId, command.actorType))
   }
 }
 
@@ -79,9 +81,11 @@ export class RejectQuoteHandler {
     const quote = await this.repo.findById(command.tenantId, command.id)
     if (!quote) throw new NotFoundError('Quote', command.id)
     if (quote.status !== 'SENT') throw new ConflictError('Only sent quotes can be rejected')
+    if (quote.isExpired()) throw new ConflictError('Expired quotes cannot be rejected')
 
-    const updated = quote.updateStatus('REJECTED')
-    await this.repo.save(updated)
-    await this.outbox.publish(new QuoteRejectedEvent(updated.id, command.reason, command.actorId, command.actorType))
+    const transitioned = await this.repo.transitionStatus(command.tenantId, command.id, 'SENT', 'REJECTED')
+    if (!transitioned) throw new ConflictError('Quote was already changed by another request')
+
+    await this.outbox.publish(new QuoteRejectedEvent(quote.id, command.reason, command.actorId, command.actorType))
   }
 }

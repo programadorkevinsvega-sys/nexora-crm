@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { eq, and, asc, or, gt, ilike } from 'drizzle-orm'
 import { getDb, quotes as quotesTable } from '@crm/database'
 import { QuoteRepository, QuoteFilter, PaginatedQuotes } from '../domain/repositories/quote.repository'
-import { Quote } from '../domain/entities/quote.entity'
+import { Quote, QuoteStatus } from '../domain/entities/quote.entity'
 import { QuoteMapper } from './quote.mapper'
 
 @Injectable()
@@ -46,6 +46,24 @@ export class DrizzleQuoteRepository extends QuoteRepository {
       target: quotesTable.id,
       set: row,
     })
+  }
+
+  async transitionStatus(
+    tenantId: string,
+    id: string,
+    expectedStatus: QuoteStatus,
+    nextStatus: QuoteStatus,
+  ): Promise<boolean> {
+    const updated = await this.db.update(quotesTable)
+      .set({ status: nextStatus, updatedAt: new Date() })
+      .where(and(
+        eq(quotesTable.tenantId, tenantId),
+        eq(quotesTable.id, id),
+        eq(quotesTable.status, expectedStatus),
+      ))
+      .returning({ id: quotesTable.id })
+
+    return updated.length === 1
   }
 
   async delete(tenantId: string, id: string): Promise<void> {

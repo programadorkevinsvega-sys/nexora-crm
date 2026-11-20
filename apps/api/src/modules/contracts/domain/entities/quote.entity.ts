@@ -42,6 +42,13 @@ export class Quote {
     )
   }
 
+  isExpired(at: Date = new Date()): boolean {
+    const expiry = /^\d{4}-\d{2}-\d{2}$/.test(this.validUntil)
+      ? Date.parse(`${this.validUntil}T23:59:59.999Z`)
+      : Date.parse(this.validUntil)
+    return !Number.isFinite(expiry) || expiry < at.getTime()
+  }
+
   updateStatus(status: QuoteStatus): Quote {
     return new Quote(
       this.id,

@@ -2,13 +2,18 @@ import { CreateContractHandler, RenewContractHandler } from '../../application/c
 import { AcceptQuoteHandler, RejectQuoteHandler } from '../../application/commands/quote.handlers'
 import { Quote } from '../../domain/entities/quote.entity'
 import { Contract } from '../../domain/entities/contract.entity'
+import { ConflictError } from '@crm/shared'
 
 describe('Contracts Module - Unit Tests', () => {
   let mockRepo: any
   let mockOutbox: any
 
   beforeEach(() => {
-    mockRepo = { save: jest.fn().mockResolvedValue(undefined), findById: jest.fn() }
+    mockRepo = {
+      save: jest.fn().mockResolvedValue(undefined),
+      findById: jest.fn(),
+      transitionStatus: jest.fn().mockResolvedValue(true),
+    }
     mockOutbox = { publish: jest.fn().mockResolvedValue(undefined) }
   })
 
@@ -55,12 +60,47 @@ describe('Contracts Module - Unit Tests', () => {
         actorType: 'CUSTOMER_PORTAL',
       })
 
-      expect(mockRepo.save).toHaveBeenCalled()
+      expect(mockRepo.transitionStatus).toHaveBeenCalledWith('tenant-1', sentQuote.id, 'SENT', 'ACCEPTED')
       expect(mockOutbox.publish).toHaveBeenCalledWith(expect.objectContaining({
         aggregateId: sentQuote.id,
         actorId: 'portal-account-1',
         actorType: 'CUSTOMER_PORTAL',
       }))
+    })
+
+    it('rejects concurrent decisions when another request already transitioned the quote', async () => {
+      mockRepo.findById.mockResolvedValue(sentQuote)
+      mockRepo.transitionStatus.mockResolvedValueOnce(false)
+      const handler = new AcceptQuoteHandler(mockRepo, mockOutbox)
+
+      await expect(handler.execute({
+        tenantId: 'tenant-1',
+        id: sentQuote.id,
+        actorId: 'portal-account-1',
+        actorType: 'CUSTOMER_PORTAL',
+      })).rejects.toBeInstanceOf(ConflictError)
+
+      expect(mockOutbox.publish).not.toHaveBeenCalled()
+    })
+
+    it('does not accept expired quotes', async () => {
+      const expiredQuote = Quote.create({
+        tenantId: 'tenant-1',
+        dealId: 'deal-1',
+        quoteNumber: 'Q-OLD',
+        validUntil: '2026-01-01',
+        subtotal: 100,
+        taxTotal: 19,
+        grandTotal: 119,
+      }).updateStatus('SENT')
+      mockRepo.findById.mockResolvedValue(expiredQuote)
+      const handler = new AcceptQuoteHandler(mockRepo, mockOutbox)
+
+      await expect(handler.execute({
+        tenantId: 'tenant-1',
+        id: expiredQuote.id,
+      })).rejects.toBeInstanceOf(ConflictError)
+      expect(mockRepo.transitionStatus).not.toHaveBeenCalled()
     })
 
     it('includes the authenticated portal actor and reason in the rejected quote event', async () => {
@@ -75,7 +115,7 @@ describe('Contracts Module - Unit Tests', () => {
         actorType: 'CUSTOMER_PORTAL',
       })
 
-      expect(mockRepo.save).toHaveBeenCalled()
+      expect(mockRepo.transitionStatus).toHaveBeenCalledWith('tenant-1', sentQuote.id, 'SENT', 'REJECTED')
       expect(mockOutbox.publish).toHaveBeenCalledWith(expect.objectContaining({
         aggregateId: sentQuote.id,
         reason: 'Budget constraints',
