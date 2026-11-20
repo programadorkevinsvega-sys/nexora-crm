@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ConflictException, Injectable } from '@nestjs/common'
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common'
 import { eq, and, ilike, gt, asc, inArray, sql } from 'drizzle-orm'
 import { getDb } from '@crm/database'
 import {
@@ -14,26 +14,11 @@ import { Permission } from '../domain/entities/permission.entity'
 import { UserRole } from '../domain/entities/user-role.entity'
 import { IamMapper } from './iam.mapper'
 import { assertTenantHasRemainingAdmin } from './tenant-admin-invariant'
-import { assertTenantHasRemainingAdmin } from './tenant-admin-invariant'
 
 @Injectable()
 export class DrizzleIamRepository extends IamRepository {
   private get db() {
     return getDb()
-  }
-
-  private async lockTenantRoleChanges(tx: any, tenantId: string): Promise<void> {
-    await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtextextended(${tenantId}, 0))`)
-  }
-
-  private async tenantAdminUserIds(tx: any, tenantId: string, adminRoleId: string): Promise<string[]> {
-    const rows = await tx.select({ userId: userRolesTable.userId })
-      .from(userRolesTable)
-      .where(and(
-        eq(userRolesTable.tenantId, tenantId),
-        eq(userRolesTable.roleId, adminRoleId),
-      ) as any)
-    return [...new Set(rows.map((row) => row.userId))]
   }
 
   private async lockTenantRoleChanges(tx: any, tenantId: string): Promise<void> {
