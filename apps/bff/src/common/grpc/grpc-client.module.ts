@@ -41,7 +41,7 @@ function protoPath(): string {
             options: {
               package: [
                 'crm.common', 'crm.companies', 'crm.contacts', 'crm.pipelines',
-                'crm.users', 'crm.iam',
+                'crm.users', 'crm.iam', 'crm.notifications',
                 'crm.interactions', 'crm.support_tickets', 'crm.campaigns',
                 'crm.contracts', 'crm.sales_teams', 'crm.helpdesk',
                 'crm.affiliates', 'crm.personal_crm', 'crm.loyalty', 'crm.tags',
@@ -53,6 +53,7 @@ function protoPath(): string {
                 resolve(protoPath(), 'common.proto'),
                 resolve(protoPath(), 'users.proto'),
                 resolve(protoPath(), 'iam.proto'),
+                resolve(protoPath(), 'notifications.proto'),
                 resolve(protoPath(), 'companies.proto'),
                 resolve(protoPath(), 'contacts.proto'),
                 resolve(protoPath(), 'pipelines.proto'),
