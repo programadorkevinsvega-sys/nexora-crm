@@ -18,7 +18,7 @@ function isPortalPath(path: string): boolean {
   if (path.startsWith("/api/customer-portal")) return true
   return path.startsWith("/api/kb/") &&
     typeof window !== "undefined" &&
-    Boolean(sessionStorage.getItem("portal_access_token"))
+    (Boolean(sessionStorage.getItem("portal_access_token")) || window.location.pathname.startsWith("/portal/"))
 }
 
 function resolveRequestUrl(path: string): string {
