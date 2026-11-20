@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Injectable } from '@nestjs/common'
-import { eq, and, ilike, gt, asc, inArray } from 'drizzle-orm'
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common'
+import { eq, and, ilike, gt, asc, inArray, sql } from 'drizzle-orm'
 import { getDb } from '@crm/database'
 import {
   roles as rolesTable,
@@ -13,11 +13,26 @@ import { Role } from '../domain/entities/role.entity'
 import { Permission } from '../domain/entities/permission.entity'
 import { UserRole } from '../domain/entities/user-role.entity'
 import { IamMapper } from './iam.mapper'
+import { assertTenantHasRemainingAdmin } from './tenant-admin-invariant'
 
 @Injectable()
 export class DrizzleIamRepository extends IamRepository {
   private get db() {
     return getDb()
+  }
+
+  private async lockTenantRoleChanges(tx: any, tenantId: string): Promise<void> {
+    await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtextextended(${tenantId}, 0))`)
+  }
+
+  private async tenantAdminUserIds(tx: any, tenantId: string, adminRoleId: string): Promise<string[]> {
+    const rows: Array<{ userId: string }> = await tx.select({ userId: userRolesTable.userId })
+      .from(userRolesTable)
+      .where(and(
+        eq(userRolesTable.tenantId, tenantId),
+        eq(userRolesTable.roleId, adminRoleId),
+      ) as any)
+    return [...new Set(rows.map((row: { userId: string }) => row.userId))]
   }
 
   // ── Roles ──────────────────────────────────────────
@@ -62,19 +77,35 @@ export class DrizzleIamRepository extends IamRepository {
   }
 
   async saveRole(role: Role): Promise<void> {
-    const row = IamMapper.roleToPersistence(role)
-    await this.db.insert(rolesTable).values(row as any).onConflictDoUpdate({
-      target: rolesTable.id,
-      set: row as any,
+    await this.db.transaction(async (tx) => {
+      await this.lockTenantRoleChanges(tx, role.tenantId)
+      const existing = await tx.query.roles.findFirst({
+        where: and(
+          eq(rolesTable.tenantId, role.tenantId),
+          eq(rolesTable.id, role.id),
+        ) as any,
+      })
+      if (existing?.name.toLowerCase() === 'admin' && role.name.toLowerCase() !== 'admin') {
+        throw new ConflictException('The tenant admin role name is reserved')
+      }
+      const row = IamMapper.roleToPersistence(role)
+      await tx.insert(rolesTable).values(row as any).onConflictDoUpdate({
+        target: rolesTable.id,
+        set: row as any,
+      })
     })
   }
 
   async deleteRole(tenantId: string, id: string): Promise<void> {
     await this.db.transaction(async (tx) => {
+      await this.lockTenantRoleChanges(tx, tenantId)
       const role = await tx.query.roles.findFirst({
         where: and(eq(rolesTable.tenantId, tenantId), eq(rolesTable.id, id)) as any,
       })
       if (!role) return
+      if (role.name.toLowerCase() === 'admin') {
+        throw new ConflictException('The tenant admin role cannot be deleted')
+      }
 
       await tx.delete(rolePermissionsTable).where(
         eq(rolePermissionsTable.roleId, id) as any,
@@ -209,17 +240,35 @@ export class DrizzleIamRepository extends IamRepository {
   }
 
   async assignRoleToUser(assignment: UserRole): Promise<void> {
-    await this.db.insert(userRolesTable).values({
-      userId: assignment.userId,
-      roleId: assignment.roleId,
-      tenantId: assignment.tenantId,
-      branchId: assignment.branchId,
-      grantedAt: assignment.grantedAt,
-    } as any).onConflictDoNothing()
+    await this.db.transaction(async (tx) => {
+      await this.lockTenantRoleChanges(tx, assignment.tenantId)
+      const role = await tx.query.roles.findFirst({
+        where: and(
+          eq(rolesTable.tenantId, assignment.tenantId),
+          eq(rolesTable.id, assignment.roleId),
+        ) as any,
+      })
+      if (!role) throw new NotFoundException('Role not found')
+      await tx.insert(userRolesTable).values({
+        userId: assignment.userId,
+        roleId: assignment.roleId,
+        tenantId: assignment.tenantId,
+        branchId: assignment.branchId,
+        grantedAt: assignment.grantedAt,
+      } as any).onConflictDoNothing()
+    })
   }
 
   async replaceRolesForUser(tenantId: string, userId: string, assignment: UserRole): Promise<UserRole[]> {
     return this.db.transaction(async (tx) => {
+      await this.lockTenantRoleChanges(tx, tenantId)
+      const targetRole = await tx.query.roles.findFirst({
+        where: and(
+          eq(rolesTable.tenantId, tenantId),
+          eq(rolesTable.id, assignment.roleId),
+        ) as any,
+      })
+      if (!targetRole) throw new NotFoundException('Role not found')
       const previousRows = await tx
         .select({
           userId: userRolesTable.userId,
@@ -235,6 +284,17 @@ export class DrizzleIamRepository extends IamRepository {
           eq(userRolesTable.userId, userId) as any,
           eq(rolesTable.tenantId, tenantId) as any,
         ) as any)
+
+      const adminRole = await tx.query.roles.findFirst({
+        where: and(
+          eq(rolesTable.tenantId, tenantId),
+          ilike(rolesTable.name, 'admin'),
+        ) as any,
+      })
+      if (adminRole && previousRows.some((row) => row.roleId === adminRole.id)) {
+        const adminUsers = await this.tenantAdminUserIds(tx, tenantId, adminRole.id)
+        assertTenantHasRemainingAdmin(adminUsers, userId, assignment.roleId === adminRole.id)
+      }
 
       await tx.delete(userRolesTable).where(and(
         eq(userRolesTable.tenantId, tenantId) as any,
@@ -254,13 +314,24 @@ export class DrizzleIamRepository extends IamRepository {
   }
 
   async removeRoleFromUser(tenantId: string, userId: string, roleId: string): Promise<void> {
-    await this.db.delete(userRolesTable).where(
-      and(
+    await this.db.transaction(async (tx) => {
+      await this.lockTenantRoleChanges(tx, tenantId)
+      const role = await tx.query.roles.findFirst({
+        where: and(
+          eq(rolesTable.tenantId, tenantId),
+          eq(rolesTable.id, roleId),
+        ) as any,
+      })
+      if (role?.name.toLowerCase() === 'admin') {
+        const adminUsers = await this.tenantAdminUserIds(tx, tenantId, roleId)
+        assertTenantHasRemainingAdmin(adminUsers, userId, false)
+      }
+      await tx.delete(userRolesTable).where(and(
         eq(userRolesTable.tenantId, tenantId) as any,
         eq(userRolesTable.userId, userId) as any,
         eq(userRolesTable.roleId, roleId) as any,
-      ) as any,
-    )
+      ) as any)
+    })
   }
 
   // ── Policy evaluation ───────────────────────────────

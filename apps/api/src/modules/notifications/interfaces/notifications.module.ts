@@ -4,7 +4,7 @@ import { NotificationsGrpcController } from './grpc/notifications-grpc.controlle
 import {
   CreateChannelHandler, UpdateChannelHandler, DeleteChannelHandler, ListChannelsHandler, GetChannelHandler,
   CreateTemplateHandler, UpdateTemplateHandler, DeleteTemplateHandler, ListTemplatesHandler, GetTemplateHandler, RenderTemplateHandler,
-  SendEmailHandler, SendPushHandler, EnqueueNotificationHandler, CancelNotificationHandler, ListNotificationsHandler, GetNotificationHandler,
+  SendEmailHandler, SendTransientEmailHandler, SendPushHandler, EnqueueNotificationHandler, CancelNotificationHandler, ListNotificationsHandler, GetNotificationHandler,
   ListLogsHandler,
   GetPreferencesHandler, SetPreferencesHandler,
 } from '../application/handlers'
@@ -18,7 +18,7 @@ import { ProviderFactory } from '../infrastructure/providers/provider-factory'
   providers: [
     CreateChannelHandler, GetChannelHandler, ListChannelsHandler, UpdateChannelHandler, DeleteChannelHandler,
     CreateTemplateHandler, GetTemplateHandler, ListTemplatesHandler, UpdateTemplateHandler, DeleteTemplateHandler, RenderTemplateHandler,
-    SendEmailHandler, SendPushHandler, EnqueueNotificationHandler, GetNotificationHandler, ListNotificationsHandler, CancelNotificationHandler,
+    SendEmailHandler, SendTransientEmailHandler, SendPushHandler, EnqueueNotificationHandler, GetNotificationHandler, ListNotificationsHandler, CancelNotificationHandler,
     ListLogsHandler,
     GetPreferencesHandler, SetPreferencesHandler,
     ProviderFactory,

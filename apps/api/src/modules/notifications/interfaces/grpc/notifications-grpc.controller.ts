@@ -3,14 +3,14 @@ import { GrpcMethod } from '@nestjs/microservices'
 import {
   CreateChannelHandler, UpdateChannelHandler, DeleteChannelHandler, ListChannelsHandler, GetChannelHandler,
   CreateTemplateHandler, UpdateTemplateHandler, DeleteTemplateHandler, ListTemplatesHandler, GetTemplateHandler, RenderTemplateHandler,
-  SendEmailHandler, SendPushHandler, EnqueueNotificationHandler, CancelNotificationHandler, ListNotificationsHandler, GetNotificationHandler,
+  SendEmailHandler, SendTransientEmailHandler, SendPushHandler, EnqueueNotificationHandler, CancelNotificationHandler, ListNotificationsHandler, GetNotificationHandler,
   ListLogsHandler,
   GetPreferencesHandler, SetPreferencesHandler,
 } from '../../application/handlers'
 import {
   CreateChannelCommand, UpdateChannelCommand, DeleteChannelCommand, ListChannelsQuery, GetChannelQuery,
   CreateTemplateCommand, UpdateTemplateCommand, DeleteTemplateCommand, ListTemplatesQuery, GetTemplateQuery, RenderTemplateQuery,
-  SendEmailCommand, SendPushCommand, EnqueueNotificationCommand, CancelNotificationCommand, ListNotificationsQuery,
+  SendEmailCommand, SendTransientEmailCommand, SendPushCommand, EnqueueNotificationCommand, CancelNotificationCommand, ListNotificationsQuery,
   ListLogsQuery,
   GetPreferencesQuery, SetPreferencesCommand,
 } from '../../application/handlers'
@@ -31,6 +31,7 @@ export class NotificationsGrpcController {
     private readonly deleteTemplateHandler: DeleteTemplateHandler,
     private readonly renderTemplateHandler: RenderTemplateHandler,
     private readonly sendEmailHandler: SendEmailHandler,
+    private readonly sendTransientEmailHandler: SendTransientEmailHandler,
     private readonly sendPushHandler: SendPushHandler,
     private readonly enqueueNotificationHandler: EnqueueNotificationHandler,
     private readonly getNotificationHandler: GetNotificationHandler,
@@ -122,6 +123,15 @@ export class NotificationsGrpcController {
   async sendEmail(data: any) {
     const result = await this.sendEmailHandler.execute(
       new SendEmailCommand(data.tenantId, data.to, data.subject, data.body, data.isHtml, data.channelId))
+    return { json: JSON.stringify(NotificationsMapper.notificationToResponse(result)) }
+  }
+
+
+  @GrpcMethod('NotificationService', 'SendTransientEmail')
+  async sendTransientEmail(data: any) {
+    const result = await this.sendTransientEmailHandler.execute(
+      new SendTransientEmailCommand(data.tenantId, data.to, data.subject, data.body, data.isHtml),
+    )
     return { json: JSON.stringify(NotificationsMapper.notificationToResponse(result)) }
   }
 

@@ -126,24 +126,6 @@ export class TenantMembersBffService implements OnModuleInit {
     }))
   }
 
-  private async countOtherTenantAdmins(tenantId: string, excludedUserId: string, adminRoleId: string): Promise<number> {
-    let cursor: string | undefined
-    let count = 0
-
-    do {
-      const response = await lastValueFrom(this.users.listUsers({ tenantId, cursor, limit: 100 }))
-      const members = parseItems<{ id: string }>(response.jsonItems)
-      const assignments = await Promise.all(
-        members.filter((member) => member.id !== excludedUserId)
-          .map((member) => this.getAssignments(tenantId, member.id)),
-      )
-      count += assignments.filter((roles) => roles.some((role) => role.roleId === adminRoleId)).length
-      cursor = response.nextCursor || undefined
-    } while (cursor)
-
-    return count
-  }
-
   async replaceMemberRole(user: AuthenticatedUser, memberId: string, nextRoleId: string) {
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(nextRoleId)) {
       throw new BadRequestException('roleId must be a valid UUID')
@@ -151,26 +133,16 @@ export class TenantMembersBffService implements OnModuleInit {
 
     await this.assertTenantAdmin(user)
     const tenantId = user.tenantId
-    const [targetUser, roles, currentAssignments] = await Promise.all([
+    const [targetUser, roles] = await Promise.all([
       lastValueFrom(this.users.getUser({ tenantId, id: memberId })),
       this.getRoles(tenantId),
-      this.getAssignments(tenantId, memberId),
     ])
     if (!targetUser?.json) throw new NotFoundException('Team member not found')
 
     const requestedRole = roles.find((role) => role.id === nextRoleId)
     if (!requestedRole) throw new NotFoundException('Role is not available to this tenant')
 
-    const adminRole = roles.find((role) => role.name.toLowerCase() === 'admin')
-    const currentlyAdmin = Boolean(adminRole && currentAssignments.some((assignment) => assignment.roleId === adminRole.id))
-    const willRemainAdmin = Boolean(adminRole && requestedRole.id === adminRole.id)
-
-    if (currentlyAdmin && !willRemainAdmin) {
-      const otherAdmins = await this.countOtherTenantAdmins(tenantId, memberId, adminRole!.id)
-      if (otherAdmins < 1) {
-        throw new ForbiddenException('The tenant must retain at least one administrator')
-      }
-    }
+    // IAM enforces the last-admin invariant transactionally per tenant.
 
     await lastValueFrom(this.iam.replaceUserRole({
       tenantId,
@@ -191,12 +163,7 @@ export class TenantMembersBffService implements OnModuleInit {
     const assignments = await this.getAssignments(user.tenantId, memberId)
     if (!assignments.some((assignment) => assignment.roleId === roleId)) return
 
-    if (selected.name.toLowerCase() === 'admin') {
-      const otherAdmins = await this.countOtherTenantAdmins(user.tenantId, memberId, selected.id)
-      if (otherAdmins < 1) {
-        throw new ForbiddenException('The tenant must retain at least one administrator')
-      }
-    }
+    // IAM enforces the last-admin invariant transactionally per tenant.
 
     await lastValueFrom(this.iam.removeRole({ tenantId: user.tenantId, userId: memberId, roleId }))
     return { removed: true }

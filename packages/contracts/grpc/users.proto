@@ -138,6 +138,39 @@ message ListDevicesRequest {
   string user_id = 2;
 }
 
+message CreateInvitationRequest {
+  string tenant_id = 1;
+  string email = 2;
+  string role_id = 3;
+  string invited_by = 4;
+}
+
+message TenantInvitationsRequest {
+  string tenant_id = 1;
+}
+
+message InvitationMutationRequest {
+  string tenant_id = 1;
+  string invitation_id = 2;
+}
+
+message GetInvitationByTokenRequest {
+  string token = 1;
+}
+
+message PrepareInvitationAcceptanceRequest {
+  string token = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string password = 4;
+}
+
+message CompleteInvitationAcceptanceRequest {
+  string tenant_id = 1;
+  string invitation_id = 2;
+  string user_id = 3;
+}
+
 message UserResponse {
   string json = 1;
 }
@@ -156,6 +189,14 @@ message OAuthLinksResponse {
 }
 
 message DevicesResponse {
+  repeated string json_items = 1;
+}
+
+message InvitationResponse {
+  string json = 1;
+}
+
+message InvitationListResponse {
   repeated string json_items = 1;
 }
 
@@ -179,4 +220,12 @@ service UserService {
   rpc UpdateDevice(UpdateDeviceRequest) returns (crm.common.Empty);
   rpc RemoveDevice(RemoveDeviceRequest) returns (crm.common.Empty);
   rpc ListDevices(ListDevicesRequest) returns (DevicesResponse);
+
+  rpc CreateInvitation(CreateInvitationRequest) returns (InvitationResponse);
+  rpc ListInvitations(TenantInvitationsRequest) returns (InvitationListResponse);
+  rpc RevokeInvitation(InvitationMutationRequest) returns (InvitationResponse);
+  rpc ResendInvitation(InvitationMutationRequest) returns (InvitationResponse);
+  rpc GetInvitationByToken(GetInvitationByTokenRequest) returns (InvitationResponse);
+  rpc PrepareInvitationAcceptance(PrepareInvitationAcceptanceRequest) returns (InvitationResponse);
+  rpc CompleteInvitationAcceptance(CompleteInvitationAcceptanceRequest) returns (InvitationResponse);
 }

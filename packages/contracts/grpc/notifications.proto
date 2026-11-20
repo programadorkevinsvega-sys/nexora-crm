@@ -50,6 +50,14 @@ message RenderTemplateRequest {
 }
 
 // Send / Queue
+message SendTransientEmailRequest {
+  string tenant_id = 1;
+  string to = 2;
+  string subject = 3;
+  string body = 4;
+  optional bool is_html = 5;
+}
+
 message SendEmailRequest {
   optional string tenant_id = 1;
   string to = 2;
@@ -124,6 +132,7 @@ service NotificationService {
 
   // Send / Queue
   rpc SendEmail(SendEmailRequest) returns (EnqueueNotificationResponse);
+  rpc SendTransientEmail(SendTransientEmailRequest) returns (EnqueueNotificationResponse);
   rpc SendPush(SendPushRequest) returns (EnqueueNotificationResponse);
   rpc EnqueueNotification(EnqueueNotificationRequest) returns (EnqueueNotificationResponse);
   rpc GetNotification(crm.common.IdRequest) returns (EnqueueNotificationResponse);

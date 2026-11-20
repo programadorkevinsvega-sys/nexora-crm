@@ -6,7 +6,7 @@ import { Button } from '@/src/presentation/crm/components/ui/Button'
 import { Avatar } from '@/src/presentation/crm/components/ui/Avatar'
 import { useSession } from '@/src/infrastructure/auth/auth-provider'
 import { api, ApiError } from '@/src/infrastructure/crm/api/api-client'
-import { Users, UserPlus, RefreshCw, ShieldAlert } from 'lucide-react'
+import { Users, UserPlus, RefreshCw, Mail, Send, Ban } from 'lucide-react'
 
 interface MemberRole {
   id: string
@@ -30,10 +30,25 @@ interface TenantRole {
   description: string | null
 }
 
+interface Invitation {
+  id: string
+  email: string
+  roleId: string
+  status: 'PENDING' | 'ACCEPTING' | 'ACCEPTED' | 'REVOKED' | 'EXPIRED'
+  expiresAt: string
+  createdAt: string
+}
+
 export function TeamMembersSettingsTab() {
   const { session } = useSession()
   const [members, setMembers] = useState<Member[]>([])
   const [roles, setRoles] = useState<TenantRole[]>([])
+  const [invitations, setInvitations] = useState<Invitation[]>([])
+  const [inviteOpen, setInviteOpen] = useState(false)
+  const [inviteEmail, setInviteEmail] = useState('')
+  const [inviteRoleId, setInviteRoleId] = useState('')
+  const [sendingInvitation, setSendingInvitation] = useState(false)
+  const [mutatingInvitationId, setMutatingInvitationId] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [savingMemberId, setSavingMemberId] = useState<string | null>(null)
@@ -51,12 +66,14 @@ export function TeamMembersSettingsTab() {
     try {
       const params = new URLSearchParams({ limit: '100' })
       if (search.trim()) params.set('search', search.trim())
-      const [memberResponse, roleResponse] = await Promise.all([
+      const [memberResponse, roleResponse, invitationResponse] = await Promise.all([
         api.get<{ data: Member[]; nextCursor: string | null }>(`/api/tenant/team/members?${params.toString()}`),
         api.get<TenantRole[]>('/api/tenant/team/roles'),
+        api.get<Invitation[]>('/api/tenant/team/invitations'),
       ])
       setMembers(Array.isArray(memberResponse.data) ? memberResponse.data : [])
       setRoles(Array.isArray(roleResponse) ? roleResponse : [])
+      setInvitations(Array.isArray(invitationResponse) ? invitationResponse : [])
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'No se pudo cargar el equipo de la empresa.')
     } finally {
@@ -85,6 +102,74 @@ export function TeamMembersSettingsTab() {
     }
   }
 
+
+  const handleInvite = async () => {
+    if (!inviteEmail.trim() || !inviteRoleId) {
+      setError('Indica el correo y el rol del nuevo miembro.')
+      return
+    }
+    setSendingInvitation(true)
+    setError('')
+    setNotice('')
+    try {
+      const result = await api.post<{ invitation: Invitation; emailSent: boolean }>(
+        '/api/tenant/team/invitations',
+        { email: inviteEmail.trim(), roleId: inviteRoleId },
+      )
+      setInviteOpen(false)
+      setInviteEmail('')
+      setInviteRoleId('')
+      setNotice(result.emailSent
+        ? `Invitación enviada a ${result.invitation.email}.`
+        : `La invitación se creó, pero no se entregó el correo a ${result.invitation.email}. Revisa el proveedor y usa Reenviar.`)
+      await load()
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'No se pudo crear la invitación.')
+    } finally {
+      setSendingInvitation(false)
+    }
+  }
+
+  const handleResendInvitation = async (invitationId: string) => {
+    setMutatingInvitationId(invitationId)
+    setError('')
+    setNotice('')
+    try {
+      const result = await api.post<{ invitation: Invitation; emailSent: boolean }>(
+        `/api/tenant/team/invitations/${invitationId}/resend`, {},
+      )
+      setNotice(result.emailSent ? `Se envió un nuevo enlace a ${result.invitation.email}.` : 'El correo no pudo entregarse.')
+      await load()
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'No se pudo reenviar la invitación.')
+    } finally {
+      setMutatingInvitationId(null)
+    }
+  }
+
+  const handleRevokeInvitation = async (invitationId: string) => {
+    setMutatingInvitationId(invitationId)
+    setError('')
+    setNotice('')
+    try {
+      await api.delete(`/api/tenant/team/invitations/${invitationId}`)
+      setNotice('La invitación fue revocada.')
+      await load()
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'No se pudo revocar la invitación.')
+    } finally {
+      setMutatingInvitationId(null)
+    }
+  }
+
+  const invitationStatusLabel = (status: Invitation['status']) => ({
+    PENDING: 'Pendiente',
+    ACCEPTING: 'Activando cuenta',
+    ACCEPTED: 'Aceptada',
+    REVOKED: 'Revocada',
+    EXPIRED: 'Vencida',
+  }[status])
+
   const roleLabel = (name: string) => {
     const labels: Record<string, string> = {
       admin: 'Administrador del tenant',
@@ -106,6 +191,7 @@ export function TeamMembersSettingsTab() {
   }
 
   return (
+    <div className="space-y-6">
     <Card className="p-6 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-steel/60">
         <div className="flex items-center gap-3">
@@ -124,18 +210,46 @@ export function TeamMembersSettingsTab() {
             <RefreshCw size={14} className={isLoading ? 'animate-spin' : ''} />
             Actualizar
           </Button>
-          <Button variant="secondary" disabled title="Las invitaciones seguras se habilitarán con el flujo de aceptación por correo.">
+          <Button onClick={() => setInviteOpen((open) => !open)} disabled={roles.length === 0}>
             <UserPlus size={14} /> Invitar miembro
           </Button>
         </div>
       </div>
 
-      <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 flex items-start gap-2">
-        <ShieldAlert size={16} className="text-amber-400 mt-0.5 shrink-0" />
+      <div className="rounded-lg border border-sky-500/20 bg-sky-500/5 p-3 flex items-start gap-2">
+        <Mail size={16} className="text-sky-400 mt-0.5 shrink-0" />
         <p className="text-xs text-ash">
-          Las invitaciones todavía no están habilitadas. No se crearán usuarios ficticios en el navegador: el alta requiere un enlace de un solo uso, vencimiento y activación de contraseña.
+          Los enlaces son de un solo uso y vencen en siete días. El nuevo miembro crea su contraseña al aceptar.
         </p>
       </div>
+
+      {inviteOpen && (
+        <div className="rounded-lg border border-steel p-4 space-y-3">
+          <h4 className="text-sm font-semibold text-paper">Invitar a una persona</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label htmlFor="invite-email" className="text-xs text-ash mb-1.5 block">Correo electrónico</label>
+              <input id="invite-email" type="email" autoComplete="email" value={inviteEmail}
+                onChange={(event) => setInviteEmail(event.target.value)} placeholder="persona@empresa.com"
+                className="w-full bg-obsidian border border-steel rounded-lg px-3 py-2 text-xs text-paper focus:outline-none focus:border-signal-blue" />
+            </div>
+            <div>
+              <label htmlFor="invite-role" className="text-xs text-ash mb-1.5 block">Rol de la empresa</label>
+              <select id="invite-role" value={inviteRoleId} onChange={(event) => setInviteRoleId(event.target.value)}
+                className="w-full bg-obsidian border border-steel rounded-lg px-3 py-2 text-xs text-paper focus:outline-none focus:border-signal-blue">
+                <option value="">Selecciona un rol</option>
+                {roles.map((role) => <option key={role.id} value={role.id}>{role.name}</option>)}
+              </select>
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="ghost" onClick={() => setInviteOpen(false)} disabled={sendingInvitation}>Cancelar</Button>
+            <Button onClick={() => void handleInvite()} disabled={sendingInvitation || !inviteEmail.trim() || !inviteRoleId}>
+              <Send size={14} /> {sendingInvitation ? 'Enviando...' : 'Enviar invitación'}
+            </Button>
+          </div>
+        </div>
+      )}
 
       <div>
         <label htmlFor="team-search" className="text-xs text-ash mb-1.5 block">Buscar por nombre o correo</label>
@@ -221,5 +335,41 @@ export function TeamMembersSettingsTab() {
         </table>
       </div>
     </Card>
+
+      <Card className="p-6 space-y-4">
+        <div>
+          <h3 className="text-base font-semibold text-paper">Invitaciones</h3>
+          <p className="text-xs text-ash">Invitaciones de la empresa y estado de aceptación ({invitations.length})</p>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead><tr className="border-b border-steel/60 text-left text-ash uppercase tracking-wider font-semibold">
+              <th className="pb-3 pr-4">Correo</th><th className="pb-3 pr-4">Rol</th>
+              <th className="pb-3 pr-4">Estado</th><th className="pb-3 pr-4">Vence</th><th className="pb-3">Acciones</th>
+            </tr></thead>
+            <tbody className="divide-y divide-steel/40">
+              {isLoading ? <tr><td colSpan={5} className="py-6 text-center text-ash">Cargando invitaciones...</td></tr>
+                : invitations.length === 0 ? <tr><td colSpan={5} className="py-6 text-center text-ash">Todavía no hay invitaciones.</td></tr>
+                : invitations.map((invitation) => {
+                  const role = roles.find((item) => item.id === invitation.roleId)
+                  const canMutate = invitation.status === 'PENDING' || invitation.status === 'EXPIRED'
+                  const busy = mutatingInvitationId === invitation.id
+                  return <tr key={invitation.id}>
+                    <td className="py-3 pr-4 text-paper">{invitation.email}</td>
+                    <td className="py-3 pr-4 text-ash">{role?.name ?? 'Rol no disponible'}</td>
+                    <td className="py-3 pr-4 text-ash">{invitationStatusLabel(invitation.status)}</td>
+                    <td className="py-3 pr-4 text-ash">{new Date(invitation.expiresAt).toLocaleDateString()}</td>
+                    <td className="py-3"><div className="flex items-center gap-2">
+                      {canMutate && <Button size="sm" variant="secondary" onClick={() => void handleResendInvitation(invitation.id)} disabled={busy}><RefreshCw size={12} /> Reenviar</Button>}
+                      {canMutate && <Button size="sm" variant="danger" onClick={() => void handleRevokeInvitation(invitation.id)} disabled={busy}><Ban size={12} /> Revocar</Button>}
+                      {busy && <span className="text-[10px] text-ash">Procesando...</span>}
+                    </div></td>
+                  </tr>
+                })}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+    </div>
   )
 }
