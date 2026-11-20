@@ -241,6 +241,17 @@ export class DrizzleUserInvitationRepository extends UserInvitationRepository {
           ),
         })
         if (current?.status === 'ACCEPTING' && current.acceptedUserId) {
+          const [pendingUser] = await tx.update(usersTable).set({
+            passwordHash,
+            updatedAt: new Date(),
+          }).where(and(
+            eq(usersTable.tenantId, current.tenantId),
+            eq(usersTable.id, current.acceptedUserId),
+            eq(usersTable.status, 'INACTIVE'),
+          )).returning({ id: usersTable.id })
+          if (!pendingUser) {
+            throw new ConflictException('The prepared invitation account cannot be resumed')
+          }
           return {
             tenantId: current.tenantId,
             invitationId: current.id,

@@ -86,10 +86,7 @@ export class DrizzleIamRepository extends IamRepository {
         ) as any,
       })
       if (existing?.name.toLowerCase() === 'admin' && role.name.toLowerCase() !== 'admin') {
-        const adminUsers = await this.tenantAdminUserIds(tx, role.tenantId, role.id)
-        if (adminUsers.length > 0) {
-          throw new ConflictException('The tenant admin role cannot be renamed while it is assigned')
-        }
+        throw new ConflictException('The tenant admin role name is reserved')
       }
       const row = IamMapper.roleToPersistence(role)
       await tx.insert(rolesTable).values(row as any).onConflictDoUpdate({
@@ -107,10 +104,7 @@ export class DrizzleIamRepository extends IamRepository {
       })
       if (!role) return
       if (role.name.toLowerCase() === 'admin') {
-        const adminUsers = await this.tenantAdminUserIds(tx, tenantId, id)
-        if (adminUsers.length > 0) {
-          throw new ConflictException('The tenant admin role cannot be deleted while it is assigned')
-        }
+        throw new ConflictException('The tenant admin role cannot be deleted')
       }
 
       await tx.delete(rolePermissionsTable).where(

@@ -27,13 +27,14 @@ export class PrepareInvitationAcceptanceHandler {
     }
     if (
       command.password.length < 12 ||
+      Buffer.byteLength(command.password, 'utf8') > 72 ||
       !/[a-z]/.test(command.password) ||
       !/[A-Z]/.test(command.password) ||
       !/[0-9]/.test(command.password) ||
       !/[^A-Za-z0-9]/.test(command.password)
     ) {
       throw new BadRequestException(
-        'Password must have at least 12 characters and include uppercase, lowercase, number, and symbol',
+        'Password must have 12 to 72 UTF-8 bytes and include uppercase, lowercase, number, and symbol',
       )
     }
 

@@ -25,12 +25,16 @@ export class CreateRoleHandler {
   ) {}
 
   async execute(command: CreateRoleCommand): Promise<Role> {
-    const existing = await this.repo.findRoleByName(command.tenantId, command.name)
-    if (existing) throw new ConflictException(`Role "${command.name}" already exists`)
+    const roleName = command.name.trim()
+    if (roleName.toLowerCase() === 'admin' || roleName.toLowerCase() === 'super_admin') {
+      throw new BadRequestException('The admin role names are reserved for tenant access control')
+    }
+    const existing = await this.repo.findRoleByName(command.tenantId, roleName)
+    if (existing) throw new ConflictException(`Role "${roleName}" already exists`)
 
     const role = Role.create({
       tenantId: command.tenantId,
-      name: command.name,
+      name: roleName,
       description: command.description,
     })
 
@@ -51,6 +55,13 @@ export class UpdateRoleHandler {
     const role = await this.repo.findRoleById(command.id)
     if (!role || role.tenantId !== command.tenantId) throw new NotFoundException('Role not found')
 
+    if (
+      command.name &&
+      command.name.trim().toLowerCase() === 'admin' &&
+      role.name.toLowerCase() !== 'admin'
+    ) {
+      throw new ConflictException('The tenant admin role name is reserved')
+    }
     const updated = role.update({ name: command.name, description: command.description })
     await this.repo.saveRole(updated)
     await this.outbox.publish(new RoleUpdatedEvent(updated.id))

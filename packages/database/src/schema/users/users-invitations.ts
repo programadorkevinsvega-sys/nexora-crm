@@ -18,7 +18,9 @@ export const userMemberInvitations = usersSchema.table('tenant_member_invitation
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 }, (table) => ({
-  tokenHashUnique: uniqueIndex('idx_user_member_invitation_token_hash').on(table.tokenHash),
+  tokenHashUnique: uniqueIndex('idx_user_member_invitation_token_hash')
+    .on(table.tokenHash)
+    .where(sql`${table.tokenHash} IS NOT NULL`),
   oneActiveInvitationPerEmail: uniqueIndex('idx_user_member_invitation_active_email')
     .on(table.tenantId, table.email)
     .where(sql`${table.status} in ('PENDING', 'ACCEPTING')`),

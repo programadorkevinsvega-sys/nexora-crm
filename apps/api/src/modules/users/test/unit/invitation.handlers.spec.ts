@@ -116,7 +116,7 @@ describe('tenant member invitation handlers', () => {
 
     await expect(handler.execute(new PrepareInvitationAcceptanceCommand(
       token, 'Ana', 'Pérez', 'weak',
-    ))).rejects.toThrow('Password must have at least 12 characters')
+    ))).rejects.toThrow('Password must have 12 to 72 UTF-8 bytes')
     expect(invitations.prepareAcceptance).not.toHaveBeenCalled()
   })
 })

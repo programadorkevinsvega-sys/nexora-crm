@@ -55,6 +55,9 @@ export class SendTransientEmailHandler {
       isHtml: command.isHtml,
     })
 
+    // Provider error payloads are external and must never be copied into the
+    // transient delivery log because they may echo the message body or URL.
+    const safeError = 'Email provider rejected the transient message'
     const log = new NotificationLog(
       randomUUID(),
       notification.tenantId,
@@ -66,18 +69,18 @@ export class SendTransientEmailHandler {
       result.success ? 'SENT' : 'FAILED',
       result.provider,
       result.providerMessageId ?? null,
-      result.error ?? null,
+      result.success ? null : safeError,
       new Date(),
     )
     await this.repo.saveLog(log)
 
     if (!result.success) {
-      const failed = notification.markFailed(result.error ?? 'Email provider rejected the message')
+      const failed = notification.markFailed(safeError)
       await this.repo.saveNotification(failed)
       await this.outbox.publish(new NotificationFailedEvent(
         notification.id,
         notification.tenantId,
-        result.error ?? 'Email provider rejected the message',
+        safeError,
         'EMAIL',
         command.to,
       ))

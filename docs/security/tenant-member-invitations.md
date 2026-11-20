@@ -45,7 +45,7 @@ El token contiene 256 bits aleatorios. En la tabla se conserva únicamente su SH
 ## Secuencia de aceptación y recuperación
 
 1. La persona abre el enlace del correo y consulta la vista previa usando un POST.
-2. Introduce nombre, apellido y contraseña. El servidor aplica mínimo de 12 caracteres y requisitos de mayúscula, minúscula, número y símbolo; la contraseña se hashea con bcrypt.
+2. Introduce nombre, apellido y contraseña. El servidor aplica mínimo de 12 caracteres y requisitos de mayúscula, minúscula, número y símbolo; la contraseña se hashea con bcrypt y se limita a 72 bytes UTF-8 para evitar el truncamiento silencioso de bcrypt.
 3. Una transacción reclama el token y crea el perfil y el usuario con estado INACTIVE.
 4. IAM asigna el rol validado dentro del mismo tenant.
 5. Sólo después de que IAM responde correctamente, otra transacción marca el usuario ACTIVE, verifica su correo y marca la invitación ACCEPTED.
