@@ -1,10 +1,10 @@
 import { AiBffController } from './ai.bff.controller'
 import { AiBffService } from './ai.bff.service'
+import { RagService } from './rag/rag.service'
 import type {
   DealWinProbability,
   GeneratedMessageDraft,
   ContactExecutiveSummary,
-  ChurnRiskPrediction,
 } from '@crm/contracts'
 
 describe('AiBffController', () => {
@@ -17,18 +17,18 @@ describe('AiBffController', () => {
       generateMessageDraft: jest.fn(),
       getContactExecutiveSummary: jest.fn(),
       getChurnRiskPrediction: jest.fn(),
-    } as any
+    } as unknown as jest.Mocked<AiBffService>
 
     const mockRagService = {
       searchKnowledgeBase: jest.fn().mockResolvedValue([]),
       generateGroundedReply: jest.fn().mockResolvedValue({ replyText: 'mock', retrievedChunks: [], sourceCount: 0 }),
-    } as any
+    } as unknown as RagService
 
     controller = new AiBffController(mockService, mockRagService)
   })
 
-  it('should get deal win probability on GET /api/ai/deals/:dealId/win-probability', async () => {
-    const prob: DealWinProbability = {
+  it('gets deal win probability from service', async () => {
+    const probability: DealWinProbability = {
       dealId: '00000000-0000-0000-0000-000000000001',
       dealName: 'Acme SaaS Deal',
       dealAmount: 15000,
@@ -40,35 +40,27 @@ describe('AiBffController', () => {
       predictedCloseDate: '2026-09-15',
       calculatedAt: new Date().toISOString(),
     }
-    mockService.getDealWinProbability.mockResolvedValue(prob)
-
-    const res = await controller.getDealWinProbability(prob.dealId, 'tenant-1')
-
-    expect(mockService.getDealWinProbability).toHaveBeenCalledWith(prob.dealId, 'tenant-1')
-    expect(res.winProbabilityPercent).toBe(78)
+    mockService.getDealWinProbability.mockResolvedValue(probability)
+    const result = await controller.getDealWinProbability(probability.dealId, 'tenant-1')
+    expect(mockService.getDealWinProbability).toHaveBeenCalledWith(probability.dealId, 'tenant-1')
+    expect(result.winProbabilityPercent).toBe(78)
   })
 
-  it('should generate draft on POST /api/ai/drafts/generate', async () => {
+  it('generates a draft', async () => {
     const draft: GeneratedMessageDraft = {
-      subject: 'Seguimiento',
-      bodyText: 'Hola...',
-      channel: 'EMAIL',
-      tone: 'FORMAL',
-      objective: 'FOLLOW_UP',
-      tokensEstimated: 12,
+      subject: 'Seguimiento', bodyText: 'Hola...', channel: 'EMAIL',
+      tone: 'FORMAL', objective: 'FOLLOW_UP', tokensEstimated: 12,
     }
     mockService.generateMessageDraft.mockResolvedValue(draft)
-
-    const res = await controller.generateMessageDraft(
+    const result = await controller.generateMessageDraft(
       { channel: 'EMAIL', tone: 'FORMAL', objective: 'FOLLOW_UP' },
       'tenant-1',
     )
-
-    expect(res.channel).toBe('EMAIL')
+    expect(result.channel).toBe('EMAIL')
     expect(mockService.generateMessageDraft).toHaveBeenCalled()
   })
 
-  it('should get contact executive summary on GET /api/ai/contacts/:contactId/summary', async () => {
+  it('gets contact executive summary', async () => {
     const summary: ContactExecutiveSummary = {
       contactId: '00000000-0000-0000-0000-000000000001',
       contactName: 'Carlos',
@@ -79,10 +71,8 @@ describe('AiBffController', () => {
       generatedAt: new Date().toISOString(),
     }
     mockService.getContactExecutiveSummary.mockResolvedValue(summary)
-
-    const res = await controller.getContactExecutiveSummary(summary.contactId, 'tenant-1')
-
+    const result = await controller.getContactExecutiveSummary(summary.contactId, 'tenant-1')
     expect(mockService.getContactExecutiveSummary).toHaveBeenCalledWith(summary.contactId, 'tenant-1')
-    expect(res.sentiment).toBe('POSITIVE')
+    expect(result.sentiment).toBe('POSITIVE')
   })
 })
