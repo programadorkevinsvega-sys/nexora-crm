@@ -4,9 +4,6 @@ import {
   VoteArticleHandler,
 } from '../../application/commands/kb.handlers'
 import {
-  ListCategoriesHandler,
-  ListArticlesHandler,
-  GetArticleHandler,
   GetPortalOverviewHandler,
 } from '../../application/queries/kb.handlers'
 import {
@@ -15,9 +12,6 @@ import {
   VoteArticleCommand,
 } from '../../application/commands/kb.commands'
 import {
-  ListCategoriesQuery,
-  ListArticlesQuery,
-  GetArticleQuery,
   GetPortalOverviewQuery,
 } from '../../application/queries/kb.queries'
 import { KnowledgeBaseRepository } from '../../domain/repositories/knowledge-base.repository'

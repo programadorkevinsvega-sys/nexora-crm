@@ -24,7 +24,6 @@ import {
   GetLeadScoreQuery,
   ListScoringRulesQuery,
   ListTopLeadsQuery,
-  ListLeadsByTemperatureQuery,
 } from '../../application/queries/lead-scoring.queries'
 import { LeadScoringMapper } from '../../infrastructure/lead-scoring.mapper'
 import { ScoringRuleCategory, ScoringCondition } from '@crm/contracts'
