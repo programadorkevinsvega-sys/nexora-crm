@@ -3,6 +3,7 @@ import { cloneAndFreezeJson } from '../services/immutable-json'
 
 export class WorkflowStepExecution {
   readonly outputData: Record<string, unknown> | null
+  private readonly hasLegacyIdempotencyKey: boolean
 
   constructor(
     readonly id: string,
@@ -16,6 +17,7 @@ export class WorkflowStepExecution {
     readonly errorMessage: string | null,
     readonly startedAt: Date,
     readonly completedAt: Date | null,
+    allowLegacyIdempotencyKey = false,
   ) {
     if (!Number.isSafeInteger(attempts) || attempts < 1) {
       throw new Error('Workflow step attempt must be a positive safe integer')
@@ -24,12 +26,51 @@ export class WorkflowStepExecution {
       throw new Error('Workflow step id is required')
     }
 
+    if (!idempotencyKey.trim()) {
+      throw new Error('Workflow step idempotency key is required')
+    }
+
     const expectedKey = `${executionId}_${stepId}_${attempts}`
-    if (idempotencyKey !== expectedKey) {
+    if (idempotencyKey !== expectedKey && !allowLegacyIdempotencyKey) {
       throw new Error('Workflow step idempotency key does not match execution, step, and attempt')
     }
 
+    this.hasLegacyIdempotencyKey = idempotencyKey !== expectedKey
     this.outputData = cloneAndFreezeJson(outputData)
+  }
+
+  /**
+   * Rehydrates persisted history without rewriting keys created by older
+   * application versions. New records must still go through create(), which
+   * always derives the canonical execution_step_attempt key.
+   */
+  static rehydrate(props: {
+    id: string
+    tenantId: string
+    executionId: string
+    stepId: string
+    idempotencyKey: string
+    status: WorkflowStepStatus
+    attempts: number
+    outputData: Record<string, unknown> | null
+    errorMessage: string | null
+    startedAt: Date
+    completedAt: Date | null
+  }): WorkflowStepExecution {
+    return new WorkflowStepExecution(
+      props.id,
+      props.tenantId,
+      props.executionId,
+      props.stepId,
+      props.idempotencyKey,
+      props.status,
+      props.attempts,
+      props.outputData,
+      props.errorMessage,
+      props.startedAt,
+      props.completedAt,
+      true,
+    )
   }
 
   static create(props: {
@@ -59,6 +100,7 @@ export class WorkflowStepExecution {
       null,
       new Date(),
       null,
+      this.hasLegacyIdempotencyKey,
     )
   }
 
@@ -75,6 +117,7 @@ export class WorkflowStepExecution {
       this.errorMessage,
       this.startedAt,
       null,
+      this.hasLegacyIdempotencyKey,
     )
   }
 
@@ -91,6 +134,7 @@ export class WorkflowStepExecution {
       null,
       this.startedAt,
       new Date(),
+      this.hasLegacyIdempotencyKey,
     )
   }
 
@@ -107,6 +151,7 @@ export class WorkflowStepExecution {
       errorMessage,
       this.startedAt,
       new Date(),
+      this.hasLegacyIdempotencyKey,
     )
   }
 
@@ -123,6 +168,7 @@ export class WorkflowStepExecution {
       null,
       this.startedAt,
       new Date(),
+      this.hasLegacyIdempotencyKey,
     )
   }
 }
