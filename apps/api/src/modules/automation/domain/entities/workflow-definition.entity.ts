@@ -1,6 +1,10 @@
 import { WorkflowStatus, WorkflowStep } from '@crm/contracts'
+import { cloneAndFreezeJson } from '../services/immutable-json'
 
 export class WorkflowDefinition {
+  readonly triggerFilter: Record<string, unknown> | null
+  readonly stepsGraph: WorkflowStep[]
+
   constructor(
     readonly id: string,
     readonly tenantId: string,
@@ -9,11 +13,14 @@ export class WorkflowDefinition {
     readonly version: number,
     readonly status: WorkflowStatus,
     readonly triggerEvent: string,
-    readonly triggerFilter: Record<string, unknown> | null,
-    readonly stepsGraph: WorkflowStep[],
+    triggerFilter: Record<string, unknown> | null,
+    stepsGraph: WorkflowStep[],
     readonly createdAt: Date,
     readonly updatedAt: Date,
-  ) {}
+  ) {
+    this.triggerFilter = cloneAndFreezeJson(triggerFilter)
+    this.stepsGraph = cloneAndFreezeJson(stepsGraph)
+  }
 
   static create(props: {
     tenantId: string
@@ -49,6 +56,11 @@ export class WorkflowDefinition {
   }
 
   activate(): WorkflowDefinition {
+    if (this.status === 'ARCHIVED') {
+      throw new Error('Archived workflow versions cannot be activated')
+    }
+    if (this.status === 'ACTIVE') return this
+
     return new WorkflowDefinition(
       this.id,
       this.tenantId,
@@ -65,6 +77,11 @@ export class WorkflowDefinition {
   }
 
   pause(): WorkflowDefinition {
+    if (this.status === 'PAUSED') return this
+    if (this.status !== 'ACTIVE') {
+      throw new Error('Only active workflow versions can be paused')
+    }
+
     return new WorkflowDefinition(
       this.id,
       this.tenantId,
@@ -81,6 +98,8 @@ export class WorkflowDefinition {
   }
 
   archive(): WorkflowDefinition {
+    if (this.status === 'ARCHIVED') return this
+
     return new WorkflowDefinition(
       this.id,
       this.tenantId,
