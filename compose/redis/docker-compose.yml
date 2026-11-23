@@ -10,7 +10,7 @@ services:
     command:
       - sh
       - -c
-      - 'exec redis-server --requirepass "$$REDIS_PASSWORD"'
+      - 'exec redis-server --requirepass "$REDIS_PASSWORD" --appendonly yes --appendfsync everysec --maxmemory-policy noeviction'
     ports:
       - "10.0.2.65:6379:6379"
       - "100.88.251.53:6379:6379"
