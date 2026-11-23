@@ -2,6 +2,14 @@ import { Injectable, BadRequestException, Logger } from '@nestjs/common'
 
 const HUBSPOT_BASE = 'https://api.hubapi.com'
 
+function asRecord(value: unknown): Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? value as Record<string, unknown> : {}
+}
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
+}
+
 @Injectable()
 export class HubSpotDispatcher {
   private readonly logger = new Logger(HubSpotDispatcher.name)
@@ -15,13 +23,16 @@ export class HubSpotDispatcher {
   }
 
   async test(
-    creds: Record<string, any>,
+    creds: Record<string, unknown>,
     _recipient: string,
     _text: string,
-  ): Promise<{ success: boolean; message: string; details?: any }> {
-    const { accessToken, syncContacts, syncCompanies, syncDeals } = creds
+  ): Promise<{ success: boolean; message: string; details?: unknown }> {
+    const accessToken = creds.accessToken
+    const syncContacts = creds.syncContacts
+    const syncCompanies = creds.syncCompanies
+    const syncDeals = creds.syncDeals
 
-    if (!accessToken) throw new BadRequestException('HubSpot Access Token es requerido')
+    if (typeof accessToken !== 'string' || accessToken.length === 0) throw new BadRequestException('HubSpot Access Token es requerido')
 
     try {
       const accountRes = await fetch(`${HUBSPOT_BASE}/account-info/v3/details`, {
@@ -29,14 +40,16 @@ export class HubSpotDispatcher {
       })
 
       if (!accountRes.ok) {
-        const err = await accountRes.json().catch(() => ({}))
+        const err: unknown = await accountRes.json().catch(() => ({}))
         return {
           success: false,
-          message: `HubSpot rechazó el token (${accountRes.status}): ${(err as any).message || accountRes.statusText}`,
+          message: `HubSpot rechazó el token (${accountRes.status}): ${typeof asRecord(err).message === 'string' ? asRecord(err).message : accountRes.statusText}`,
         }
       }
 
-      const account = await accountRes.json()
+      const account: unknown = await accountRes.json()
+      const accountDetails = asRecord(account)
+      const portalId = typeof accountDetails.portalId === 'string' ? accountDetails.portalId : 'unknown'
 
       const [contactsRes, companiesRes, dealsRes] = await Promise.allSettled([
         fetch(`${HUBSPOT_BASE}/crm/v3/objects/contacts?limit=1`, { headers: this.headers(accessToken) }),
@@ -44,8 +57,12 @@ export class HubSpotDispatcher {
         fetch(`${HUBSPOT_BASE}/crm/v3/objects/deals?limit=1`, { headers: this.headers(accessToken) }),
       ])
 
-      const getTotal = async (r: PromiseSettledResult<Response>) =>
-        r.status === 'fulfilled' && r.value.ok ? (await r.value.json()).total : 'N/A'
+      const getTotal = async (r: PromiseSettledResult<Response>): Promise<number | string> => {
+        if (r.status !== 'fulfilled' || !r.value.ok) return 'N/A'
+        const body: unknown = await r.value.json()
+        const total = asRecord(body).total
+        return typeof total === 'number' ? total : 'N/A'
+      }
 
       const [contactTotal, companyTotal, dealTotal] = await Promise.all([
         getTotal(contactsRes),
@@ -53,14 +70,14 @@ export class HubSpotDispatcher {
         getTotal(dealsRes),
       ])
 
-      this.logger.log(`HubSpot verified: portalId=${(account as any).portalId}`)
+      this.logger.log(`HubSpot verified: portalId=${portalId}`)
       return {
         success: true,
-        message: `HubSpot CRM conectado. Portal: ${(account as any).portalId}. Contactos: ${contactTotal}, Empresas: ${companyTotal}, Deals: ${dealTotal}. Sync: Contactos=${syncContacts ?? true}, Empresas=${syncCompanies ?? true}, Deals=${syncDeals ?? true}`,
-        details: { portalId: (account as any).portalId, contactTotal, companyTotal, dealTotal },
+        message: `HubSpot CRM conectado. Portal: ${portalId}. Contactos: ${contactTotal}, Empresas: ${companyTotal}, Deals: ${dealTotal}. Sync: Contactos=${syncContacts ?? true}, Empresas=${syncCompanies ?? true}, Deals=${dealTotal}. Sync: Contactos=${syncContacts ?? true}, Empresas=${syncCompanies ?? true}, Deals=${syncDeals ?? true}`,
+        details: { portalId, contactTotal, companyTotal, dealTotal },
       }
-    } catch (err: any) {
-      return { success: false, message: `Error conectando con HubSpot: ${err.message}` }
+    } catch (err: unknown) {
+      return { success: false, message: `Error conectando con HubSpot: ${errorMessage(err)}` }
     }
   }
 
