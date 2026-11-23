@@ -2,10 +2,10 @@ import { calculateWorkflowResumeAt, parseWorkflowDelay } from './workflow-delay.
 
 describe('workflow delay parser', () => {
   it.each([
-    ['10m', 600_000],
-    ['24h', 86_400_000],
-    ['30d', 2_592_000_000],
-  ])('parses %s', (value, expected) => {
+    { value: '10m', expected: 600_000 },
+    { value: '24h', expected: 86_400_000 },
+    { value: '30d', expected: 2_592_000_000 },
+  ])('parses $value', ({ value, expected }) => {
     expect(parseWorkflowDelay(value)).toBe(expected)
   })
 

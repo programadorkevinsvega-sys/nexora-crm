@@ -1,5 +1,4 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common'
-import { PullSubscription } from 'nats'
 import { WorkflowEngineService } from '../application/services/workflow-engine.service'
 import { WorkflowDelayScheduleMessage } from '../domain/repositories/workflow-execution.repository'
 import { NatsService } from '../../../common/nats/nats.service'
@@ -9,7 +8,7 @@ const MAX_WORKFLOW_DELIVERIES = 5
 @Injectable()
 export class WorkflowRuntimeWorker implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(WorkflowRuntimeWorker.name)
-  private subscription: PullSubscription | null = null
+  private subscription: any = null
   private running = false
 
   constructor(

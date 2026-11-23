@@ -137,8 +137,19 @@ export class NatsService implements OnModuleInit, OnModuleDestroy {
     if (!this.jetStream) throw new Error('NATS JetStream is not connected; cannot schedule workflow')
 
     const resumeDate = new Date(resumeAt)
-    if (Number.isNaN(resumeDate.getTime()) || resumeDate.getTime() <= Date.now()) {
-      throw new Error('Workflow schedule must target a valid future timestamp')
+    if (Number.isNaN(resumeDate.getTime())) {
+      throw new Error('Workflow schedule must target a valid timestamp')
+    }
+
+    // If the relay was offline past the due date, publish the resume event now.
+    // The resume token makes this safe if the original scheduled event also exists.
+    if (resumeDate.getTime() <= Date.now()) {
+      await this.jetStream.publish(
+        'workflow.resume',
+        this.sc.encode(JSON.stringify(payload)),
+        { msgID: `workflow-resume-${messageId}` },
+      )
+      return
     }
 
     const messageHeaders = headers()

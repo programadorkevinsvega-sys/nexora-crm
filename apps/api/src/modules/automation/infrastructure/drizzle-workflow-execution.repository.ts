@@ -126,19 +126,43 @@ export class DrizzleWorkflowExecutionRepository extends WorkflowExecutionReposit
           eq(workflowExecutionsTable.status, 'RUNNING'),
         ))
 
-      await tx.insert(workflowStepExecutionsTable).values({
-        id: stepExecution.id,
-        tenantId: stepExecution.tenantId,
-        executionId: stepExecution.executionId,
-        stepId: stepExecution.stepId,
-        idempotencyKey: stepExecution.idempotencyKey,
-        status: stepExecution.status,
-        attempts: stepExecution.attempts,
-        outputData: stepExecution.outputData,
-        errorMessage: stepExecution.errorMessage,
-        startedAt: stepExecution.startedAt,
-        completedAt: stepExecution.completedAt,
-      })
+      const existingStep = await tx
+        .select({ id: workflowStepExecutionsTable.id })
+        .from(workflowStepExecutionsTable)
+        .where(and(
+          eq(workflowStepExecutionsTable.tenantId, stepExecution.tenantId),
+          eq(workflowStepExecutionsTable.idempotencyKey, stepExecution.idempotencyKey),
+        ))
+        .limit(1)
+
+      if (existingStep.length > 0) {
+        await tx
+          .update(workflowStepExecutionsTable)
+          .set({
+            status: stepExecution.status,
+            outputData: stepExecution.outputData,
+            errorMessage: stepExecution.errorMessage,
+            completedAt: stepExecution.completedAt,
+          })
+          .where(and(
+            eq(workflowStepExecutionsTable.tenantId, stepExecution.tenantId),
+            eq(workflowStepExecutionsTable.idempotencyKey, stepExecution.idempotencyKey),
+          ))
+      } else {
+        await tx.insert(workflowStepExecutionsTable).values({
+          id: stepExecution.id,
+          tenantId: stepExecution.tenantId,
+          executionId: stepExecution.executionId,
+          stepId: stepExecution.stepId,
+          idempotencyKey: stepExecution.idempotencyKey,
+          status: stepExecution.status,
+          attempts: stepExecution.attempts,
+          outputData: stepExecution.outputData,
+          errorMessage: stepExecution.errorMessage,
+          startedAt: stepExecution.startedAt,
+          completedAt: stepExecution.completedAt,
+        })
+      }
 
       const eventId = crypto.randomUUID()
       const occurredAt = new Date().toISOString()

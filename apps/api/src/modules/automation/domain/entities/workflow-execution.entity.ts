@@ -60,7 +60,7 @@ export class WorkflowExecution {
     return new WorkflowExecution(
       this.id, this.tenantId, this.workflowId, this.version, this.entityType, this.entityId,
       'RUNNING', nextStepId, updatedContext ?? this.contextData, this.startedAt,
-      null, null, null, null, null,
+      null, null, null, null, this.resumeToken,
     )
   }
 
