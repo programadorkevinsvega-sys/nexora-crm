@@ -22,7 +22,7 @@ export interface CalculationResult {
 export class HealthScoreCalculatorHelper {
   static calculate(input: CalculationInput): CalculationResult {
     // 1. Engagement (0-30)
-    let engagementScore = Math.min(30, Math.max(5, input.interactionCount * 4))
+    const engagementScore = Math.min(30, Math.max(5, input.interactionCount * 4))
 
     // 2. Support Health (0-25)
     let supportScore = 25

@@ -15,7 +15,6 @@ export class StripeDispatcher {
     if (!secretKey) throw new BadRequestException('Stripe Secret Key es requerida')
     const stripe = this.buildClient(secretKey)
     const isLive = secretKey.startsWith('sk_live_')
-    const mode = isLive ? '🟢 PRODUCCIÓN' : '🟡 TEST'
     try {
       const balance = await stripe.balance.retrieve()
       const isLiveKey = secretKey.startsWith('sk_live_')

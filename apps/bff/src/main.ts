@@ -1,7 +1,10 @@
 import { NestFactory } from '@nestjs/core'
+import { Logger } from '@nestjs/common'
 import { AppModule } from './app.module'
 import { GrpcToHttpExceptionFilter } from './common/filters/grpc-exception.filter'
 import { setupSwagger } from './common/swagger/swagger.config'
+
+const logger = new Logger('BffBootstrap')
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
@@ -30,7 +33,7 @@ async function bootstrap() {
 
   const port = process.env.BFF_PORT || 3006
   await app.listen(port)
-  console.log(`BFF running on port ${port}`)
+  logger.log(`BFF running on port ${port}`)
   if (swaggerActive) {
     console.log(`Swagger documentation available at http://localhost:${port}/api/docs`)
   } else {
