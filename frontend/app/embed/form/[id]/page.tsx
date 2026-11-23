@@ -2,7 +2,7 @@
 
 import React, { useState } from "react"
 import { useParams } from "next/navigation"
-import { CheckCircle2, AlertCircle, Send, Loader2 } from "lucide-react"
+import { CheckCircle2, Loader2 } from "lucide-react"
 import { usePublicWebForm } from "@/src/application/crm/di/hooks"
 import { ApiWebFormsRepository } from "@/src/infrastructure/crm/repositories/web-forms/api-web-forms.repository"
 import type { FormField } from "@crm/contracts"

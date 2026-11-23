@@ -1,5 +1,4 @@
 import { Entity } from "../common/entities/base.entity"
-import type { Stage } from "./stage.entity"
 
 export interface PipelineProps {
   tenantId: string
