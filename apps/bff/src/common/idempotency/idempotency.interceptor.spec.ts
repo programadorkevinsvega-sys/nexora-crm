@@ -1,6 +1,6 @@
 import { IdempotencyInterceptor } from './idempotency.interceptor'
 import { ExecutionContext, CallHandler, ConflictException } from '@nestjs/common'
-import { of } from 'rxjs'
+import { of, Observable } from 'rxjs'
 import type { CacheService } from '../cache/cache.service'
 
 type MockCacheService = jest.Mocked<Pick<CacheService, 'getRaw' | 'setRaw' | 'setNx' | 'del'>>

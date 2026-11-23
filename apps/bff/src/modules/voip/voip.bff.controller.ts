@@ -5,7 +5,7 @@ import { VoipBffService } from './voip.bff.service'
 
 interface TwilioWebhookBody {
   To?: string; to?: string; CallerId?: string; From?: string
-  CallSid?: string; callSid?: string
+  CallSid?: string; callSid?: string; from?: string
   RecordingUrl?: string; recordingUrl?: string
   RecordingDuration?: string | number; recordingDuration?: string | number
 }

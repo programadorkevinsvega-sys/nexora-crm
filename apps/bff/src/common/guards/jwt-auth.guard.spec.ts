@@ -27,7 +27,7 @@ const contextFor = (request: TestRequest): ExecutionContext => ({
 } as unknown as ExecutionContext)
 
 describe('BffJwtAuthGuard', () => {
-  const reflector = new Reflector()
+  const reflector = { getAllAndOverride: jest.fn().mockReturnValue(false) } as unknown as Reflector
   const guard = new BffJwtAuthGuard(reflector)
   beforeEach(() => { process.env.JWT_SECRET = 'test-secret' })
   afterAll(() => { delete process.env.JWT_SECRET })

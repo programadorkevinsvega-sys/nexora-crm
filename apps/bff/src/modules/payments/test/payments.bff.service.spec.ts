@@ -22,10 +22,10 @@ describe('PaymentsBffService', () => {
       row: typeof paymentTransactions.$inferSelect,
     ) => PaymentTransaction
     const tx = mapTx({
-      id: 'tx-1',
-      tenantId: 'tenant-1',
+      id: '00000000-0000-4000-8000-000000000001',
+      tenantId: '00000000-0000-4000-8000-000000000002',
       resourceType: 'QUOTE',
-      resourceId: 'quote-1',
+      resourceId: '00000000-0000-4000-8000-000000000003',
       gateway: 'STRIPE',
       externalPaymentId: null,
       paymentUrl: 'https://buy.stripe.com/test_123',

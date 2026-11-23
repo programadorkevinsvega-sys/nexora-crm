@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common'
 import * as twilioLib from 'twilio'
 import { IntegrationsBffService } from '../integrations/integrations.bff.service'
 import { ApiCoreGrpcClient } from '../../common/grpc/api-core-grpc.client'
+import { credentialString } from '../integrations/dispatchers/dispatcher-utils'
 
 const AccessToken = twilioLib.jwt.AccessToken
 const VoiceGrant = AccessToken.VoiceGrant
@@ -20,12 +21,12 @@ export class VoipBffService {
 
   async getTwilioConfig(tenantId: string = DEFAULT_TENANT) {
     const creds = await this.integrationsService.getDecryptedConfig(tenantId, 'TWILIO_SMS')
-    const accountSid = creds?.accountSid || process.env.TWILIO_ACCOUNT_SID || 'AC_MOCK_ACCOUNT_SID'
-    const authToken = creds?.authToken || process.env.TWILIO_AUTH_TOKEN || 'mock_auth_token'
-    const apiKey = creds?.apiKey || process.env.TWILIO_API_KEY || accountSid
-    const apiSecret = creds?.apiSecret || process.env.TWILIO_API_SECRET || authToken
-    const twimlAppSid = creds?.twimlAppSid || process.env.TWILIO_TWIML_APP_SID || 'AP_MOCK_APP_SID'
-    const fromNumber = creds?.fromNumber || process.env.TWILIO_FROM_NUMBER || '+18005550199'
+    const accountSid = credentialString(creds ?? {}, 'accountSid') || process.env.TWILIO_ACCOUNT_SID || 'AC_MOCK_ACCOUNT_SID'
+    const authToken = credentialString(creds ?? {}, 'authToken') || process.env.TWILIO_AUTH_TOKEN || 'mock_auth_token'
+    const apiKey = credentialString(creds ?? {}, 'apiKey') || process.env.TWILIO_API_KEY || accountSid
+    const apiSecret = credentialString(creds ?? {}, 'apiSecret') || process.env.TWILIO_API_SECRET || authToken
+    const twimlAppSid = credentialString(creds ?? {}, 'twimlAppSid') || process.env.TWILIO_TWIML_APP_SID || 'AP_MOCK_APP_SID'
+    const fromNumber = credentialString(creds ?? {}, 'fromNumber') || process.env.TWILIO_FROM_NUMBER || '+18005550199'
     return { accountSid, authToken, apiKey, apiSecret, twimlAppSid, fromNumber }
   }
 
