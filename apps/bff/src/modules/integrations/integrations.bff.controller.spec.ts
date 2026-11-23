@@ -13,13 +13,13 @@ describe('IntegrationsBffController - Unit Tests', () => {
       saveConfig: jest.fn().mockResolvedValue({ ok: true }),
       testIntegration: jest.fn().mockResolvedValue({ success: true, message: 'OK' }),
       deleteConfig: jest.fn().mockResolvedValue({ ok: true }),
-    } as any
+    } as unknown as jest.Mocked<IntegrationsBffService>
 
     controller = new IntegrationsBffController(mockService)
   })
 
   it('GET /api/integrations should list provider statuses', async () => {
-    const mockReq = { headers: {} } as any
+    const mockReq = { headers: {} } as unknown as Parameters<IntegrationsBffController['listStatuses']>[0]
     const res = await controller.listStatuses(mockReq)
     expect(res).toHaveLength(1)
     expect(mockService.listStatuses).toHaveBeenCalled()

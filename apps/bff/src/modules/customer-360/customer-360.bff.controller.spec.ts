@@ -9,7 +9,7 @@ describe('Customer360BffController', () => {
   beforeEach(() => {
     mockService = {
       getCustomer360: jest.fn(),
-    } as any
+    } as unknown as jest.Mocked<Customer360BffService>
 
     controller = new Customer360BffController(mockService)
   })

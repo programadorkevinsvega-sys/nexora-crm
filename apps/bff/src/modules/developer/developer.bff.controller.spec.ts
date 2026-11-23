@@ -1,5 +1,6 @@
 import { DeveloperBffController } from './developer.bff.controller'
 import { DeveloperBffService } from './developer.bff.service'
+import type { AuthenticatedUser } from '../../common/decorators/current-user.decorator'
 import type {
   ApiKey,
   CreatedApiKey,
@@ -14,7 +15,7 @@ describe('DeveloperBffController - Unit Tests', () => {
   const tenantId = '00000000-0000-0000-0000-000000000001'
   const keyId = '00000000-0000-0000-0000-000000000002'
   const endpointId = '00000000-0000-0000-0000-000000000003'
-  const adminUser = { userId: 'u-1', sub: 'u-1', tenantId, role: 'admin' } as any
+  const adminUser: AuthenticatedUser = { userId: 'u-1', sub: 'u-1', tenantId, role: 'admin' }
 
   beforeEach(() => {
     mockService = {
@@ -27,7 +28,7 @@ describe('DeveloperBffController - Unit Tests', () => {
       deleteWebhookEndpoint: jest.fn(),
       getDeliveryLogs: jest.fn(),
       dispatchTestEvent: jest.fn(),
-    } as any
+    } as unknown as jest.Mocked<DeveloperBffService>
 
     controller = new DeveloperBffController(mockService)
   })

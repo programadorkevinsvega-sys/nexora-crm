@@ -26,7 +26,7 @@ describe('McpBffController - Unit Tests', () => {
 
   it('POST /api/mcp/messages should delegate to handlePostMessage', async () => {
     const mockReq = { query: { sessionId: 'sess-1' } } as unknown as Request
-    const mockRes = {} as any
+    const mockRes = {} as unknown as Response
 
     await controller.handleMessage(mockReq, mockRes)
 

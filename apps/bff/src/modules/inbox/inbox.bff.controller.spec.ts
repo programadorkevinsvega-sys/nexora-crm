@@ -11,7 +11,7 @@ describe('InboxBffController', () => {
       listConversations: jest.fn(),
       getConversation: jest.fn(),
       sendMessage: jest.fn(),
-    } as any
+    } as unknown as jest.Mocked<InboxBffService>
 
     controller = new InboxBffController(mockService)
   })
