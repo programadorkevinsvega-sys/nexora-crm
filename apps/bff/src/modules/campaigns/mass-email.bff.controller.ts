@@ -9,7 +9,7 @@ import {
   ParseUUIDPipe,
   Res,
 } from '@nestjs/common'
-import { ApiTags, ApiOperation, ApiBody, ApiParam, ApiQuery, ApiHeader } from '@nestjs/swagger'
+import { ApiTags, ApiOperation, ApiBody, ApiParam, ApiHeader } from '@nestjs/swagger'
 import type { Response } from 'express'
 import { Public } from '../../common/decorators/public.decorator'
 import { CampaignsBffService } from './campaigns.bff.service'
@@ -45,8 +45,7 @@ export class MassEmailBffController {
   })
   async sendBulk(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() dto: { creds: any; recipients: string[]; subject: string; htmlTemplate: string },
-    @Headers('X-Tenant-Id') tenantId?: string,
+    @Body() dto: { creds: Record<string, unknown>; recipients: string[]; subject: string; htmlTemplate: string },
   ) {
     return this.massEmailService.sendBulk(dto.creds, dto.recipients, dto.subject, dto.htmlTemplate)
   }
@@ -65,8 +64,7 @@ export class MassEmailBffController {
     },
   })
   async sendTest(
-    @Body() dto: { creds: any; recipient: string; subject: string; html: string },
-    @Headers('X-Tenant-Id') tenantId?: string,
+    @Body() dto: { creds: Record<string, unknown>; recipient: string; subject: string; html: string },
   ) {
     return this.massEmailService.sendTest(dto.creds, dto.recipient, dto.subject, dto.html)
   }

@@ -2,22 +2,18 @@ import {
   Controller,
   Get,
   Post,
-  Put,
   Param,
   Query,
   Body,
   Headers,
   ParseUUIDPipe,
 } from '@nestjs/common'
-import { ApiTags, ApiOperation, ApiBody, ApiParam, ApiQuery, ApiHeader } from '@nestjs/swagger'
+import { ApiTags, ApiOperation, ApiBody, ApiParam, ApiHeader } from '@nestjs/swagger'
 import { AffiliatesBffService, PaginatedResult } from './affiliates.bff.service'
 import type {
   CreateProgram,
   RegisterAffiliate,
-  RecordCommission,
-  ProcessPayout,
   AffiliateProgram, Affiliate,
-  AffiliateCommission, AffiliatePayout,
 } from '@crm/contracts'
 
 @ApiTags('Marketing de Afiliados (Affiliates)')
