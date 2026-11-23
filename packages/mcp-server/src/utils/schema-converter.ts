@@ -1,11 +1,14 @@
-import { z, ZodTypeAny, ZodObject } from 'zod'
+import { z, ZodTypeAny } from 'zod'
 
-export function zodToJsonSchema(schema: ZodObject<any>): Record<string, unknown> {
-  const shape = schema.shape
+export function zodToJsonSchema(schema: ZodTypeAny): Record<string, unknown> {
+  if (!(schema instanceof z.ZodObject)) {
+    throw new TypeError('MCP tool input schemas must be Zod objects')
+  }
+
   const properties: Record<string, unknown> = {}
   const required: string[] = []
 
-  for (const [key, value] of Object.entries(shape) as [string, ZodTypeAny][]) {
+  for (const [key, value] of Object.entries(schema.shape) as Array<[string, ZodTypeAny]>) {
     properties[key] = convertZodField(value)
     if (!value.isOptional() && !value.isNullable()) {
       required.push(key)
@@ -20,42 +23,39 @@ export function zodToJsonSchema(schema: ZodObject<any>): Record<string, unknown>
 }
 
 function convertZodField(field: ZodTypeAny): Record<string, unknown> {
-  const desc = field.description
-
-  // Unwrap optional or nullable
+  const description = field.description
   let inner = field
-  while ('unwrap' in inner && typeof (inner as any).unwrap === 'function') {
-    inner = (inner as any).unwrap()
+
+  while (inner instanceof z.ZodOptional || inner instanceof z.ZodNullable) {
+    inner = inner.unwrap()
   }
 
-  const typeName = inner._def?.typeName
-
-  if (typeName === 'ZodString') {
-    return { type: 'string', ...(desc ? { description: desc } : {}) }
+  if (inner instanceof z.ZodString) {
+    return { type: 'string', ...(description ? { description } : {}) }
   }
-  if (typeName === 'ZodNumber') {
-    return { type: 'number', ...(desc ? { description: desc } : {}) }
+  if (inner instanceof z.ZodNumber) {
+    return { type: 'number', ...(description ? { description } : {}) }
   }
-  if (typeName === 'ZodBoolean') {
-    return { type: 'boolean', ...(desc ? { description: desc } : {}) }
+  if (inner instanceof z.ZodBoolean) {
+    return { type: 'boolean', ...(description ? { description } : {}) }
   }
-  if (typeName === 'ZodEnum') {
+  if (inner instanceof z.ZodEnum) {
     return {
       type: 'string',
-      enum: inner._def.values,
-      ...(desc ? { description: desc } : {}),
+      enum: inner.options,
+      ...(description ? { description } : {}),
     }
   }
-  if (typeName === 'ZodArray') {
+  if (inner instanceof z.ZodArray) {
     return {
       type: 'array',
-      items: convertZodField(inner._def.type),
-      ...(desc ? { description: desc } : {}),
+      items: convertZodField(inner.element),
+      ...(description ? { description } : {}),
     }
   }
-  if (typeName === 'ZodObject') {
-    return zodToJsonSchema(inner as ZodObject<any>)
+  if (inner instanceof z.ZodObject) {
+    return zodToJsonSchema(inner)
   }
 
-  return { type: 'string', ...(desc ? { description: desc } : {}) }
+  return { type: 'string', ...(description ? { description } : {}) }
 }

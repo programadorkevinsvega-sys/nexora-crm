@@ -69,7 +69,7 @@ export function createNexoraMcpServer(config: NexoraMcpConfig = {}) {
       tools: activeTools.map((t) => ({
         name: t.name,
         description: t.description,
-        inputSchema: zodToJsonSchema(t.inputSchema as any),
+        inputSchema: zodToJsonSchema(t.inputSchema),
       })),
     }
   })
@@ -89,11 +89,11 @@ export function createNexoraMcpServer(config: NexoraMcpConfig = {}) {
 
     try {
       const parsedArgs = tool.inputSchema.parse(request.params.arguments || {})
-      return await tool.handler(parsedArgs as any)
-    } catch (err: any) {
+      return await tool.handler(parsedArgs as never)
+    } catch (err: unknown) {
       return {
         isError: true,
-        content: [{ type: 'text', text: `Tool Error: ${err?.message || String(err)}` }],
+        content: [{ type: 'text', text: `Tool Error: ${err instanceof Error ? err.message : String(err)}` }],
       }
     }
   })
@@ -134,7 +134,7 @@ export function createNexoraMcpServer(config: NexoraMcpConfig = {}) {
     if (!prompt) {
       throw new McpError(ErrorCode.MethodNotFound, `Unknown prompt: ${request.params.name}`)
     }
-    return prompt.handler(request.params.arguments as any)
+    return prompt.handler(request.params.arguments as never)
   })
 
   return { server, client, tools: activeTools, allTools, resources, prompts, isReadOnly }

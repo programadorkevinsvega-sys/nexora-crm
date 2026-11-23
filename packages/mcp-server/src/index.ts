@@ -10,7 +10,7 @@ async function main() {
   const transport = new StdioServerTransport()
 
   await server.connect(transport)
-  console.error('🚀 Nexora CRM MCP Server running on stdio transport')
+  process.stderr.write('🚀 Nexora CRM MCP Server running on stdio transport\\n')
 }
 
 if (require.main === module) {
