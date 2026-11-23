@@ -131,7 +131,7 @@ export class DeduplicationBffService {
   private mapAuditLog(r: typeof deduplicationAuditLogs.$inferSelect): DeduplicationAuditLog {
     return {
       ...r,
-      entityType: r.entityType as any,
+      entityType: r.entityType as DeduplicationAuditLog['entityType'],
       mergedAt: r.mergedAt ? new Date(r.mergedAt).toISOString() : new Date().toISOString(),
     }
   }
