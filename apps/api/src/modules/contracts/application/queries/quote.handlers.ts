@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { QuoteRepository } from '../../domain/repositories/quote.repository'
 import { GetQuoteQuery, ListQuotesQuery } from './quote.queries'
-import { NotFoundError, ConflictError } from '@crm/shared'
+import { NotFoundError } from '@crm/shared'
 
 @Injectable()
 export class GetQuoteHandler {
