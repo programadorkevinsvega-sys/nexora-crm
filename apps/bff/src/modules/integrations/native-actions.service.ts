@@ -9,6 +9,17 @@ import { credentialString, type IntegrationCredentials } from './dispatchers/dis
 
 interface StoredIntegration { credentials?: IntegrationCredentials }
 
+function normalizeActionResult(value: unknown): NativeActionResult {
+  const record = typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : {}
+  return {
+    ...record,
+    success: typeof record.success === 'boolean' ? record.success : false,
+    message: typeof record.message === 'string' ? record.message : 'The integration action returned no message',
+  }
+}
+
 export interface NativeActionResult {
   success: boolean
   message: string
@@ -58,25 +69,25 @@ export class NativeActionsService {
         payload.currency || 'USD', payload.customerName || 'Ejecutivo CRM')
       return { success: true, message: `Alerta de venta enviada a Slack #${channel}` }
     }
-    return this.slackDispatcher.test(creds, channel, message)
+    return normalizeActionResult(await this.slackDispatcher.test(creds, channel, message))
   }
 
-  async executeDiscord(tenantId: string, payload: NativeActionPayload): Promise<unknown> {
+  async executeDiscord(tenantId: string, payload: NativeActionPayload): Promise<NativeActionResult> {
     const creds = await this.getDecryptedCredentials(tenantId, 'DISCORD')
     const webhookUrl = payload.webhookUrl || credentialString(creds, 'webhookUrl') || credentialString(creds, 'url')
-    if (!webhookUrl) return { success: false, message: 'Discord no tiene Webhook URL configurada en este tenant' }
+    if (!webhookUrl) return normalizeActionResult({ success: false, message: 'Discord no tiene Webhook URL configurada en este tenant' })
     if (payload.amount && payload.title) {
-      return this.discordDispatcher.postDealAlert(webhookUrl, {
+      return normalizeActionResult(await this.discordDispatcher.postDealAlert(webhookUrl, {
         name: payload.title, amount: payload.amount, stage: 'WON', contactName: payload.customerName,
-      })
+      }))
     }
-    return this.discordDispatcher.sendMessage(webhookUrl, {
+    return normalizeActionResult(await this.discordDispatcher.sendMessage(webhookUrl, {
       content: payload.message || `🚀 Alerta de Automatización: ${payload.title || 'Evento procesado'}`,
       username: credentialString(creds, 'botName') || 'Nexora Sales Bot',
-    })
+    }))
   }
 
-  async executeAccounting(tenantId: string, payload: NativeActionPayload): Promise<unknown> {
+  async executeAccounting(tenantId: string, payload: NativeActionPayload): Promise<NativeActionResult> {
     const creds = await this.getDecryptedCredentials(tenantId, 'ACCOUNTING')
     const provider = payload.provider || credentialString(creds, 'provider') || 'QUICKBOOKS'
     const invoiceData = {
@@ -88,10 +99,10 @@ export class NativeActionsService {
       dueDate: new Date(Date.now() + 15 * 86400000).toISOString().split('T')[0],
       referenceId: `CRM-${Date.now()}`,
     }
-    return this.accountingDispatcher.syncInvoice({ ...creds, provider }, invoiceData)
+    return normalizeActionResult(await this.accountingDispatcher.syncInvoice({ ...creds, provider }, invoiceData))
   }
 
-  async executeAction(tenantId: string, payload: NativeActionPayload): Promise<unknown> {
+  async executeAction(tenantId: string, payload: NativeActionPayload): Promise<NativeActionResult> {
     this.logger.log(`Executing native external action: ${payload.action} for tenant ${tenantId}`)
     switch (payload.action) {
       case 'SEND_SLACK': return this.executeSlack(tenantId, payload)
