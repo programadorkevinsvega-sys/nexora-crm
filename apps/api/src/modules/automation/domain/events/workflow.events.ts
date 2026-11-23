@@ -79,3 +79,20 @@ export class WorkflowExecutionCancelledEvent extends DomainEvent {
     }
   }
 }
+
+export class WorkflowExecutionFailedEvent extends DomainEvent {
+  readonly aggregateType = 'workflow_execution'
+  readonly eventName = 'workflow.execution.failed'
+
+  constructor(readonly aggregateId: string, readonly workflowId: string, readonly reason: string) {
+    super()
+  }
+
+  toPrimitives() {
+    return {
+      executionId: this.aggregateId,
+      workflowId: this.workflowId,
+      reason: this.reason,
+    }
+  }
+}
