@@ -9,14 +9,12 @@ import { Card } from "@/src/presentation/crm/components/ui/Card"
 import { PageHeader } from "@/src/presentation/crm/components/common/PageHeader"
 import { Skeleton } from "@/src/presentation/crm/components/ui/Skeleton"
 import { ErrorState } from "@/src/presentation/components/error-state"
-import { useAuth } from "@/src/presentation/hooks/use-auth"
 import { useCampaign, useUpdateCampaign } from "@src/application/crm/di/hooks"
 import type { CampaignUpdateInput } from "@/src/domain/crm/campaigns/campaign.entity"
 
 export function EditCampaignPage() {
   const params = useParams()
   const router = useRouter()
-  const { tenantId } = useAuth()
   const id = params.id as string
 
   const { data: campaign, isLoading, isError, error } = useCampaign(id)

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { ArrowLeft, Send, CheckCircle2, AlertCircle, RefreshCw, Mail, Users, TrendingUp, Sparkles } from "lucide-react"
+import { ArrowLeft, Send, CheckCircle2, AlertCircle, RefreshCw, Mail, Users, TrendingUp } from "lucide-react"
 import { Button } from "@/src/presentation/crm/components/ui/Button"
 import { Card } from "@/src/presentation/crm/components/ui/Card"
 import { api } from "@/src/infrastructure/crm/api/api-client"
@@ -30,7 +30,7 @@ export function CampaignSendPage() {
   const [sending, setSending] = useState(false)
   const [result, setResult] = useState<{ sent: number; failed: number } | null>(null)
   const [stats, setStats] = useState<any>(null)
-  const [loadingStats, setLoadingStats] = useState(false)
+  const [_loadingStats, setLoadingStats] = useState(false)
 
   const loadStats = async () => {
     setLoadingStats(true)

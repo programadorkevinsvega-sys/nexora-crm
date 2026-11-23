@@ -13,13 +13,11 @@ import { Skeleton } from "@/src/presentation/crm/components/ui/Skeleton"
 import { ConfirmDialog } from "@/src/presentation/crm/components/common/ConfirmDialog"
 import { CampaignMemberList } from "@/src/presentation/crm/components/modules/campaigns/campaign-member-list"
 import { ErrorState } from "@/src/presentation/components/error-state"
-import { useAuth } from "@/src/presentation/hooks/use-auth"
 import { useCampaign, useDeleteCampaign } from "@src/application/crm/di/hooks"
 
 export function CampaignDetailPage() {
   const params = useParams()
   const router = useRouter()
-  const { tenantId } = useAuth()
   const [showDelete, setShowDelete] = useState(false)
   const [activeTab, setActiveTab] = useState("details")
   const id = params.id as string

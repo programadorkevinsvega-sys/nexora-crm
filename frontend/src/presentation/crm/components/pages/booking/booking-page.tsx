@@ -11,7 +11,7 @@ export function BookingPage() {
   const [activeTab, setActiveTab] = useState<'LINKS' | 'APPOINTMENTS'>('LINKS')
   const [links, setLinks] = useState<BookingLink[]>([])
   const [appointments, setAppointments] = useState<BookingAppointment[]>([])
-  const [loading, setLoading] = useState(true)
+  const [_loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [copiedId, setCopiedId] = useState<string | null>(null)
 
