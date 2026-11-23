@@ -3,7 +3,7 @@ import { cloneAndFreezeJson } from '../services/immutable-json'
 
 export class WorkflowStepExecution {
   readonly outputData: Record<string, unknown> | null
-  private readonly hasLegacyIdempotencyKey: boolean
+  private readonly preserveLegacyIdentity: boolean
 
   constructor(
     readonly id: string,
@@ -22,11 +22,11 @@ export class WorkflowStepExecution {
     if (!Number.isSafeInteger(attempts) || attempts < 1) {
       throw new Error('Workflow step attempt must be a positive safe integer')
     }
-    if (!stepId.trim()) {
+    if (!stepId.trim() && !allowLegacyIdempotencyKey) {
       throw new Error('Workflow step id is required')
     }
 
-    if (!idempotencyKey.trim()) {
+    if (!idempotencyKey.trim() && !allowLegacyIdempotencyKey) {
       throw new Error('Workflow step idempotency key is required')
     }
 
@@ -35,7 +35,7 @@ export class WorkflowStepExecution {
       throw new Error('Workflow step idempotency key does not match execution, step, and attempt')
     }
 
-    this.hasLegacyIdempotencyKey = idempotencyKey !== expectedKey
+    this.preserveLegacyIdentity = allowLegacyIdempotencyKey
     this.outputData = cloneAndFreezeJson(outputData)
   }
 
@@ -116,7 +116,7 @@ export class WorkflowStepExecution {
       this.errorMessage,
       this.startedAt,
       null,
-      this.hasLegacyIdempotencyKey,
+      this.preserveLegacyIdentity,
     )
   }
 
@@ -133,7 +133,7 @@ export class WorkflowStepExecution {
       null,
       this.startedAt,
       new Date(),
-      this.hasLegacyIdempotencyKey,
+      this.preserveLegacyIdentity,
     )
   }
 
@@ -150,7 +150,7 @@ export class WorkflowStepExecution {
       errorMessage,
       this.startedAt,
       new Date(),
-      this.hasLegacyIdempotencyKey,
+      this.preserveLegacyIdentity,
     )
   }
 
@@ -167,7 +167,7 @@ export class WorkflowStepExecution {
       null,
       this.startedAt,
       new Date(),
-      this.hasLegacyIdempotencyKey,
+      this.preserveLegacyIdentity,
     )
   }
 }
