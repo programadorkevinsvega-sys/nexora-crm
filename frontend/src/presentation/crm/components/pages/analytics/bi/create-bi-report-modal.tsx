@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { ApiBiRepository } from '@src/infrastructure/crm/repositories/bi/api-bi.repository'
 import type { BiReportCategory } from '@crm/contracts'
-import { X, BarChart3, Link as LinkIcon, Sparkles } from 'lucide-react'
+import { X, BarChart3, Sparkles } from 'lucide-react'
 
 interface Props {
   onClose: () => void

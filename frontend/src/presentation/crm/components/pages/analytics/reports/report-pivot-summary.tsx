@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { DollarSign, Hash, Percent, Layers, Calculator } from "lucide-react"
+import { DollarSign, Percent, Layers, Calculator } from "lucide-react"
 import { Card } from "@/src/presentation/crm/components/ui/Card"
 import type { ReportColumn } from "./report-builder.types"
 
