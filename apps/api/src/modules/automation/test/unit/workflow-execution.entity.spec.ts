@@ -22,6 +22,30 @@ describe('WorkflowExecution Entity', () => {
     expect(execution.completedAt).toBeNull()
   })
 
+
+  it('stores an isolated deeply frozen context snapshot', () => {
+    const initialContext = { customer: { segment: 'enterprise' } }
+    const execution = WorkflowExecution.start({
+      ...startProps,
+      initialContext,
+    })
+
+    initialContext.customer.segment = 'consumer'
+
+    expect(execution.contextData?.customer).toEqual({ segment: 'enterprise' })
+    expect(Object.isFrozen(execution.contextData)).toBe(true)
+    expect(Object.isFrozen(execution.contextData?.customer)).toBe(true)
+  })
+
+  it('requires a positive integer source version', () => {
+    expect(() => WorkflowExecution.start({ ...startProps, version: 0 })).toThrow(
+      'Workflow execution version must be a positive integer',
+    )
+    expect(() => WorkflowExecution.start({ ...startProps, version: 1.5 })).toThrow(
+      'Workflow execution version must be a positive integer',
+    )
+  })
+
   it('should advance to next step correctly', () => {
     const execution = WorkflowExecution.start(startProps)
     const advanced = execution.advanceTo('step_2', { leadScore: 85, whatsappSent: true })

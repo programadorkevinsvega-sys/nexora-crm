@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common'
-import { eq, and } from 'drizzle-orm'
-import { getDb, workflowExecutions as workflowExecutionsTable, workflowStepExecutions as workflowStepExecutionsTable } from '@crm/database'
+import { and, eq, sql } from 'drizzle-orm'
+import {
+  getDb,
+  workflowExecutions as workflowExecutionsTable,
+  workflowStepExecutions as workflowStepExecutionsTable,
+} from '@crm/database'
+import { ConflictError } from '@crm/shared'
 import { WorkflowExecutionRepository } from '../domain/repositories/workflow-execution.repository'
 import { WorkflowExecution } from '../domain/entities/workflow-execution.entity'
 import { WorkflowStepExecution } from '../domain/entities/workflow-step-execution.entity'
@@ -13,26 +18,55 @@ export class DrizzleWorkflowExecutionRepository extends WorkflowExecutionReposit
   }
 
   async save(execution: WorkflowExecution): Promise<void> {
-    const existing = await this.findById(execution.tenantId, execution.id)
-    if (existing) {
-      await this.db
-        .update(workflowExecutionsTable)
-        .set({
-          status: execution.status,
-          currentStepId: execution.currentStepId,
-          contextData: execution.contextData,
-          completedAt: execution.completedAt,
-          cancelledAt: execution.cancelledAt,
-          errorMessage: execution.errorMessage,
-        })
+    await this.db.transaction(async (tx) => {
+      await tx.execute(sql`select set_config('app.tenant_id', ${execution.tenantId}, true)`)
+
+      const rows = await tx
+        .select()
+        .from(workflowExecutionsTable)
         .where(
           and(
             eq(workflowExecutionsTable.tenantId, execution.tenantId),
             eq(workflowExecutionsTable.id, execution.id),
           ),
         )
-    } else {
-      await this.db.insert(workflowExecutionsTable).values({
+        .limit(1)
+
+      if (rows.length > 0) {
+        const existing = WorkflowMapper.executionToDomain(rows[0])
+        const identityIsUnchanged =
+          existing.id === execution.id &&
+          existing.tenantId === execution.tenantId &&
+          existing.workflowId === execution.workflowId &&
+          existing.version === execution.version &&
+          existing.entityType === execution.entityType &&
+          existing.entityId === execution.entityId &&
+          existing.startedAt.getTime() === execution.startedAt.getTime()
+
+        if (!identityIsUnchanged) {
+          throw new ConflictError('Workflow execution identity and source version are immutable')
+        }
+
+        await tx
+          .update(workflowExecutionsTable)
+          .set({
+            status: execution.status,
+            currentStepId: execution.currentStepId,
+            contextData: execution.contextData,
+            completedAt: execution.completedAt,
+            cancelledAt: execution.cancelledAt,
+            errorMessage: execution.errorMessage,
+          })
+          .where(
+            and(
+              eq(workflowExecutionsTable.tenantId, execution.tenantId),
+              eq(workflowExecutionsTable.id, execution.id),
+            ),
+          )
+        return
+      }
+
+      await tx.insert(workflowExecutionsTable).values({
         id: execution.id,
         tenantId: execution.tenantId,
         workflowId: execution.workflowId,
@@ -47,77 +81,114 @@ export class DrizzleWorkflowExecutionRepository extends WorkflowExecutionReposit
         cancelledAt: execution.cancelledAt,
         errorMessage: execution.errorMessage,
       })
-    }
+    })
   }
 
   async findById(tenantId: string, id: string): Promise<WorkflowExecution | null> {
-    const rows = await this.db
-      .select()
-      .from(workflowExecutionsTable)
-      .where(
-        and(
-          eq(workflowExecutionsTable.tenantId, tenantId),
-          eq(workflowExecutionsTable.id, id),
-        ),
-      )
-      .limit(1)
+    return this.db.transaction(async (tx) => {
+      await tx.execute(sql`select set_config('app.tenant_id', ${tenantId}, true)`)
+      const rows = await tx
+        .select()
+        .from(workflowExecutionsTable)
+        .where(
+          and(
+            eq(workflowExecutionsTable.tenantId, tenantId),
+            eq(workflowExecutionsTable.id, id),
+          ),
+        )
+        .limit(1)
 
-    return rows.length > 0 ? WorkflowMapper.executionToDomain(rows[0]) : null
+      return rows.length > 0 ? WorkflowMapper.executionToDomain(rows[0]) : null
+    })
   }
 
   async findRunningByEntity(tenantId: string, entityType: string, entityId: string): Promise<WorkflowExecution[]> {
-    const rows = await this.db
-      .select()
-      .from(workflowExecutionsTable)
-      .where(
-        and(
-          eq(workflowExecutionsTable.tenantId, tenantId),
-          eq(workflowExecutionsTable.entityType, entityType),
-          eq(workflowExecutionsTable.entityId, entityId),
-          eq(workflowExecutionsTable.status, 'RUNNING'),
-        ),
-      )
+    return this.db.transaction(async (tx) => {
+      await tx.execute(sql`select set_config('app.tenant_id', ${tenantId}, true)`)
+      const rows = await tx
+        .select()
+        .from(workflowExecutionsTable)
+        .where(
+          and(
+            eq(workflowExecutionsTable.tenantId, tenantId),
+            eq(workflowExecutionsTable.entityType, entityType),
+            eq(workflowExecutionsTable.entityId, entityId),
+            eq(workflowExecutionsTable.status, 'RUNNING'),
+          ),
+        )
 
-    return rows.map(WorkflowMapper.executionToDomain)
+      return rows.map(WorkflowMapper.executionToDomain)
+    })
   }
 
   async listExecutions(tenantId: string, filters?: { workflowId?: string; status?: string }): Promise<WorkflowExecution[]> {
-    const conditions = [eq(workflowExecutionsTable.tenantId, tenantId)]
-    if (filters?.workflowId) {
-      conditions.push(eq(workflowExecutionsTable.workflowId, filters.workflowId))
-    }
-    if (filters?.status) {
-      conditions.push(eq(workflowExecutionsTable.status, filters.status))
-    }
+    return this.db.transaction(async (tx) => {
+      await tx.execute(sql`select set_config('app.tenant_id', ${tenantId}, true)`)
+      const conditions = [eq(workflowExecutionsTable.tenantId, tenantId)]
+      if (filters?.workflowId) {
+        conditions.push(eq(workflowExecutionsTable.workflowId, filters.workflowId))
+      }
+      if (filters?.status) {
+        conditions.push(eq(workflowExecutionsTable.status, filters.status))
+      }
 
-    const rows = await this.db
-      .select()
-      .from(workflowExecutionsTable)
-      .where(and(...conditions))
+      const rows = await tx
+        .select()
+        .from(workflowExecutionsTable)
+        .where(and(...conditions))
 
-    return rows.map(WorkflowMapper.executionToDomain)
+      return rows.map(WorkflowMapper.executionToDomain)
+    })
   }
 
   async saveStepExecution(step: WorkflowStepExecution): Promise<void> {
-    const existing = await this.findStepExecutionByIdempotencyKey(step.tenantId, step.idempotencyKey)
-    if (existing) {
-      await this.db
-        .update(workflowStepExecutionsTable)
-        .set({
-          status: step.status,
-          attempts: step.attempts,
-          outputData: step.outputData,
-          errorMessage: step.errorMessage,
-          completedAt: step.completedAt,
-        })
+    await this.db.transaction(async (tx) => {
+      await tx.execute(sql`select set_config('app.tenant_id', ${step.tenantId}, true)`)
+
+      const rows = await tx
+        .select()
+        .from(workflowStepExecutionsTable)
         .where(
           and(
             eq(workflowStepExecutionsTable.tenantId, step.tenantId),
             eq(workflowStepExecutionsTable.idempotencyKey, step.idempotencyKey),
           ),
         )
-    } else {
-      await this.db.insert(workflowStepExecutionsTable).values({
+        .limit(1)
+
+      if (rows.length > 0) {
+        const existing = WorkflowMapper.stepExecutionToDomain(rows[0])
+        const identityIsUnchanged =
+          existing.id === step.id &&
+          existing.tenantId === step.tenantId &&
+          existing.executionId === step.executionId &&
+          existing.stepId === step.stepId &&
+          existing.idempotencyKey === step.idempotencyKey &&
+          existing.attempts === step.attempts &&
+          existing.startedAt.getTime() === step.startedAt.getTime()
+
+        if (!identityIsUnchanged) {
+          throw new ConflictError('Workflow step execution identity and idempotency key are immutable')
+        }
+
+        await tx
+          .update(workflowStepExecutionsTable)
+          .set({
+            status: step.status,
+            outputData: step.outputData,
+            errorMessage: step.errorMessage,
+            completedAt: step.completedAt,
+          })
+          .where(
+            and(
+              eq(workflowStepExecutionsTable.tenantId, step.tenantId),
+              eq(workflowStepExecutionsTable.idempotencyKey, step.idempotencyKey),
+            ),
+          )
+        return
+      }
+
+      await tx.insert(workflowStepExecutionsTable).values({
         id: step.id,
         tenantId: step.tenantId,
         executionId: step.executionId,
@@ -130,35 +201,41 @@ export class DrizzleWorkflowExecutionRepository extends WorkflowExecutionReposit
         startedAt: step.startedAt,
         completedAt: step.completedAt,
       })
-    }
+    })
   }
 
   async findStepExecutionByIdempotencyKey(tenantId: string, idempotencyKey: string): Promise<WorkflowStepExecution | null> {
-    const rows = await this.db
-      .select()
-      .from(workflowStepExecutionsTable)
-      .where(
-        and(
-          eq(workflowStepExecutionsTable.tenantId, tenantId),
-          eq(workflowStepExecutionsTable.idempotencyKey, idempotencyKey),
-        ),
-      )
-      .limit(1)
+    return this.db.transaction(async (tx) => {
+      await tx.execute(sql`select set_config('app.tenant_id', ${tenantId}, true)`)
+      const rows = await tx
+        .select()
+        .from(workflowStepExecutionsTable)
+        .where(
+          and(
+            eq(workflowStepExecutionsTable.tenantId, tenantId),
+            eq(workflowStepExecutionsTable.idempotencyKey, idempotencyKey),
+          ),
+        )
+        .limit(1)
 
-    return rows.length > 0 ? WorkflowMapper.stepExecutionToDomain(rows[0]) : null
+      return rows.length > 0 ? WorkflowMapper.stepExecutionToDomain(rows[0]) : null
+    })
   }
 
   async listStepExecutions(tenantId: string, executionId: string): Promise<WorkflowStepExecution[]> {
-    const rows = await this.db
-      .select()
-      .from(workflowStepExecutionsTable)
-      .where(
-        and(
-          eq(workflowStepExecutionsTable.tenantId, tenantId),
-          eq(workflowStepExecutionsTable.executionId, executionId),
-        ),
-      )
+    return this.db.transaction(async (tx) => {
+      await tx.execute(sql`select set_config('app.tenant_id', ${tenantId}, true)`)
+      const rows = await tx
+        .select()
+        .from(workflowStepExecutionsTable)
+        .where(
+          and(
+            eq(workflowStepExecutionsTable.tenantId, tenantId),
+            eq(workflowStepExecutionsTable.executionId, executionId),
+          ),
+        )
 
-    return rows.map(WorkflowMapper.stepExecutionToDomain)
+      return rows.map(WorkflowMapper.stepExecutionToDomain)
+    })
   }
 }

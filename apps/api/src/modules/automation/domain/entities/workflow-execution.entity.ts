@@ -1,6 +1,9 @@
 import { WorkflowExecutionStatus } from '@crm/contracts'
+import { cloneAndFreezeJson } from '../services/immutable-json'
 
 export class WorkflowExecution {
+  readonly contextData: Record<string, unknown> | null
+
   constructor(
     readonly id: string,
     readonly tenantId: string,
@@ -10,12 +13,17 @@ export class WorkflowExecution {
     readonly entityId: string,
     readonly status: WorkflowExecutionStatus,
     readonly currentStepId: string,
-    readonly contextData: Record<string, unknown> | null,
+    contextData: Record<string, unknown> | null,
     readonly startedAt: Date,
     readonly completedAt: Date | null,
     readonly cancelledAt: Date | null,
     readonly errorMessage: string | null,
-  ) {}
+  ) {
+    if (!Number.isSafeInteger(version) || version < 1) {
+      throw new Error('Workflow execution version must be a positive integer')
+    }
+    this.contextData = cloneAndFreezeJson(contextData)
+  }
 
   static start(props: {
     tenantId: string

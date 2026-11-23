@@ -48,6 +48,54 @@ describe('WorkflowDefinition Entity', () => {
     expect(v2.id).not.toBe(v1.id)
   })
 
+
+  it('keeps the persisted definition graph and trigger filter as isolated frozen snapshots', () => {
+    const graphConfig = { payload: { channel: 'email' } }
+    const triggerFilter = { contact: { country: 'CO' } }
+    const stepsGraph = [
+      { id: 's1', type: 'ACTION' as const, action: 'SEND_EMAIL', config: graphConfig },
+    ]
+
+    const workflow = WorkflowDefinition.create({
+      ...validProps,
+      triggerFilter,
+      stepsGraph,
+    })
+
+    graphConfig.payload.channel = 'whatsapp'
+    triggerFilter.contact.country = 'US'
+    stepsGraph.length = 0
+
+    expect(workflow.stepsGraph).toHaveLength(1)
+    expect(workflow.stepsGraph[0].config?.payload).toEqual({ channel: 'email' })
+    expect(workflow.triggerFilter).toEqual({ contact: { country: 'CO' } })
+    expect(Object.isFrozen(workflow.stepsGraph)).toBe(true)
+    expect(Object.isFrozen(workflow.stepsGraph[0].config)).toBe(true)
+    expect(Object.isFrozen(workflow.stepsGraph[0].config?.payload)).toBe(true)
+    expect(Object.isFrozen(workflow.triggerFilter?.contact)).toBe(true)
+  })
+
+  it('creates a new independent content snapshot for each version', () => {
+    const v1 = WorkflowDefinition.create(validProps).activate()
+    const v2 = v1.cloneAsNewVersion()
+
+    expect(v2.stepsGraph).not.toBe(v1.stepsGraph)
+    expect(v2.stepsGraph[0]).not.toBe(v1.stepsGraph[0])
+    expect(v2.stepsGraph).toEqual(v1.stepsGraph)
+    expect(v1.version).toBe(1)
+    expect(v2.version).toBe(2)
+  })
+
+  it('rejects invalid lifecycle transitions and keeps archived versions terminal', () => {
+    const draft = WorkflowDefinition.create(validProps)
+
+    expect(() => draft.pause()).toThrow('Only active workflow versions can be paused')
+    expect(() => draft.activate().archive().activate()).toThrow(
+      'Archived workflow versions cannot be activated',
+    )
+    expect(draft.archive().archive().status).toBe('ARCHIVED')
+  })
+
   it('should throw error if name or triggerEvent are missing', () => {
     expect(() =>
       WorkflowDefinition.create({ ...validProps, name: '' }),
