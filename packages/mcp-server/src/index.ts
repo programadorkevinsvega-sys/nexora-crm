@@ -10,13 +10,14 @@ async function main() {
   const transport = new StdioServerTransport()
 
   await server.connect(transport)
-  process.stderr.write('🚀 Nexora CRM MCP Server running on stdio transport\\n')
+  process.stderr.write('🚀 Nexora CRM MCP Server running on stdio transport\n')
 }
 
 if (require.main === module) {
-  main().catch((err) => {
-    console.error('Fatal MCP Server error:', err)
-    process.exit(1)
+  main().catch((error: unknown) => {
+    const message = error instanceof Error ? error.stack || error.message : String(error)
+    process.stderr.write(`Fatal MCP Server error: ${message}\n`)
+    process.exitCode = 1
   })
 }
 

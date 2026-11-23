@@ -5,47 +5,32 @@ import { z } from 'zod'
 describe('Nexora CRM MCP Server - Unit Tests', () => {
   it('should register all core CRM tools across all modules', () => {
     const { tools } = createNexoraMcpServer({ apiKey: 'test-key' })
-
     const toolNames = tools.map((t) => t.name)
 
-    // Contacts & 360
     expect(toolNames).toContain('nexora_list_contacts')
     expect(toolNames).toContain('nexora_get_contact')
     expect(toolNames).toContain('nexora_create_contact')
     expect(toolNames).toContain('nexora_get_customer_360')
-
-    // Deals & Pipeline
     expect(toolNames).toContain('nexora_list_deals')
     expect(toolNames).toContain('nexora_create_deal')
     expect(toolNames).toContain('nexora_move_deal_stage')
     expect(toolNames).toContain('nexora_win_deal')
     expect(toolNames).toContain('nexora_lose_deal')
-
-    // Interactions
     expect(toolNames).toContain('nexora_create_note')
     expect(toolNames).toContain('nexora_create_task')
     expect(toolNames).toContain('nexora_log_call')
-
-    // Support Tickets
     expect(toolNames).toContain('nexora_list_tickets')
     expect(toolNames).toContain('nexora_create_ticket')
     expect(toolNames).toContain('nexora_reply_ticket')
-
-    // CPQ & Quotes
     expect(toolNames).toContain('nexora_list_products')
     expect(toolNames).toContain('nexora_create_quote')
     expect(toolNames).toContain('nexora_accept_quote')
-
-    // AI Intelligence
     expect(toolNames).toContain('nexora_predict_deal_win')
     expect(toolNames).toContain('nexora_generate_message_draft')
     expect(toolNames).toContain('nexora_get_contact_summary')
     expect(toolNames).toContain('nexora_predict_churn_risk')
-
-    // Knowledge Base
     expect(toolNames).toContain('nexora_search_knowledge_base')
     expect(toolNames).toContain('nexora_get_kb_article')
-
     expect(tools.length).toBeGreaterThanOrEqual(20)
   })
 
@@ -61,8 +46,6 @@ describe('Nexora CRM MCP Server - Unit Tests', () => {
     expect(toolNames).not.toContain('nexora_lose_deal')
     expect(toolNames).not.toContain('nexora_create_note')
     expect(toolNames).not.toContain('nexora_create_ticket')
-
-    // Read tools must remain available
     expect(toolNames).toContain('nexora_list_contacts')
     expect(toolNames).toContain('nexora_get_customer_360')
     expect(toolNames).toContain('nexora_list_deals')
@@ -86,16 +69,16 @@ describe('Nexora CRM MCP Server - Unit Tests', () => {
     expect(promptNames).toContain('nexora_customer_health_check')
 
     const dealReview = prompts.find((p) => p.name === 'nexora_deal_review')!
-    const res = (dealReview.handler as any)({ dealId: '123' })
-    expect(res.messages[0].content.text).toContain('deal ID 123')
+    const result = dealReview.handler({ dealId: '123' } as never)
+    expect(result.messages[0].content.text).toContain('deal ID 123')
   })
 
   it('should execute nexora_get_customer_360 handler calling client.get', async () => {
     const { client, tools } = createNexoraMcpServer()
-    jest.spyOn(client, 'get').mockResolvedValue({ contact: { id: 'c-1', firstName: 'Alice' } } as any)
+    jest.spyOn(client, 'get').mockResolvedValue({ contact: { id: 'c-1', firstName: 'Alice' } } as never)
 
     const tool = tools.find((t) => t.name === 'nexora_get_customer_360')!
-    const result = await (tool.handler as any)({ contactId: '00000000-0000-0000-0000-000000000001' })
+    const result = await tool.handler({ contactId: '00000000-0000-0000-0000-000000000001' } as never)
 
     expect(result.content[0].text).toContain('Alice')
     expect(client.get).toHaveBeenCalledWith('/api/v1/contacts/00000000-0000-0000-0000-000000000001/360')
@@ -109,10 +92,11 @@ describe('Nexora CRM MCP Server - Unit Tests', () => {
     })
 
     const jsonSchema = zodToJsonSchema(schema)
+    const properties = jsonSchema.properties as Record<string, { type?: string; description?: string; enum?: string[] }>
     expect(jsonSchema.type).toBe('object')
-    expect((jsonSchema.properties as any).name.type).toBe('string')
-    expect((jsonSchema.properties as any).name.description).toBe('User name')
-    expect((jsonSchema.properties as any).role.enum).toEqual(['ADMIN', 'USER'])
+    expect(properties.name.type).toBe('string')
+    expect(properties.name.description).toBe('User name')
+    expect(properties.role.enum).toEqual(['ADMIN', 'USER'])
     expect(jsonSchema.required).toEqual(['name', 'role'])
   })
 })
