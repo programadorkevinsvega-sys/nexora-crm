@@ -6,7 +6,7 @@ const SHOPIFY_API_VERSION = '2024-10'
 export class ShopifyDispatcher {
   private readonly logger = new Logger(ShopifyDispatcher.name)
   private buildBaseUrl(shopUrl: string): string {
-    const normalized = shopUrl.replace(/^https?:\\/\\//, '').replace(/\\/$/, '')
+    const normalized = shopUrl.replace(/^https?:\/\//, '').replace(/\/$/, '')
     const domain = normalized.includes('.') ? normalized : `${normalized}.myshopify.com`
     return `https://${domain}/admin/api/${SHOPIFY_API_VERSION}`
   }
