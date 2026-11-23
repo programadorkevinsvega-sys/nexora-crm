@@ -1,8 +1,18 @@
 import type { contacts, deals, supportTickets } from '@crm/database'
 
-type DealFeedSource = typeof deals.$inferSelect
-type ContactFeedSource = typeof contacts.$inferSelect
-type TicketFeedSource = typeof supportTickets.$inferSelect
+type DealFeedSource = Pick<
+  typeof deals.$inferSelect,
+  'id' | 'name' | 'amount' | 'stageId' | 'status' | 'probabilityOverride' |
+  'expectedCloseDate' | 'createdAt' | 'updatedAt'
+>
+type ContactFeedSource = Pick<
+  typeof contacts.$inferSelect,
+  'id' | 'firstName' | 'lastName' | 'email' | 'phone' | 'companyId' | 'leadStatus' | 'createdAt'
+>
+type TicketFeedSource = Pick<
+  typeof supportTickets.$inferSelect,
+  'id' | 'subject' | 'priority' | 'status' | 'channel' | 'contactId' | 'createdAt'
+>
 
 export type BiFeedRow = Record<string, string | number | null>
 
@@ -15,9 +25,7 @@ export class BiDataFeedHelper {
       Stage: deal.stageId,
       Status: deal.status,
       Probability: Number(deal.probabilityOverride ?? 0),
-      ExpectedCloseDate: deal.expectedCloseDate
-        ? new Date(deal.expectedCloseDate).toISOString()
-        : null,
+      ExpectedCloseDate: deal.expectedCloseDate ? new Date(deal.expectedCloseDate).toISOString() : null,
       CreatedAt: deal.createdAt.toISOString(),
       UpdatedAt: deal.updatedAt.toISOString(),
     }))

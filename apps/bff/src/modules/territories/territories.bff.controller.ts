@@ -1,13 +1,7 @@
-import { Controller, Get, Post, Param, Body, Query, Headers } from '@nestjs/common'
+import { Controller, Get, Post, Param, Body, Headers } from '@nestjs/common'
 import { ApiTags, ApiOperation } from '@nestjs/swagger'
 import { TerritoriesBffService } from './territories.bff.service'
-import type {
-  SalesTerritory,
-  CreateTerritoryDto,
-  TerritoryMember,
-  TerritoryMemberRole,
-  RouteLeadToTerritoryDto,
-} from '@crm/contracts'
+import type { SalesTerritory, CreateTerritoryDto, TerritoryMember, TerritoryMemberRole, RouteLeadToTerritoryDto } from '@crm/contracts'
 
 @ApiTags('Sales Territories & Territory Management')
 @Controller('api/territories')
@@ -16,9 +10,7 @@ export class TerritoriesBffController {
 
   @Get()
   @ApiOperation({ summary: 'Listar territorios de ventas configurados' })
-  async listTerritories(
-    @Headers('x-tenant-id') tenantId = '00000000-0000-0000-0000-000000000001',
-  ): Promise<SalesTerritory[]> {
+  async listTerritories(@Headers('x-tenant-id') tenantId = '00000000-0000-0000-0000-000000000001'): Promise<SalesTerritory[]> {
     return this.service.listTerritories(tenantId)
   }
 

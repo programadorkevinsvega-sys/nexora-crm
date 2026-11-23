@@ -14,24 +14,30 @@ export class StripeDispatcher {
     const currency = credentialString(creds, 'currency') || 'USD'
     if (!secretKey) throw new BadRequestException('Stripe Secret Key es requerida')
     const stripe = this.buildClient(secretKey)
-    const isLive = secretKey.startsWith('sk_live_')
     try {
       const balance = await stripe.balance.retrieve()
       const isLiveKey = secretKey.startsWith('sk_live_')
       const modeLabel = isLiveKey ? '🟢 PRODUCCIÓN' : '🟡 TEST'
       const available = (balance.available || []).map((item) => `${(item.amount / 100).toFixed(2)} ${item.currency.toUpperCase()}`).join(', ')
       this.logger.log(`Stripe verified | mode=${modeLabel}`)
-      return { success: true, message: `Stripe conectado en modo ${modeLabel}. Balance disponible: ${available || '0.00 USD'}. Moneda base: ${currency}.`,
-        details: { mode: isLiveKey ? 'live' : 'test', balance: available } }
-    } catch (err: unknown) {
-      const candidate = asRecord(err)
+      return {
+        success: true,
+        message: `Stripe conectado en modo ${modeLabel}. Balance disponible: ${available || '0.00 USD'}. Moneda base: ${currency}.`,
+        details: { mode: isLiveKey ? 'live' : 'test', balance: available },
+      }
+    } catch (error: unknown) {
+      const candidate = asRecord(error)
       const code = asRecord(candidate.raw).code ?? candidate.type ?? 'unknown'
-      return { success: false, message: `Error de Stripe (${String(code)}): ${errorMessage(err)}` }
+      return { success: false, message: `Error de Stripe (${String(code)}): ${errorMessage(error)}` }
     }
   }
   async createPaymentLink(secretKey: string, amount: number, currency: string, description: string): Promise<{ url: string; id: string }> {
     const stripe = this.buildClient(secretKey)
-    const price = await stripe.prices.create({ currency: currency.toLowerCase(), unit_amount: Math.round(amount * 100), product_data: { name: description } })
+    const price = await stripe.prices.create({
+      currency: currency.toLowerCase(),
+      unit_amount: Math.round(amount * 100),
+      product_data: { name: description },
+    })
     const link = await stripe.paymentLinks.create({ line_items: [{ price: price.id, quantity: 1 }] })
     return { url: link.url!, id: link.id }
   }
