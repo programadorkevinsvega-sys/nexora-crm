@@ -61,7 +61,7 @@ jobs:
 
       - name: Start NATS JetStream for integration tests
         run: |
-          docker run -d --name ci-nats -p 4222:4222 nats:2.15.3-alpine -js -m 8222
+          docker run -d --name ci-nats -p 4222:4222 -p 8222:8222 nats:2.15.3-alpine -js -m 8222
           for attempt in $(seq 1 30); do
             if curl -fsS http://127.0.0.1:8222/healthz?js-enabled-only=true >/dev/null; then
               exit 0
