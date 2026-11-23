@@ -1,14 +1,5 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Put,
-  Param,
-  Query,
-  Body,
-  Headers,
-  ParseUUIDPipe,
+  Controller, Get, Post, Patch, Put, Param, Query, Body, Headers, ParseUUIDPipe,
 } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiBody, ApiParam, ApiQuery, ApiHeader } from '@nestjs/swagger'
 import { z } from 'zod'
@@ -18,9 +9,6 @@ import { SupportTicketsBffService, TicketFilters, PaginatedResult } from './supp
 import { CurrentUser, AuthenticatedUser } from '../../common/decorators/current-user.decorator'
 import type { CreateTicket, SupportTicket, TicketReply } from '@crm/contracts'
 
-const AssignTicketBodySchema = z.object({
-  assignedUserId: z.string().uuid(),
-})
 const AddTicketReplyBodySchema = z.object({
   message: z.string().trim().min(1).max(10000),
   isInternalNote: z.boolean().optional(),
@@ -47,30 +35,19 @@ export class SupportTicketsBffController {
     @Headers('X-Tenant-Id') tenantId?: string,
   ): Promise<PaginatedResult<SupportTicket>> {
     const filters: TicketFilters = {
-      cursor,
-      limit: limit ? Number(limit) : undefined,
-      status,
-      priority,
-      assignedUserId,
-      contactId,
+      cursor, limit: limit ? Number(limit) : undefined, status, priority, assignedUserId, contactId,
     }
     return this.service.list(filters, tenantId!)
   }
 
   @Post('tickets')
   @ApiOperation({ summary: 'Crear un nuevo ticket de soporte' })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      required: ['subject', 'contactId'],
-      properties: {
-        subject: { type: 'string', example: 'Error al generar factura electrónica' },
-        description: { type: 'string', example: 'El cliente reporta timeout en el módulo de pagos' },
-        priority: { type: 'string', example: 'HIGH' },
-        contactId: { type: 'string', example: '00000000-0000-0000-0000-000000000001' },
-      },
-    },
-  })
+  @ApiBody({ schema: { type: 'object', required: ['subject', 'contactId'], properties: {
+    subject: { type: 'string', example: 'Error al generar factura electrónica' },
+    description: { type: 'string', example: 'El cliente reporta timeout en el módulo de pagos' },
+    priority: { type: 'string', example: 'HIGH' },
+    contactId: { type: 'string', example: '00000000-0000-0000-0000-000000000001' },
+  } } })
   async create(
     @Body(createZodPipe(CreateTicketSchema)) dto: CreateTicket,
     @Headers('X-Tenant-Id') tenantId?: string,
@@ -81,52 +58,32 @@ export class SupportTicketsBffController {
   @Get('tickets/:id')
   @ApiOperation({ summary: 'Obtener un ticket por ID' })
   @ApiParam({ name: 'id', description: 'UUID del ticket' })
-  async getById(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Headers('X-Tenant-Id') tenantId?: string,
-  ): Promise<SupportTicket> {
+  async getById(@Param('id', ParseUUIDPipe) id: string, @Headers('X-Tenant-Id') tenantId?: string): Promise<SupportTicket> {
     return this.service.getById(id, tenantId!)
   }
 
   @Put('tickets/:id')
   @ApiOperation({ summary: 'Actualizar un ticket de soporte' })
   @ApiParam({ name: 'id', description: 'UUID del ticket' })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        status: { type: 'string', example: 'IN_PROGRESS' },
-        priority: { type: 'string', example: 'URGENT' },
-        assignedUserId: { type: 'string', example: '00000000-0000-0000-0000-000000000002' },
-      },
-    },
-  })
+  @ApiBody({ schema: { type: 'object', properties: {
+    status: { type: 'string', example: 'IN_PROGRESS' },
+    priority: { type: 'string', example: 'URGENT' },
+    assignedUserId: { type: 'string', example: '00000000-0000-0000-0000-000000000002' },
+  } } })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: { status?: string; assignedUserId?: string; subject?: string; description?: string },
     @Headers('X-Tenant-Id') tenantId?: string,
   ): Promise<SupportTicket> {
-    if (dto.status) {
-      await this.service.updateStatus(id, dto.status, tenantId!)
-    }
-    if (dto.assignedUserId) {
-      await this.service.assign(id, dto.assignedUserId, tenantId!)
-    }
+    if (dto.status) await this.service.updateStatus(id, dto.status, tenantId!)
+    if (dto.assignedUserId) await this.service.assign(id, dto.assignedUserId, tenantId!)
     return this.service.getById(id, tenantId!)
   }
 
   @Patch('tickets/:id/status')
   @ApiOperation({ summary: 'Actualizar exclusivamente el estado del ticket' })
   @ApiParam({ name: 'id', description: 'UUID del ticket' })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      required: ['status'],
-      properties: {
-        status: { type: 'string', example: 'RESOLVED' },
-      },
-    },
-  })
+  @ApiBody({ schema: { type: 'object', required: ['status'], properties: { status: { type: 'string', example: 'RESOLVED' } } } })
   async updateStatus(
     @Param('id', ParseUUIDPipe) id: string,
     @Body(createZodPipe(UpdateTicketStatusSchema)) dto: { status: string },
@@ -138,17 +95,11 @@ export class SupportTicketsBffController {
   @Post('tickets/:id/replies')
   @ApiOperation({ summary: 'Agregar una respuesta o nota interna al ticket' })
   @ApiParam({ name: 'id', description: 'UUID del ticket' })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      required: ['message'],
-      properties: {
-        message: { type: 'string', example: 'Se ha revisado el caso y se procedió a reintentar la transacción con éxito.' },
-        authorType: { type: 'string', example: 'AGENT' },
-        isInternalNote: { type: 'boolean', example: false },
-      },
-    },
-  })
+  @ApiBody({ schema: { type: 'object', required: ['message'], properties: {
+    message: { type: 'string', example: 'Se ha revisado el caso y se procedió a reintentar la transacción con éxito.' },
+    authorType: { type: 'string', example: 'AGENT' },
+    isInternalNote: { type: 'boolean', example: false },
+  } } })
   async addReply(
     @Param('id', ParseUUIDPipe) id: string,
     @Body(createZodPipe(AddTicketReplyBodySchema)) body: z.infer<typeof AddTicketReplyBodySchema>,
@@ -157,16 +108,9 @@ export class SupportTicketsBffController {
   ): Promise<TicketReply> {
     const tenantId = user?.tenantId || headerTenantId
     const authorId = user?.userId || '00000000-0000-0000-0000-000000000002'
-    return this.service.addReply(
-      id,
-      {
-        message: body.message,
-        authorType: 'AGENT',
-        authorId,
-        isInternalNote: body.isInternalNote ?? false,
-      },
-      tenantId!,
-    )
+    return this.service.addReply(id, {
+      message: body.message, authorType: 'AGENT', authorId, isInternalNote: body.isInternalNote ?? false,
+    }, tenantId!)
   }
 
   @Get('tickets/:id/replies')

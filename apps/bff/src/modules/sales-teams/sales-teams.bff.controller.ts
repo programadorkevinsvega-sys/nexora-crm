@@ -1,17 +1,7 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Patch,
-  Delete,
-  Param,
-  Query,
-  Body,
-  Headers,
-  ParseUUIDPipe,
+  Controller, Get, Post, Put, Delete, Param, Query, Body, Headers, ParseUUIDPipe,
 } from '@nestjs/common'
-import { ApiTags, ApiOperation, ApiBody, ApiParam, ApiQuery, ApiHeader } from '@nestjs/swagger'
+import { ApiTags, ApiOperation, ApiBody, ApiParam, ApiHeader } from '@nestjs/swagger'
 import { z } from 'zod'
 import { CreateSalesTeamSchema, CreateQuotaSchema } from '@crm/contracts'
 import { createZodPipe } from '../../common/pipes/zod-validation.pipe'
@@ -19,7 +9,6 @@ import { SalesTeamsBffService, SalesTeamFilters, PaginatedResult } from './sales
 import type { CreateSalesTeam, SalesTeam, CreateQuota, SalesQuota } from '@crm/contracts'
 
 const AddMemberBodySchema = z.object({ userId: z.string().uuid() })
-const UpdateAchievedSchema = z.object({ achievedAmount: z.number() })
 
 @ApiTags('Equipos Comerciales & Metas (Sales Teams & Quotas)')
 @ApiHeader({ name: 'X-Tenant-Id', required: false, description: 'ID del inquilino' })
@@ -41,17 +30,11 @@ export class SalesTeamsBffController {
 
   @Post('sales-teams')
   @ApiOperation({ summary: 'Crear un equipo comercial' })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      required: ['name'],
-      properties: {
-        name: { type: 'string', example: 'Equipo Comercial LatAm' },
-        description: { type: 'string', example: 'Fuerza de ventas para Colombia, México y Perú' },
-        managerUserId: { type: 'string', example: '00000000-0000-0000-0000-000000000002' },
-      },
-    },
-  })
+  @ApiBody({ schema: { type: 'object', required: ['name'], properties: {
+    name: { type: 'string', example: 'Equipo Comercial LatAm' },
+    description: { type: 'string', example: 'Fuerza de ventas para Colombia, México y Perú' },
+    managerUserId: { type: 'string', example: '00000000-0000-0000-0000-000000000002' },
+  } } })
   async create(
     @Body(createZodPipe(CreateSalesTeamSchema)) dto: CreateSalesTeam,
     @Headers('X-Tenant-Id') tenantId?: string,
@@ -62,10 +45,7 @@ export class SalesTeamsBffController {
   @Get('sales-teams/:id')
   @ApiOperation({ summary: 'Obtener equipo por ID' })
   @ApiParam({ name: 'id', description: 'UUID del equipo' })
-  async getById(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Headers('X-Tenant-Id') tenantId?: string,
-  ): Promise<SalesTeam> {
+  async getById(@Param('id', ParseUUIDPipe) id: string, @Headers('X-Tenant-Id') tenantId?: string): Promise<SalesTeam> {
     return this.service.getById(id, tenantId!)
   }
 
@@ -83,25 +63,16 @@ export class SalesTeamsBffController {
   @Delete('sales-teams/:id')
   @ApiOperation({ summary: 'Eliminar un equipo' })
   @ApiParam({ name: 'id', description: 'UUID del equipo' })
-  async delete(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Headers('X-Tenant-Id') tenantId?: string,
-  ): Promise<void> {
+  async delete(@Param('id', ParseUUIDPipe) id: string, @Headers('X-Tenant-Id') tenantId?: string): Promise<void> {
     return this.service.delete(id, tenantId!)
   }
 
   @Post('sales-teams/:id/members')
   @ApiOperation({ summary: 'Asignar vendedor a un equipo comercial' })
   @ApiParam({ name: 'id', description: 'UUID del equipo' })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      required: ['userId'],
-      properties: {
-        userId: { type: 'string', example: '00000000-0000-0000-0000-000000000002' },
-      },
-    },
-  })
+  @ApiBody({ schema: { type: 'object', required: ['userId'], properties: {
+    userId: { type: 'string', example: '00000000-0000-0000-0000-000000000002' },
+  } } })
   async addMember(
     @Param('id', ParseUUIDPipe) id: string,
     @Body(createZodPipe(AddMemberBodySchema)) dto: { userId: string },
@@ -132,18 +103,12 @@ export class SalesTeamsBffController {
   @Post('sales-teams/:id/quotas')
   @ApiOperation({ summary: 'Asignar cuota/meta de ventas mensual o trimestral' })
   @ApiParam({ name: 'id', description: 'UUID del equipo' })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      required: ['targetAmount', 'periodMonth', 'periodYear'],
-      properties: {
-        targetAmount: { type: 'number', example: 50000 },
-        periodMonth: { type: 'number', example: 10 },
-        periodYear: { type: 'number', example: 2026 },
-        userId: { type: 'string', example: '00000000-0000-0000-0000-000000000002' },
-      },
-    },
-  })
+  @ApiBody({ schema: { type: 'object', required: ['targetAmount', 'periodMonth', 'periodYear'], properties: {
+    targetAmount: { type: 'number', example: 50000 },
+    periodMonth: { type: 'number', example: 10 },
+    periodYear: { type: 'number', example: 2026 },
+    userId: { type: 'string', example: '00000000-0000-0000-0000-000000000002' },
+  } } })
   async createQuota(
     @Param('id', ParseUUIDPipe) id: string,
     @Body(createZodPipe(CreateQuotaSchema)) dto: CreateQuota,
@@ -163,8 +128,7 @@ export class SalesTeamsBffController {
     @Headers('X-Tenant-Id') tenantId?: string,
   ): Promise<PaginatedResult<SalesQuota>> {
     return this.service.listQuotas(id, {
-      cursor,
-      limit: limit ? Number(limit) : undefined,
+      cursor, limit: limit ? Number(limit) : undefined,
       periodMonth: periodMonth ? Number(periodMonth) : undefined,
       periodYear: periodYear ? Number(periodYear) : undefined,
     }, tenantId!)
