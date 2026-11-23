@@ -1,7 +1,8 @@
 import type { BookingLink, BookingAppointment } from '@crm/contracts'
+import { bookingLinks, bookingAppointments } from '@crm/database'
 
 export class BookingMapper {
-  static mapLink(r: any): BookingLink {
+  static mapLink(r: typeof bookingLinks.$inferSelect): BookingLink {
     return {
       ...r,
       description: r.description ?? undefined,
@@ -11,7 +12,7 @@ export class BookingMapper {
     }
   }
 
-  static mapAppointment(r: any): BookingAppointment {
+  static mapAppointment(r: typeof bookingAppointments.$inferSelect): BookingAppointment {
     return {
       ...r,
       guestPhone: r.guestPhone ?? undefined,

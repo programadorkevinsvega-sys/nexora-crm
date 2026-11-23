@@ -151,7 +151,7 @@ export class BookingBffService {
       .where(and(eq(bookingAppointments.id, id), eq(bookingAppointments.tenantId, tenantId)))
   }
 
-  private async syncContactAndTimeline(linkRow: any, dto: CreateBookingAppointment, scheduledDate: Date, meetingUrl: string): Promise<string | null> {
+  private async syncContactAndTimeline(linkRow: typeof bookingLinks.$inferSelect, dto: CreateBookingAppointment, scheduledDate: Date, meetingUrl: string): Promise<string | null> {
     let contactId: string | null = null
     try {
       const [existingContact] = await this.db
