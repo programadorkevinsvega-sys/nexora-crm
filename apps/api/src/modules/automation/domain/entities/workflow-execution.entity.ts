@@ -64,7 +64,7 @@ export class WorkflowExecution {
     )
   }
 
-  waitForDelay(stepId: string, resumeAt: Date, resumeToken = crypto.randomUUID()): WorkflowExecution {
+  waitForDelay(stepId: string, resumeAt: Date, resumeToken: string = crypto.randomUUID()): WorkflowExecution {
     if (resumeAt.getTime() <= Date.now()) {
       throw new Error('Workflow delay resume time must be in the future')
     }

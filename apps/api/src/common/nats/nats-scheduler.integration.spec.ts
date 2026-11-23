@@ -1,4 +1,4 @@
-import { connect, headers, StringCodec } from 'nats'
+import { connect, consumerOpts, headers, StringCodec } from 'nats'
 
 const hasNats = Boolean(process.env.NATS_URL)
 
@@ -37,7 +37,18 @@ describe('NATS JetStream scheduled messages', () => {
           { msgID: `schedule-${suffix}`, headers: messageHeaders },
         )
 
-        subscription = await js.pullSubscribe(targetSubject, durable)
+        await jsm.consumers.add(stream, {
+          durable_name: durable,
+          filter_subject: targetSubject,
+          ack_policy: 'explicit',
+          deliver_policy: 'all',
+          replay_policy: 'instant',
+        } as any)
+
+        const consumerOptions = consumerOpts()
+        consumerOptions.bind(stream, durable)
+        consumerOptions.manualAck()
+        subscription = await js.pullSubscribe('', consumerOptions)
         const batch = await subscription.fetch(1, { maxWait: 10_000 })
         let received: string | null = null
 

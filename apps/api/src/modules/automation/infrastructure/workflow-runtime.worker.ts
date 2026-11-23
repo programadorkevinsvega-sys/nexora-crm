@@ -1,4 +1,5 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common'
+import { consumerOpts } from 'nats'
 import { WorkflowEngineService } from '../application/services/workflow-engine.service'
 import { WorkflowDelayScheduleMessage } from '../domain/repositories/workflow-execution.repository'
 import { NatsService } from '../../../common/nats/nats.service'
@@ -35,7 +36,10 @@ export class WorkflowRuntimeWorker implements OnModuleInit, OnModuleDestroy {
     if (!connection) throw new Error('NATS connection is unavailable for workflow worker')
 
     const js = connection.jetstream()
-    this.subscription = await js.pullSubscribe('workflow.resume', 'workflow-runtime-worker')
+    const consumerOptions = consumerOpts()
+    consumerOptions.bind('workflow_runtime', 'workflow-runtime-worker')
+    consumerOptions.manualAck()
+    this.subscription = await js.pullSubscribe('', consumerOptions)
 
     this.logger.log('Workflow JetStream durable pull consumer is ready')
     while (this.running) {
