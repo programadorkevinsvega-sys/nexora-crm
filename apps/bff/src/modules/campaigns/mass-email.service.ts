@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { SmtpEmailDispatcher } from '../integrations/dispatchers/smtp-email.dispatcher'
+import { errorMessage, type IntegrationCredentials } from '../integrations/dispatchers/dispatcher-utils'
 
 @Injectable()
 export class MassEmailService {
@@ -10,7 +11,7 @@ export class MassEmailService {
   ) {}
 
   async sendBulk(
-    creds: Record<string, any>,
+    creds: IntegrationCredentials,
     recipients: string[],
     subject: string,
     htmlTemplate: string,
@@ -19,15 +20,15 @@ export class MassEmailService {
   }
 
   async sendTest(
-    creds: Record<string, any>,
+    creds: IntegrationCredentials,
     recipient: string,
     subject: string,
     html: string,
   ): Promise<{ success: boolean; messageId?: string; message?: string }> {
     try {
       return await this.smtpDispatcher.sendEmail(creds, recipient, subject, html)
-    } catch (error: any) {
-      return { success: false, message: error.message }
+    } catch (error: unknown) {
+      return { success: false, message: errorMessage(error) }
     }
   }
 }

@@ -62,7 +62,7 @@ export class BiBffService {
     }
   }
 
-  async getDataFeed(tenantId: string, entity: string): Promise<any[]> {
+  async getDataFeed(tenantId: string, entity: string): Promise<import('./bi-data-feed.helper').BiFeedRow[]> {
     switch (entity.toLowerCase()) {
       case 'deals': {
         const rows = await this.db.select().from(deals).where(eq(deals.tenantId, tenantId))
@@ -116,7 +116,7 @@ export class BiBffService {
     ])
   }
 
-  private mapReport(r: any): BiReport {
+  private mapReport(r: typeof biReports.$inferSelect): BiReport {
     return {
       ...r,
       description: r.description ?? undefined,
