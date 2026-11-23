@@ -15,7 +15,7 @@ import {
   GetWorkflowExecutionHandler,
   ListWorkflowExecutionsHandler,
 } from '../../application/queries/workflow.handlers'
-import { WorkflowEngineService } from '../../application/services/workflow-engine.service'
+import { WorkflowQueueService } from '../../infrastructure/workflow-queue.service'
 import { WorkflowDefinitionRepository } from '../../domain/repositories/workflow-definition.repository'
 import { WorkflowExecutionRepository } from '../../domain/repositories/workflow-execution.repository'
 import { DrizzleWorkflowDefinitionRepository } from '../../infrastructure/drizzle-workflow-definition.repository'
@@ -36,7 +36,7 @@ import { OutboxService } from '../../../../common/outbox/outbox.service'
     ListWorkflowsHandler,
     GetWorkflowExecutionHandler,
     ListWorkflowExecutionsHandler,
-    WorkflowEngineService,
+    WorkflowQueueService,
     AutomationConsumerService,
     OutboxService,
     {
