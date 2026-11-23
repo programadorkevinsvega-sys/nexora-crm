@@ -53,10 +53,10 @@ El diagrama describe el objetivo del runtime. La implementación JetStream de es
                ┌─────────────┴─────────────┐
                │                           │
                ▼                           ▼
-      💾 PostgreSQL (RLS)           🔴 Redis + BullMQ
-  • workflow_definitions (v1, v2)   • Delayed Jobs (24h, 10m)
-  • workflow_executions             • Retry Policies & Backoff
-  • workflow_step_executions        • Distributed Locks
+      💾 PostgreSQL (RLS)           ⚡ NATS JetStream
+  • workflow_definitions (v1, v2)   • Scheduled messages (10m, 24h, 30d)
+  • workflow_executions             • Durable pull consumer
+  • resume_at + resume_token        • Retry backoff + workflow_dlq
                │                           │
                └─────────────┬─────────────┘
                              ▼
