@@ -2,7 +2,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { getDb, biReports, deals, contacts, supportTickets } from '@crm/database'
 import { eq, and, desc } from 'drizzle-orm'
 import { BiDataFeedHelper } from './bi-data-feed.helper'
-import type { BiReport, CreateBiReportDto } from '@crm/contracts'
+import { BiReportSchema, type BiReport, type CreateBiReportDto } from '@crm/contracts'
 
 @Injectable()
 export class BiBffService {
@@ -12,54 +12,42 @@ export class BiBffService {
   }
 
   async listReports(tenantId: string): Promise<BiReport[]> {
-    let rows = await this.db
-      .select()
-      .from(biReports)
+    let rows = await this.db.select().from(biReports)
       .where(eq(biReports.tenantId, tenantId))
       .orderBy(desc(biReports.createdAt))
 
     if (rows.length === 0) {
       await this.seedDefaultReports(tenantId)
-      rows = await this.db
-        .select()
-        .from(biReports)
+      rows = await this.db.select().from(biReports)
         .where(eq(biReports.tenantId, tenantId))
         .orderBy(desc(biReports.createdAt))
     }
-
-    return rows.map((r) => this.mapReport(r))
+    return rows.map((row) => this.mapReport(row))
   }
 
   async createReport(tenantId: string, dto: CreateBiReportDto): Promise<BiReport> {
-    const [created] = await this.db
-      .insert(biReports)
-      .values({
-        tenantId,
-        title: dto.title,
-        description: dto.description || null,
-        category: dto.category,
-        embedType: dto.embedType,
-        embedUrl: dto.embedUrl,
-        reportId: dto.reportId || null,
-        workspaceId: dto.workspaceId || null,
-        refreshSchedule: dto.refreshSchedule || 'HOURLY',
-        isDefault: dto.isDefault || false,
-      })
-      .returning()
+    const [created] = await this.db.insert(biReports).values({
+      tenantId,
+      title: dto.title,
+      description: dto.description || null,
+      category: dto.category,
+      embedType: dto.embedType,
+      embedUrl: dto.embedUrl,
+      reportId: dto.reportId || null,
+      workspaceId: dto.workspaceId || null,
+      refreshSchedule: dto.refreshSchedule || 'HOURLY',
+      isDefault: dto.isDefault || false,
+    }).returning()
 
     this.logger.log(`Created BI report: ${created.id} (${created.title})`)
     return this.mapReport(created)
   }
 
   async deleteReport(tenantId: string, id: string): Promise<void> {
-    const res = await this.db
-      .delete(biReports)
+    const deleted = await this.db.delete(biReports)
       .where(and(eq(biReports.id, id), eq(biReports.tenantId, tenantId)))
       .returning()
-
-    if (res.length === 0) {
-      throw new NotFoundException(`Reporte BI no encontrado: ${id}`)
-    }
+    if (deleted.length === 0) throw new NotFoundException(`Reporte BI no encontrado: ${id}`)
   }
 
   async getDataFeed(tenantId: string, entity: string): Promise<import('./bi-data-feed.helper').BiFeedRow[]> {
@@ -116,14 +104,11 @@ export class BiBffService {
     ])
   }
 
-  private mapReport(r: typeof biReports.$inferSelect): BiReport {
-    return {
-      ...r,
-      description: r.description ?? undefined,
-      reportId: r.reportId ?? undefined,
-      workspaceId: r.workspaceId ?? undefined,
-      createdAt: r.createdAt ? new Date(r.createdAt).toISOString() : new Date().toISOString(),
-      updatedAt: r.updatedAt ? new Date(r.updatedAt).toISOString() : new Date().toISOString(),
-    }
+  private mapReport(row: typeof biReports.$inferSelect): BiReport {
+    return BiReportSchema.parse({
+      ...row,
+      createdAt: row.createdAt.toISOString(),
+      updatedAt: row.updatedAt.toISOString(),
+    })
   }
 }
