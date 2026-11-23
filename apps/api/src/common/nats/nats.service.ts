@@ -1,6 +1,10 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common'
 import { connect, headers, JetStreamClient, JetStreamManager, NatsConnection, StringCodec, RetentionPolicy, StorageType, AckPolicy, ReplayPolicy } from 'nats'
 
+type WorkflowStreamConfig = Parameters<JetStreamManager['streams']['add']>[0] & {
+  allow_msg_schedules: boolean
+}
+
 @Injectable()
 export class NatsService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(NatsService.name)
@@ -42,7 +46,7 @@ export class NatsService implements OnModuleInit, OnModuleDestroy {
   private async ensureWorkflowStreams(): Promise<void> {
     if (!this.jsm) throw new Error('JetStream manager is not initialized')
 
-    const runtimeConfig: Parameters<JetStreamManager['streams']['add']>[0] = {
+    const runtimeConfig: WorkflowStreamConfig = {
       name: 'workflow_runtime',
       subjects: ['workflow.schedule', 'workflow.resume'],
       retention: RetentionPolicy.Limits,
