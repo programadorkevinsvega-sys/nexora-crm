@@ -22,7 +22,7 @@ export class DrizzleContactRepository implements IContactRepository {
     const row = await this.db.query.contacts.findFirst({
       where: and(eq(contactsTable.tenantId, tenantId), eq(contactsTable.email, email)),
     })
-    return row ? ContactPersistenceMapper.toDomain(row as any) : null
+    return row ? ContactPersistenceMapper.toDomain(row) : null
   }
 
   async list(tenantId: string, filter: ContactFilter): Promise<PaginatedContacts> {

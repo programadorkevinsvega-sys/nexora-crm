@@ -53,7 +53,7 @@ export class DrizzlePersonalCrmRepository extends PersonalCrmRepository {
     const conditions = [eq(contactGiftsTable.tenantId, tenantId)]
     if (contactId && contactId.trim()) conditions.push(eq(contactGiftsTable.contactId, contactId))
     const rows = await this.db.query.contactGifts.findMany({
-      where: and(...conditions) as any,
+      where: and(...conditions),
       orderBy: (t, { desc }) => [desc(t.createdAt)],
     })
     return rows.map(PersonalCrmMapper.giftToDomain)
@@ -78,7 +78,7 @@ export class DrizzlePersonalCrmRepository extends PersonalCrmRepository {
     const conditions = [eq(contactDebtsTable.tenantId, tenantId)]
     if (contactId && contactId.trim()) conditions.push(eq(contactDebtsTable.contactId, contactId))
     const rows = await this.db.query.contactDebts.findMany({
-      where: and(...conditions) as any,
+      where: and(...conditions),
       orderBy: (t, { desc }) => [desc(t.createdAt)],
     })
     return rows.map(PersonalCrmMapper.debtToDomain)
@@ -103,7 +103,7 @@ export class DrizzlePersonalCrmRepository extends PersonalCrmRepository {
     const conditions = [eq(contactRemindersTable.tenantId, tenantId)]
     if (contactId && contactId.trim()) conditions.push(eq(contactRemindersTable.contactId, contactId))
     const rows = await this.db.query.contactReminders.findMany({
-      where: and(...conditions) as any,
+      where: and(...conditions),
       orderBy: (t, { asc }) => [asc(t.nextDueDate)],
     })
     return rows.map(PersonalCrmMapper.reminderToDomain)
@@ -121,7 +121,7 @@ export class DrizzlePersonalCrmRepository extends PersonalCrmRepository {
     const conditions = [eq(contactPetsTable.tenantId, tenantId)]
     if (contactId && contactId.trim()) conditions.push(eq(contactPetsTable.contactId, contactId))
     const rows = await this.db.query.contactPets.findMany({
-      where: and(...conditions) as any,
+      where: and(...conditions),
       orderBy: (t, { asc }) => [asc(t.name)],
     })
     return rows.map(PersonalCrmMapper.petToDomain)
