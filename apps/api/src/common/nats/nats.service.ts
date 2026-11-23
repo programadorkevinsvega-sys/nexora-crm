@@ -48,7 +48,7 @@ export class NatsService implements OnModuleInit, OnModuleDestroy {
       retention: 'limits',
       storage: 'file',
       num_replicas: Number(process.env.NATS_WORKFLOW_REPLICAS ?? 1),
-      max_age: 90 * 24 * 60 * 60 * 1_000_000_000,
+      max_age: 400 * 24 * 60 * 60 * 1_000_000_000,
       duplicate_window: 10 * 60 * 1_000_000_000,
       allow_msg_schedules: true,
     }
@@ -167,12 +167,13 @@ export class NatsService implements OnModuleInit, OnModuleDestroy {
     payload: Record<string, unknown>,
     reason: string,
     deliveryCount: number,
+    messageIdOverride?: string,
   ): Promise<void> {
     if (!this.jetStream) throw new Error('NATS JetStream is not connected; cannot persist workflow DLQ record')
 
     const executionId = String(payload.executionId ?? 'unknown')
     const resumeToken = String(payload.resumeToken ?? 'unknown')
-    const messageId = `workflow-dlq-${executionId}-${resumeToken}`
+    const messageId = `workflow-dlq-${messageIdOverride ?? `${executionId}-${resumeToken}`}`
     const deadLetter = {
       original: payload,
       reason,

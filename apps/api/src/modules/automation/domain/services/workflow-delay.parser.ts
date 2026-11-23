@@ -9,7 +9,7 @@ const DURATION_UNITS_MS: Record<string, number> = {
 const MAX_DELAY_MS = 365 * 86_400_000
 
 export function parseWorkflowDelay(value?: string | null): number {
-  const input = value?.trim() || '1h'
+  const input = value === undefined || value === null ? '1h' : value.trim()
   const match = /^(0|[1-9]\d*)(s|m|h|d|w)$/.exec(input)
   if (!match) {
     throw new Error(`Invalid workflow delay "${input}". Use a positive integer followed by s, m, h, d, or w.`)

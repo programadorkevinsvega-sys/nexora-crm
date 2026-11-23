@@ -25,7 +25,7 @@ Este documento conserva el diseño objetivo y el plan original del **Motor de Au
 | 7.2 Constructor visual | Presente parcialmente | Existe `/automations/new` y componentes de canvas/nodos; no se verificó toda la funcionalidad de ramas, delays y acciones reales. |
 | 7.3 Monitor/depurador | Parcial | La API expone consulta de ejecuciones y pasos; no se encontró la ruta de monitor dedicada descrita en el plan ni reintento manual de paso. |
 | 8.1 Pruebas unitarias | Parcial | Hay pruebas de entidades, evaluador y handlers; no se midió cobertura y no se afirma 100%. |
-| 8.2 Pruebas de integración | Parcial | Existe prueba de repositorio Drizzle; no hay evidencia de integración BullMQ/Redis ni de reanudación de delays. |
+| 8.2 Pruebas de integración | Parcial | Existe prueba de repositorio Drizzle; falta ejecutar integración real con NATS JetStream y PostgreSQL para validar scheduling, reanudación y DLQ. |
 | 8.3 Pruebas E2E | Parcial | `frontend/e2e/automations.spec.ts` valida renderizado del dashboard y diseñador; no ejecuta el ciclo completo evento → acción → delay → finalización. |
 
 El motor en su forma actual no debe describirse como runtime distribuido completo: las ejecuciones, filtros y transiciones tienen código, pero el despacho de acciones y la reanudación de delays descritos en el plan no se localizaron.
@@ -34,7 +34,7 @@ El motor en su forma actual no debe describirse como runtime distribuido complet
 
 ## 🏛️ 1. Arquitectura objetivo (no as-built)
 
-El diagrama conserva componentes planificados. BullMQ/Redlock y políticas RLS no se encontraron en el código/configuración revisados; no representa el runtime actual completo.
+El diagrama describe el objetivo del runtime. La implementación JetStream de esta rama aún está pendiente de CI y despliegue.
 
 ```text
                   NEXORA CRM BUSINESS CORE
@@ -82,9 +82,9 @@ gantt
     section Fase 2: Dominio & FSM
     Agregados, Entidades & Máquina Estados :active, f2, after f1, 4d
     Evaluador de Reglas JSON               :f2b, after f1, 3d
-    section Fase 3: Runtime BullMQ
-    Integración BullMQ + Redis            :f3, after f2, 4d
-    Manejo de Delays & Locks              :f3b, after f3, 3d
+    section Fase 3: Runtime JetStream
+    Stream y worker durable               :f3, after f2, 4d
+    Scheduling, retries y DLQ             :f3b, after f3, 3d
     section Fase 4: Eventos NATS
     Ingesta de Eventos & Filtros          :f4, after f3, 3d
     section Fase 5: Acciones
@@ -105,7 +105,7 @@ Las etiquetas `done` y `active` del Gantt son parte del plan histórico; no refl
 ### 🔹 FASE 1: Modelado de Datos y Persistencia Transaccional
 **Objetivo:** Crear la estructura de almacenamiento con versionado inmutable, soporte multi-tenant (RLS) y claves únicas de idempotencia.
 
-- [ ] **1.1 Persistencia y Versionado Inmutable (PR #15 integrada en `main`; despliegue productivo pendiente de compatibilidad histórica):**
+- [x] **1.1 Persistencia y Versionado Inmutable (PR #16 integrada en `main`; CI y despliegue productivo verificados):**
   - **`workflow_definitions`:**
     - `id`: UUID (Primary Key); `tenant_id`: UUID (FK a `tenants.tenants.id`, RLS).
     - `name`: `varchar(200)`; `description`: `text`; `version`: entero positivo desde 1.
@@ -238,6 +238,6 @@ La tabla siguiente expresa la organización prevista. Las filas no certifican qu
 |---|---|---|
 | `@crm/database` | `packages/database` | Esquemas de tablas `workflow_*`, migraciones Drizzle y RLS. |
 | `@crm/contracts` | `packages/contracts` | Schemas Zod, validaciones de grafos y DTOs tipados. |
-| `AutomationModule` | `apps/api` | Lógica DDD, FSM, listeners NATS, BullMQ Workers y gRPC. |
+| `AutomationModule` | `apps/api` | Lógica DDD, FSM, listeners NATS y gRPC. El proceso `WorkflowWorkerModule` ejecuta el runtime diferido JetStream. |
 | `AutomationsBff` | `apps/bff` | API Gateway REST, autenticación, autorización y swagger docs. |
 | `AutomationsUI` | `frontend` | Constructor de flujos, monitor de auditoría y métricas. |

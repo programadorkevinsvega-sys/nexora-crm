@@ -53,20 +53,29 @@ export class WorkflowRuntimeWorker implements OnModuleInit, OnModuleDestroy {
   }
 
   private async processMessage(message: any): Promise<void> {
-    let payload: WorkflowDelayScheduleMessage
-    try {
-      payload = JSON.parse(this.nats.getStringCodec().decode(message.data)) as WorkflowDelayScheduleMessage
-      this.validatePayload(payload)
-    } catch (error) {
-      this.logger.error(`Discarding malformed workflow schedule message: ${error}`)
-      message.term()
-      return
-    }
-
     const info = message.info ?? {}
     const deliveryCount = Number(
       info.deliveryCount ?? ((info.redeliveryCount ?? 0) + 1),
     ) || 1
+    let payload: WorkflowDelayScheduleMessage
+    let rawPayload = ''
+
+    try {
+      rawPayload = this.nats.getStringCodec().decode(message.data)
+      payload = JSON.parse(rawPayload) as WorkflowDelayScheduleMessage
+      this.validatePayload(payload)
+    } catch (error) {
+      const reason = `Invalid workflow schedule payload: ${error instanceof Error ? error.message : String(error)}`
+      await this.nats.publishDeadLetter(
+        { rawPayload },
+        reason,
+        deliveryCount,
+        `malformed-${String(info.streamSequence ?? Date.now())}`,
+      )
+      message.ack()
+      this.logger.error(reason)
+      return
+    }
 
     const heartbeat = setInterval(() => {
       try {
