@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, text, timestamp, boolean, integer, jsonb, primaryKey, unique } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, varchar, text, timestamp, integer, jsonb, primaryKey, unique } from 'drizzle-orm/pg-core'
 import { helpdeskMailboxes } from '../006-helpdesk-inbox/helpdesk-inbox'
 import { helpdeskConversations } from '../006-helpdesk-inbox/helpdesk-inbox'
 import { helpdeskThreads } from '../006-helpdesk-inbox/helpdesk-inbox'

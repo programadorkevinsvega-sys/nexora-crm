@@ -1,5 +1,5 @@
 import { tenantsSchema } from './tenants'
-import { uuid, varchar, text, boolean, integer, numeric, timestamp, jsonb, uniqueIndex, primaryKey } from 'drizzle-orm/pg-core'
+import { uuid, varchar, text, boolean, numeric, timestamp, jsonb, uniqueIndex } from 'drizzle-orm/pg-core'
 
 export const systemModules = tenantsSchema.table('system_modules', {
   id: uuid('id').defaultRandom().primaryKey(),

@@ -1,4 +1,4 @@
-import { pgSchema, uuid, varchar, text, boolean, integer, timestamp, jsonb, primaryKey, index } from 'drizzle-orm/pg-core'
+import { pgSchema, uuid, varchar, text, boolean, integer, timestamp, jsonb, index } from 'drizzle-orm/pg-core'
 
 export const notificationsSchema = pgSchema('notifications')
 
