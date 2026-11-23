@@ -1,5 +1,26 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common'
 import type { IntegrationProvider } from '@crm/contracts'
+
+type DispatchIntegrationProvider = IntegrationProvider | 'DISCORD_APP' | 'ACCOUNTING_ERP'
+type IntegrationCredentials = Record<string, unknown>
+
+function requiredCredential(credentials: IntegrationCredentials, key: string): string {
+  const value = credentials[key]
+  if (typeof value !== 'string' || value.length === 0) {
+    throw new BadRequestException(`Missing integration credential: ${key}`)
+  }
+  return value
+}
+
+function asObject(value: unknown): Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : {}
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
+}
 import { AiIntegrationDispatcher } from './dispatchers/ai-integration.dispatcher'
 import { SmtpEmailDispatcher } from './dispatchers/smtp-email.dispatcher'
 import { AwsSesDispatcher } from './dispatchers/aws-ses.dispatcher'
@@ -31,11 +52,11 @@ export class IntegrationsDispatcher {
   ) {}
 
   async dispatchTest(
-    provider: IntegrationProvider,
-    credentials: Record<string, any>,
+    provider: DispatchIntegrationProvider,
+    credentials: IntegrationCredentials,
     recipient: string,
     testMessage = 'Prueba de conexión exitosa desde Nexora CRM 🚀',
-  ): Promise<{ success: boolean; message: string; details?: any }> {
+  ): Promise<{ success: boolean; message: string; details?: unknown }> {
     this.logger.log(`Testing integration: ${provider}`)
 
     switch (provider) {
@@ -77,11 +98,11 @@ export class IntegrationsDispatcher {
         return this.aiDispatcher.test(credentials, testMessage)
 
       case 'DISCORD':
-      case 'DISCORD_APP' as any:
+      case 'DISCORD_APP':
         return this.discordDispatcher.test(credentials, recipient, testMessage)
 
       case 'ACCOUNTING':
-      case 'ACCOUNTING_ERP' as any:
+      case 'ACCOUNTING_ERP':
         return this.accountingDispatcher.test(credentials, recipient, testMessage)
 
       case 'MICROSOFT_365':
@@ -115,8 +136,9 @@ export class IntegrationsDispatcher {
 
   // ─── Channel dispatchers kept inline ──────────────────────────────────────
 
-  private async testWhatsApp(creds: Record<string, any>, recipient: string, text: string) {
-    const { phoneNumberId, accessToken } = creds
+  private async testWhatsApp(creds: IntegrationCredentials, recipient: string, text: string) {
+    const phoneNumberId = requiredCredential(creds, 'phoneNumberId')
+    const accessToken = requiredCredential(creds, 'accessToken')
     if (!phoneNumberId || !accessToken) {
       throw new BadRequestException('Faltan PhoneNumberId o AccessToken de WhatsApp Cloud API')
     }
@@ -136,27 +158,33 @@ export class IntegrationsDispatcher {
         }),
       })
 
-      const data = await res.json()
+      const data: unknown = await res.json()
+      const response = asObject(data)
+      const apiError = asObject(response.error)
+      const messages = Array.isArray(response.messages) ? response.messages : []
+      const messageId = asObject(messages[0]).id
       if (!res.ok) {
         return {
           success: false,
-          message: `Error de Meta API: ${(data as any).error?.message || res.statusText}`,
+          message: `Error de Meta API: ${typeof apiError.message === 'string' ? apiError.message : res.statusText}`,
           details: data,
         }
       }
 
       return {
         success: true,
-        message: `Mensaje de WhatsApp enviado correctamente a +${recipient.replace(/\D/g, '')} (ID: ${(data as any).messages?.[0]?.id || 'OK'})`,
+        message: `Mensaje de WhatsApp enviado correctamente a +${recipient.replace(/\D/g, '')} (ID: ${typeof messageId === 'string' ? messageId : 'OK'})`,
         details: data,
       }
-    } catch (err: any) {
-      return { success: false, message: `Fallo de conexión con Meta Graph API: ${err.message}` }
+    } catch (err: unknown) {
+      return { success: false, message: `Fallo de conexión con Meta Graph API: ${errorMessage(err)}` }
     }
   }
 
-  private async testTwilio(creds: Record<string, any>, recipient: string, text: string) {
-    const { accountSid, authToken, fromNumber } = creds
+  private async testTwilio(creds: IntegrationCredentials, recipient: string, text: string) {
+    const accountSid = requiredCredential(creds, 'accountSid')
+    const authToken = requiredCredential(creds, 'authToken')
+    const fromNumber = requiredCredential(creds, 'fromNumber')
     if (!accountSid || !authToken || !fromNumber) {
       throw new BadRequestException('Faltan AccountSid, AuthToken o FromNumber de Twilio')
     }
@@ -176,27 +204,28 @@ export class IntegrationsDispatcher {
         },
       )
 
-      const data = await res.json()
+      const data: unknown = await res.json()
+      const response = asObject(data)
       if (!res.ok) {
         return {
           success: false,
-          message: `Error de Twilio: ${(data as any).message || res.statusText}`,
+          message: `Error de Twilio: ${typeof response.message === 'string' ? response.message : res.statusText}`,
           details: data,
         }
       }
 
       return {
         success: true,
-        message: `SMS enviado vía Twilio a ${recipient} (SID: ${(data as any).sid})`,
+        message: `SMS enviado vía Twilio a ${recipient} (SID: ${typeof response.sid === 'string' ? response.sid : 'desconocido'})`,
         details: data,
       }
-    } catch (err: any) {
-      return { success: false, message: `Error conectando con Twilio: ${err.message}` }
+    } catch (err: unknown) {
+      return { success: false, message: `Error conectando con Twilio: ${errorMessage(err)}` }
     }
   }
 
-  private async testTelegram(creds: Record<string, any>, recipient: string, text: string) {
-    const { botToken } = creds
+  private async testTelegram(creds: IntegrationCredentials, recipient: string, text: string) {
+    const botToken = requiredCredential(creds, 'botToken')
     if (!botToken) throw new BadRequestException('Falta Bot Token de Telegram')
 
     try {
@@ -206,11 +235,12 @@ export class IntegrationsDispatcher {
         body: JSON.stringify({ chat_id: recipient, text }),
       })
 
-      const data = await res.json()
-      if (!(data as any).ok) {
+      const data: unknown = await res.json()
+      const response = asObject(data)
+      if (response.ok !== true) {
         return {
           success: false,
-          message: `Error de Telegram: ${(data as any).description || 'No se pudo enviar'}`,
+          message: `Error de Telegram: ${typeof response.description === 'string' ? response.description : 'No se pudo enviar'}`,
           details: data,
         }
       }
@@ -220,8 +250,8 @@ export class IntegrationsDispatcher {
         message: `Mensaje enviado al chat ${recipient} vía Telegram Bot`,
         details: data,
       }
-    } catch (err: any) {
-      return { success: false, message: `Error conectando con Telegram: ${err.message}` }
+    } catch (err: unknown) {
+      return { success: false, message: `Error conectando con Telegram: ${errorMessage(err)}` }
     }
   }
 }
