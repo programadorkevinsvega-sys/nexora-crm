@@ -1,74 +1,47 @@
 import { AutomationBffController } from './automation.bff.controller'
+import { AutomationBffService } from './automation.bff.service'
+import { CreateWorkflowSchema } from '@crm/contracts'
 
 describe('AutomationBffController - REST Gateway Tests', () => {
   let controller: AutomationBffController
-  let mockService: any
+  let mockService: jest.Mocked<AutomationBffService>
 
   beforeEach(() => {
     mockService = {
-      createWorkflow: jest.fn().mockResolvedValue({
-        id: 'wf-1',
-        name: 'Welcome Lead Flow',
-        version: 1,
-        status: 'DRAFT',
-      }),
-      getWorkflow: jest.fn().mockResolvedValue({
-        id: 'wf-1',
-        name: 'Welcome Lead Flow',
-      }),
-      listWorkflows: jest.fn().mockResolvedValue([
-        { id: 'wf-1', name: 'Welcome Lead Flow' },
-      ]),
-      activateWorkflow: jest.fn().mockResolvedValue({
-        id: 'wf-1',
-        status: 'ACTIVE',
-      }),
-      pauseWorkflow: jest.fn().mockResolvedValue({
-        id: 'wf-1',
-        status: 'PAUSED',
-      }),
+      createWorkflow: jest.fn().mockResolvedValue({ id: 'wf-1', name: 'Welcome Lead Flow', version: 1, status: 'DRAFT' }),
+      getWorkflow: jest.fn().mockResolvedValue({ id: 'wf-1', name: 'Welcome Lead Flow' }),
+      listWorkflows: jest.fn().mockResolvedValue([{ id: 'wf-1', name: 'Welcome Lead Flow' }]),
+      activateWorkflow: jest.fn().mockResolvedValue({ id: 'wf-1', status: 'ACTIVE' }),
+      pauseWorkflow: jest.fn().mockResolvedValue({ id: 'wf-1', status: 'PAUSED' }),
       triggerEvent: jest.fn().mockResolvedValue({ triggeredCount: 1 }),
-      getExecution: jest.fn().mockResolvedValue({
-        execution: { id: 'exec-1', status: 'RUNNING' },
-        steps: [],
-      }),
-      listExecutions: jest.fn().mockResolvedValue([
-        { id: 'exec-1', status: 'RUNNING' },
-      ]),
+      getExecution: jest.fn().mockResolvedValue({ execution: { id: 'exec-1', status: 'RUNNING' }, steps: [] }),
+      listExecutions: jest.fn().mockResolvedValue([{ id: 'exec-1', status: 'RUNNING' }]),
       cancelExecution: jest.fn().mockResolvedValue(undefined),
-    }
-
+    } as unknown as jest.Mocked<AutomationBffService>
     controller = new AutomationBffController(mockService)
   })
 
-  it('should call createWorkflow on service when POST /api/automation/workflows is executed', async () => {
-    const payload = {
-      name: 'Welcome Lead Flow',
-      triggerEvent: 'crm.contact.created',
-      stepsGraph: [{ id: 's1', type: 'ACTION' as const, action: 'SEND_WHATSAPP' }],
-    }
+  it('calls createWorkflow with the validated workflow DTO', async () => {
+    const payload = CreateWorkflowSchema.parse({
+      name: 'Welcome Lead Flow', triggerEvent: 'crm.contact.created', nodes: [], edges: [],
+    })
     const result = await controller.create(payload, 'tenant-1')
-
     expect(mockService.createWorkflow).toHaveBeenCalledWith(payload, 'tenant-1')
     expect(result.id).toBe('wf-1')
   })
 
-  it('should call activateWorkflow on service when POST /api/automation/workflows/:id/activate is executed', async () => {
+  it('calls activateWorkflow for an existing workflow', async () => {
     const result = await controller.activate('00000000-0000-0000-0000-000000000001', 'tenant-1')
-
     expect(mockService.activateWorkflow).toHaveBeenCalledWith('00000000-0000-0000-0000-000000000001', 'tenant-1')
     expect(result.status).toBe('ACTIVE')
   })
 
-  it('should call triggerEvent when POST /api/automation/trigger is executed', async () => {
+  it('calls triggerEvent for a workflow event', async () => {
     const triggerData = {
-      eventName: 'crm.contact.created',
-      entityType: 'contact',
-      entityId: 'contact-123',
+      eventName: 'crm.contact.created', entityType: 'contact', entityId: 'contact-123',
       payload: { name: 'Juan Perez' },
     }
     const result = await controller.trigger(triggerData, 'tenant-1')
-
     expect(mockService.triggerEvent).toHaveBeenCalledWith(triggerData, 'tenant-1')
     expect(result.triggeredCount).toBe(1)
   })

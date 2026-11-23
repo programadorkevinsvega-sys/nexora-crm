@@ -1,9 +1,11 @@
 import { CreateContactSchema } from '@crm/contracts'
 import { ContactsBffController } from './contacts.bff.controller'
+import { ContactsBffService } from './contacts.bff.service'
+import type { AuthenticatedUser } from '../../common/decorators/current-user.decorator'
 
 describe('ContactsBffController - HTTP REST Gateway E2E Tests', () => {
   let controller: ContactsBffController
-  let mockService: any
+  let mockService: jest.Mocked<ContactsBffService>
 
   beforeEach(() => {
     mockService = {
@@ -11,52 +13,35 @@ describe('ContactsBffController - HTTP REST Gateway E2E Tests', () => {
         data: [{ id: 'contact-1', firstName: 'Ada', lastName: 'Lovelace', email: 'ada@example.com' }],
         nextCursor: null,
       }),
-      create: jest.fn().mockImplementation((dto, tenantId) =>
+      create: jest.fn().mockImplementation((dto: Record<string, unknown>, tenantId: string) =>
         Promise.resolve({
-          id: 'contact-new',
-          ...dto,
-          tenantId,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
+          id: 'contact-new', ...dto, tenantId,
+          createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
         }),
       ),
       getById: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
-    }
-
+    } as unknown as jest.Mocked<ContactsBffService>
     controller = new ContactsBffController(mockService)
   })
 
-  it('should validate and parse payload with null optional fields without throwing validation error', () => {
-    const rawPayload = {
-      firstName: 'Alan',
-      lastName: null,
-      email: null,
-      phone: null,
-      companyId: null,
-      jobTitle: null,
-      birthDate: null,
-    }
-    const parsed = CreateContactSchema.parse(rawPayload)
+  it('validates payload with null optional fields', () => {
+    const parsed = CreateContactSchema.parse({
+      firstName: 'Alan', lastName: null, email: null, phone: null,
+      companyId: null, jobTitle: null, birthDate: null,
+    })
     expect(parsed.firstName).toBe('Alan')
     expect(parsed.lastName).toBeNull()
   })
 
-  it('should forward list contacts query with pagination and filters to gRPC service', async () => {
-    const user = { tenantId: 'tenant-1', userId: 'user-1', sub: 'user-1' } as any
+  it('forwards list query with pagination and filters', async () => {
+    const user: AuthenticatedUser = {
+      tenantId: 'tenant-1', userId: 'user-1', sub: 'user-1', role: 'admin',
+    }
     const result = await controller.list(
-      undefined,
-      '20',
-      'Ada',
-      'LEAD',
-      undefined,
-      'true',
-      undefined,
-      undefined,
-      user,
+      undefined, '20', 'Ada', 'LEAD', undefined, 'true', undefined, undefined, user,
     )
-
     expect(result.data.length).toBe(1)
     expect(mockService.list).toHaveBeenCalledWith(
       expect.objectContaining({ limit: 20, search: 'Ada', isStarred: true }),
@@ -64,10 +49,9 @@ describe('ContactsBffController - HTTP REST Gateway E2E Tests', () => {
     )
   })
 
-  it('should forward create contact payload with tenant header to gRPC service', async () => {
-    const dto = { firstName: 'Alan', lastName: 'Turing' } as any
+  it('forwards parsed create contact payload with tenant header', async () => {
+    const dto = CreateContactSchema.parse({ firstName: 'Alan', lastName: 'Turing' })
     const result = await controller.create(dto, 'tenant-1')
-
     expect(result.id).toBe('contact-new')
     expect(mockService.create).toHaveBeenCalledWith(
       expect.objectContaining({ firstName: 'Alan', lastName: 'Turing' }),
