@@ -64,7 +64,7 @@ describe('WorkflowDefinition Entity', () => {
 
     graphConfig.payload.channel = 'whatsapp'
     triggerFilter.contact.country = 'US'
-    stepsGraph.push({ id: 's2', type: 'ACTION', action: 'CREATE_TASK' })
+    stepsGraph.length = 0
 
     expect(workflow.stepsGraph).toHaveLength(1)
     expect(workflow.stepsGraph[0].config?.payload).toEqual({ channel: 'email' })
