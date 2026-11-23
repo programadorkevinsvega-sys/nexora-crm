@@ -18,7 +18,7 @@ export const workflowDefinitions = pgTable(
   'workflow_definitions',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    tenantId: uuid('tenant_id').notNull().references(() => tenants.id, { onDelete: 'restrict' }),
+    tenantId: uuid('tenant_id').notNull(),
     name: varchar('name', { length: 200 }).notNull(),
     description: text('description'),
     version: integer('version').default(1).notNull(),
@@ -50,7 +50,7 @@ export const workflowExecutions = pgTable(
   'workflow_executions',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    tenantId: uuid('tenant_id').notNull().references(() => tenants.id, { onDelete: 'restrict' }),
+    tenantId: uuid('tenant_id').notNull(),
     workflowId: uuid('workflow_id').notNull(),
     version: integer('version').notNull(),
     entityType: varchar('entity_type', { length: 50 }).notNull(),
@@ -89,7 +89,7 @@ export const workflowStepExecutions = pgTable(
   'workflow_step_executions',
   {
     id: uuid('id').defaultRandom().primaryKey(),
-    tenantId: uuid('tenant_id').notNull().references(() => tenants.id, { onDelete: 'restrict' }),
+    tenantId: uuid('tenant_id').notNull(),
     executionId: uuid('execution_id').notNull(),
     stepId: varchar('step_id', { length: 100 }).notNull(),
     idempotencyKey: varchar('idempotency_key', { length: 255 }).notNull(),
