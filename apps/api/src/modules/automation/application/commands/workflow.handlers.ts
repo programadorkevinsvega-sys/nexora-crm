@@ -12,7 +12,7 @@ import { WorkflowExecutionRepository } from '../../domain/repositories/workflow-
 import { WorkflowDefinition } from '../../domain/entities/workflow-definition.entity'
 import { WorkflowExecution } from '../../domain/entities/workflow-execution.entity'
 import { ConditionEvaluator } from '../../domain/services/condition-evaluator.service'
-import { WorkflowEngineService } from '../services/workflow-engine.service'
+import { WorkflowQueueService } from '../../infrastructure/workflow-queue.service'
 import { OutboxService } from '../../../../common/outbox/outbox.service'
 import {
   WorkflowExecutionStartedEvent,
@@ -81,7 +81,7 @@ export class TriggerEventHandler {
   constructor(
     private readonly definitionRepo: WorkflowDefinitionRepository,
     private readonly executionRepo: WorkflowExecutionRepository,
-    private readonly engine: WorkflowEngineService,
+    private readonly workflowQueue: WorkflowQueueService,
     private readonly outbox: OutboxService,
   ) {}
 
@@ -124,7 +124,14 @@ export class TriggerEventHandler {
         ),
       )
 
-      await this.engine.processExecution(execution, definition)
+      try {
+        await this.workflowQueue.enqueueExecution(execution)
+      } catch (error) {
+        const reason = error instanceof Error ? error.message : String(error)
+        const failed = execution.fail(`Could not enqueue workflow execution: ${reason}`)
+        await this.executionRepo.save(failed)
+        throw error
+      }
       triggeredCount++
     }
 
