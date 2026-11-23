@@ -9,6 +9,16 @@ import { Reflector } from '@nestjs/core'
 import { CacheService } from '../cache/cache.service'
 import { THROTTLE_LIMIT_KEY, THROTTLE_TTL_KEY } from '../decorators/throttle.decorator'
 
+interface RateLimitRequest {
+  user?: { tenantId?: unknown; sub?: unknown; userId?: unknown }
+  apiKeyContext?: { keyId?: unknown }
+  headers?: Record<string, string | string[] | undefined>
+  ip?: string
+  socket?: { remoteAddress?: string }
+  route?: { path?: string }
+  path?: string
+}
+
 @Injectable()
 export class RateLimiterGuard implements CanActivate {
   private inMemoryFallback = new Map<string, { count: number; expiresAt: number }>()
@@ -20,7 +30,7 @@ export class RateLimiterGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const http = context.switchToHttp()
-    const request = http.getRequest()
+    const request = http.getRequest<RateLimitRequest>()
     const response = http.getResponse()
 
     // 1. Determine rate limits from decorator or defaults
@@ -75,14 +85,15 @@ export class RateLimiterGuard implements CanActivate {
     return true
   }
 
-  private extractClientId(request: any): string {
-    if (request.user?.tenantId && (request.user?.sub || request.user?.userId)) {
-      return `usr:${request.user.tenantId}:${request.user.sub || request.user.userId}`
-    }
-    if (request.apiKeyContext?.keyId) {
-      return `key:${request.apiKeyContext.keyId}`
-    }
-    const forwarded = request.headers?.['x-forwarded-for']
+  private extractClientId(request: RateLimitRequest): string {
+    const tenantId = typeof request.user?.tenantId === 'string' ? request.user.tenantId : undefined
+    const userId = typeof request.user?.sub === 'string' ? request.user.sub
+      : typeof request.user?.userId === 'string' ? request.user.userId : undefined
+    if (tenantId && userId) return `usr:${tenantId}:${userId}`
+    const keyId = typeof request.apiKeyContext?.keyId === 'string' ? request.apiKeyContext.keyId : undefined
+    if (keyId) return `key:${keyId}`
+    const forwardedHeader = request.headers?.['x-forwarded-for']
+    const forwarded = Array.isArray(forwardedHeader) ? forwardedHeader[0] : forwardedHeader
     if (typeof forwarded === 'string' && forwarded.trim()) {
       return `ip:${forwarded.split(',')[0].trim()}`
     }
