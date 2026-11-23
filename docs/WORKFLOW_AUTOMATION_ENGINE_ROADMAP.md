@@ -8,12 +8,12 @@ Este documento conserva el diseño objetivo y el plan original del **Motor de Au
 
 | Requisito | Estado | Evidencia y brecha encontrada |
 |---|---|---|
-| 1.1 Persistencia y versionado inmutable | Integrada en `main`; despliegue pendiente de corrección por datos históricos | PR #15 integrada en `main`. El despliegue quedó bloqueado al validar claves idempotentes históricas que no siguen el formato nuevo; el PR correctivo conserva esas identidades y aplica la regla canónica a nuevas filas. |
+| 1.1 Persistencia y versionado inmutable | Integrada y desplegada | PR #15 y corrección PR #16 integradas; CI de `main` y despliegue VM aprobados el 2026-11-23. |
 | 1.2 Dominio y FSM | Parcial | Hay entidades, estados, `cloneAsNewVersion()` y `ConditionEvaluator`. No se encontró validación completa del grafo/ciclos ni evaluación de expresiones anidadas AND/OR. |
-| 3.1 Colas BullMQ | No implementado en el código revisado | No se encontró BullMQ ni configuración de colas/workers. |
-| 3.2 Delays programados | Parcial | El motor cambia la ejecución a `WAITING_DELAY`; no se encontró programación del job ni proceso que la reanude después del tiempo configurado. |
+| 3.1 Colas BullMQ | Implementación en curso (PR en preparación) | BullMQ + Redis, cola `workflow-step-queue`, cola `workflow-dead-letter-queue` y worker PM2 dedicado. |
+| 3.2 Delays programados | Implementación en curso (PR en preparación) | `resume_at` persiste el vencimiento y BullMQ programa `10m`, `24h`, `30d`; el worker reanuda la versión exacta del workflow. |
 | 3.3 Locks distribuidos Redlock | No implementado en el código revisado | No se encontró Redlock ni un lock de ejecución específico para workflows. |
-| 3.4 Reintentos y DLQ de workflows | No implementado como flujo de workflow | Hay utilidades generales de retry y componentes NATS, pero no se encontró política de reintentos BullMQ ni cola DLQ asociada a estos pasos. |
+| 3.4 Reintentos y DLQ de workflows | Implementación en curso (PR en preparación) | Tres intentos por defecto, backoff exponencial configurable, jobs fallidos retenidos y traslado idempotente a `workflow-dead-letter-queue`. |
 | 4.1 Consumidor NATS | Parcial | `AutomationConsumerService` se suscribe a una lista explícita de eventos y llama al handler. No se suscribe a todo `crm.*.*`. |
 | 4.2 Filtros e idempotencia de evento | Parcial | Se buscan workflows activos y se evalúa el filtro; el paso tiene clave idempotente. No se encontró deduplicación de creación de ejecución por `event_id`. |
 | 5.1–5.3 Acciones WhatsApp, SMS, email y acciones internas | No implementado en el motor actual | `WorkflowEngineService.performAction()` registra la acción y devuelve datos de configuración; no ejecuta el efecto externo/interno. Los dispatchers generales de Inbox no demuestran integración con cada paso del workflow. |
@@ -145,17 +145,17 @@ Las etiquetas `done` y `active` del Gantt son parte del plan histórico; no refl
 ### 🔹 FASE 3: Runtime Asíncrono con BullMQ y Redis
 **Objetivo:** Ejecutar tareas en segundo plano, gestionar delays prolongados sin bloquear Node.js y garantizar reintentos exponenciales.
 
-- [ ] **3.1 Configuración de Colas BullMQ:**
+- [ ] **3.1 Configuración de Colas BullMQ (alcance implementado en el PR correctivo):**
   - `workflow-trigger-queue`: Ingesta inicial de eventos disparadores.
   - `workflow-step-queue`: Ejecución de pasos inmediatos o diferidos.
-- [ ] **3.2 Manejo de Delays (Atrasos en el tiempo):**
+- [ ] **3.2 Manejo de Delays (alcance implementado en el PR correctivo):**
   - Al llegar a un nodo `DELAY (duration: "24h")`:
     - Se registra el estado `WAITING_DELAY` en Postgres.
     - Se encola el job en BullMQ con `delay: 86400000` (24h).
     - El hilo de Node.js queda libre inmediatamente.
 - [ ] **3.3 Locks Distribuidos (`Redlock`):**
   - Garantizar que una misma ejecución (`execution_id`) no sea procesada concurrentemente por dos workers si llegan eventos simultáneos.
-- [ ] **3.4 Políticas de Reintento y Dead Letter Queue (DLQ):**
+- [ ] **3.4 Políticas de Reintento y Dead Letter Queue (alcance implementado en el PR correctivo):**
   - Estrategia de reintento: 3 intentos con retroceso exponencial (`backoff: { type: 'exponential', delay: 5000 }`).
   - Fallos irrecuperables se envían a cola de dead-letter con alerta de auditoría.
 
