@@ -1,6 +1,9 @@
 import { WorkflowStepStatus } from '@crm/contracts'
+import { cloneAndFreezeJson } from '../services/immutable-json'
 
 export class WorkflowStepExecution {
+  readonly outputData: Record<string, unknown> | null
+
   constructor(
     readonly id: string,
     readonly tenantId: string,
@@ -9,11 +12,25 @@ export class WorkflowStepExecution {
     readonly idempotencyKey: string,
     readonly status: WorkflowStepStatus,
     readonly attempts: number,
-    readonly outputData: Record<string, unknown> | null,
+    outputData: Record<string, unknown> | null,
     readonly errorMessage: string | null,
     readonly startedAt: Date,
     readonly completedAt: Date | null,
-  ) {}
+  ) {
+    if (!Number.isSafeInteger(attempts) || attempts < 1) {
+      throw new Error('Workflow step attempt must be a positive safe integer')
+    }
+    if (!stepId.trim()) {
+      throw new Error('Workflow step id is required')
+    }
+
+    const expectedKey = `${executionId}_${stepId}_${attempts}`
+    if (idempotencyKey !== expectedKey) {
+      throw new Error('Workflow step idempotency key does not match execution, step, and attempt')
+    }
+
+    this.outputData = cloneAndFreezeJson(outputData)
+  }
 
   static create(props: {
     tenantId: string
@@ -22,6 +39,13 @@ export class WorkflowStepExecution {
     attempt?: number
   }): WorkflowStepExecution {
     const attempt = props.attempt ?? 1
+    if (!Number.isSafeInteger(attempt) || attempt < 1) {
+      throw new Error('Workflow step attempt must be a positive safe integer')
+    }
+    if (!props.stepId.trim()) {
+      throw new Error('Workflow step id is required')
+    }
+
     const idempotencyKey = `${props.executionId}_${props.stepId}_${attempt}`
     return new WorkflowStepExecution(
       crypto.randomUUID(),
