@@ -7,7 +7,7 @@
     "build": "next build && (cp -r public .next/standalone/frontend/ 2>/dev/null || true) && (cp -r .next/static .next/standalone/frontend/.next/ 2>/dev/null || true)",
     "start": "node start.js",
     "start:next": "next start",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings=0",
     "test:e2e": "playwright test"
   },
   "dependencies": {
