@@ -75,6 +75,7 @@ export const WorkflowExecutionSchema = z.object({
   currentStepId: z.string().min(1),
   contextData: z.record(z.unknown()).nullable().optional(),
   startedAt: z.string().datetime(),
+  resumeAt: z.string().datetime().nullable().optional(),
   completedAt: z.string().datetime().nullable().optional(),
   cancelledAt: z.string().datetime().nullable().optional(),
   errorMessage: z.string().nullable().optional(),
