@@ -1,11 +1,9 @@
 import { DrizzleContractRepository } from '../../infrastructure/drizzle-contract.repository'
-import { DrizzleQuoteRepository } from '../../infrastructure/drizzle-quote.repository'
 import { Contract } from '../../domain/entities/contract.entity'
 import * as dbModule from '@crm/database'
 
 describe('Contracts & Quotes Repositories - Persistence Integration Tests', () => {
   let contractRepo: DrizzleContractRepository
-  let quoteRepo: DrizzleQuoteRepository
   let mockDb: any
 
   beforeEach(() => {
@@ -32,7 +30,6 @@ describe('Contracts & Quotes Repositories - Persistence Integration Tests', () =
 
     jest.spyOn(dbModule, 'getDb').mockReturnValue(mockDb)
     contractRepo = new DrizzleContractRepository()
-    quoteRepo = new DrizzleQuoteRepository()
   })
 
   it('should find contract by id and map billing schedule and status', async () => {

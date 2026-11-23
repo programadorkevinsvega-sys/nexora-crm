@@ -1,4 +1,4 @@
-import { GetContractHandler, ListContractsHandler } from '../../application/queries/contract.handlers'
+import { GetContractHandler } from '../../application/queries/contract.handlers'
 import { Contract } from '../../domain/entities/contract.entity'
 import { NotFoundError } from '@crm/shared'
 

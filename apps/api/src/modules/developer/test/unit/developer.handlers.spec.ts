@@ -2,26 +2,22 @@ import {
   CreateApiKeyHandler,
   RevokeApiKeyHandler,
   CreateWebhookEndpointHandler,
-  DeleteWebhookEndpointHandler,
   DispatchWebhookEventHandler,
 } from '../../application/commands/developer.handlers'
 import {
   ListApiKeysHandler,
   ValidateApiKeyHandler,
-  ListWebhookEndpointsHandler,
   ListDeliveryLogsHandler,
 } from '../../application/queries/developer.handlers'
 import {
   CreateApiKeyCommand,
   RevokeApiKeyCommand,
   CreateWebhookEndpointCommand,
-  DeleteWebhookEndpointCommand,
   DispatchWebhookEventCommand,
 } from '../../application/commands/developer.commands'
 import {
   ListApiKeysQuery,
   ValidateApiKeyQuery,
-  ListWebhookEndpointsQuery,
   ListDeliveryLogsQuery,
 } from '../../application/queries/developer.queries'
 import { DeveloperRepository } from '../../domain/repositories/developer.repository'

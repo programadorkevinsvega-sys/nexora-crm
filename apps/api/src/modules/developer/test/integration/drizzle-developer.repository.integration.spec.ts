@@ -1,6 +1,5 @@
 import { DrizzleDeveloperRepository } from '../../infrastructure/drizzle-developer.repository'
 import { ApiKey } from '../../domain/entities/api-key.entity'
-import { WebhookEndpoint } from '../../domain/entities/webhook-endpoint.entity'
 import { WebhookDeliveryLog } from '../../domain/entities/webhook-delivery-log.entity'
 import * as dbModule from '@crm/database'
 
