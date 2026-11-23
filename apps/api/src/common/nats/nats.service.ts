@@ -137,7 +137,7 @@ export class NatsService implements OnModuleInit, OnModuleDestroy {
       filter_subject: '$JS.EVENT.ADVISORY.CONSUMER.MAX_DELIVERIES.workflow_runtime.workflow-runtime-worker',
       ack_policy: 'explicit',
       ack_wait: 60 * 1_000_000_000,
-      max_deliver: 100,
+      max_deliver: -1,
       max_ack_pending: 16,
       replay_policy: 'instant',
     } as any)

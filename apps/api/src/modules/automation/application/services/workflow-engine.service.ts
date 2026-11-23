@@ -47,12 +47,38 @@ export class WorkflowEngineService {
 
   async resumeScheduledExecution(message: WorkflowDelayScheduleMessage): Promise<WorkflowExecution | null> {
     const execution = await this.executionRepo.findById(message.tenantId, message.executionId)
-    if (!execution || execution.resumeToken !== message.resumeToken) return null
+    if (
+      !execution ||
+      execution.resumeToken !== message.resumeToken ||
+      execution.workflowId !== message.workflowId ||
+      execution.version !== message.workflowVersion
+    ) return null
+
+    const definition = await this.definitionRepo.findById(message.tenantId, execution.workflowId)
+    if (!definition || definition.version !== execution.version) {
+      throw new Error('Pinned workflow definition version is unavailable')
+    }
+
+    const delayStep = definition.stepsGraph.find((step) => step.id === message.stepId)
+    if (
+      !delayStep ||
+      delayStep.type !== 'DELAY' ||
+      (delayStep.nextStepId ?? null) !== message.nextStepId
+    ) {
+      throw new Error('Scheduled delay does not match the pinned workflow definition')
+    }
 
     let ready: WorkflowExecution
     if (execution.status === 'WAITING_DELAY') {
       if (execution.currentStepId !== message.stepId) return null
       if (!execution.resumeAt) throw new Error('Waiting workflow execution has no persisted resumeAt')
+      const messageResumeAt = new Date(message.resumeAt).getTime()
+      if (
+        Number.isNaN(messageResumeAt) ||
+        execution.resumeAt.getTime() !== messageResumeAt
+      ) {
+        return null
+      }
       if (execution.resumeAt.getTime() > Date.now()) {
         throw new Error('JetStream delivered a workflow delay before its persisted resumeAt')
       }
@@ -60,7 +86,7 @@ export class WorkflowEngineService {
       if (!message.nextStepId) {
         const completed = execution.complete()
         await this.executionRepo.save(completed)
-        await this.outbox.publish(new WorkflowExecutionCompletedEvent(completed.id, message.workflowId))
+        await this.outbox.publish(new WorkflowExecutionCompletedEvent(completed.id, definition.id))
         return completed
       }
 
@@ -70,16 +96,11 @@ export class WorkflowEngineService {
       ready = execution.retry()
       await this.executionRepo.save(ready)
     } else if (execution.status === 'RUNNING' && !execution.resumeAt) {
-      // A worker may have stopped after persisting the resume transition.
-      // The durable JetStream delivery can safely continue from the stored step.
+      // The same durable delivery may be redelivered after a worker restart.
+      // The resume token and pinned definition constrain it to the same wait.
       ready = execution
     } else {
       return null
-    }
-
-    const definition = await this.definitionRepo.findById(message.tenantId, message.workflowId)
-    if (!definition || definition.version !== message.workflowVersion) {
-      throw new Error('Pinned workflow definition version is unavailable')
     }
 
     return this.processExecution(ready, definition)

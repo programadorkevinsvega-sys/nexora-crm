@@ -28,7 +28,7 @@ Este documento conserva el diseño objetivo y el plan original del **Motor de Au
 | 8.2 Pruebas de integración | Parcial | Existe prueba de repositorio Drizzle; falta ejecutar integración real con NATS JetStream y PostgreSQL para validar scheduling, reanudación y DLQ. |
 | 8.3 Pruebas E2E | Parcial | `frontend/e2e/automations.spec.ts` valida renderizado del dashboard y diseñador; no ejecuta el ciclo completo evento → acción → delay → finalización. |
 
-El motor en su forma actual no debe describirse como runtime distribuido completo: las ejecuciones, filtros y transiciones tienen código, pero el despacho de acciones y la reanudación de delays descritos en el plan no se localizaron.
+El motor aún no debe describirse como runtime distribuido completo. La rama actual incorpora el runtime diferido JetStream; el despacho real de acciones externas/internas y varias capacidades de dominio siguen pendientes.
 
 ---
 
