@@ -58,6 +58,7 @@ export const workflowExecutions = pgTable(
     status: varchar('status', { length: 50 }).default('RUNNING').notNull(),
     currentStepId: varchar('current_step_id', { length: 100 }).notNull(),
     contextData: jsonb('context_data'),
+    resumeAt: timestamp('resume_at', { withTimezone: true }),
     startedAt: timestamp('started_at', { withTimezone: true }).defaultNow().notNull(),
     completedAt: timestamp('completed_at', { withTimezone: true }),
     cancelledAt: timestamp('cancelled_at', { withTimezone: true }),
@@ -65,6 +66,9 @@ export const workflowExecutions = pgTable(
   },
   (table) => ({
     tenantStatusIdx: index('workflow_executions_tenant_status_idx').on(table.tenantId, table.status),
+    waitingResumeIdx: index('workflow_executions_waiting_resume_idx')
+      .on(table.tenantId, table.resumeAt)
+      .where(sql`${table.status} = 'WAITING_DELAY' AND ${table.resumeAt} IS NOT NULL`),
     entityIdx: index('workflow_executions_entity_idx').on(table.tenantId, table.entityType, table.entityId),
     tenantIdIdx: uniqueIndex('workflow_executions_tenant_id_unique').on(table.tenantId, table.id),
     tenantIdFk: foreignKey({
