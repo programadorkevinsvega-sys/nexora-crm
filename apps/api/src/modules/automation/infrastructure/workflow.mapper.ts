@@ -48,19 +48,19 @@ export class WorkflowMapper {
   }
 
   static stepExecutionToDomain(row: any): WorkflowStepExecution {
-    return new WorkflowStepExecution(
-      row.id,
-      row.tenantId,
-      row.executionId,
-      row.stepId,
-      row.idempotencyKey,
-      row.status as WorkflowStepStatus,
-      row.attempts,
-      row.outputData ?? null,
-      row.errorMessage ?? null,
-      new Date(row.startedAt),
-      row.completedAt ? new Date(row.completedAt) : null,
-    )
+    return WorkflowStepExecution.rehydrate({
+      id: row.id,
+      tenantId: row.tenantId,
+      executionId: row.executionId,
+      stepId: row.stepId,
+      idempotencyKey: row.idempotencyKey,
+      status: row.status as WorkflowStepStatus,
+      attempts: row.attempts,
+      outputData: row.outputData ?? null,
+      errorMessage: row.errorMessage ?? null,
+      startedAt: new Date(row.startedAt),
+      completedAt: row.completedAt ? new Date(row.completedAt) : null,
+    })
   }
 
   static definitionToResponse(def: WorkflowDefinition) {
