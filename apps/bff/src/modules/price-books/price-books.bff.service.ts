@@ -1,5 +1,5 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common'
-import { getDb, priceBooks, priceBookEntries, productInventoryLevels, products } from '@crm/database'
+import { Injectable, Logger } from '@nestjs/common'
+import { getDb, priceBooks, priceBookEntries, productInventoryLevels } from '@crm/database'
 import { eq, and, desc } from 'drizzle-orm'
 import type {
   PriceBook,
@@ -152,10 +152,10 @@ export class PriceBooksBffService {
     ])
   }
 
-  private mapPriceBook(r: any): PriceBook {
+  private mapPriceBook(r: typeof priceBooks.$inferSelect): PriceBook {
     return {
       ...r,
-      currency: r.currency as any,
+      currency: r.currency as PriceBook['currency'],
       validFrom: r.validFrom ? new Date(r.validFrom).toISOString() : undefined,
       validUntil: r.validUntil ? new Date(r.validUntil).toISOString() : undefined,
       createdAt: r.createdAt ? new Date(r.createdAt).toISOString() : new Date().toISOString(),
@@ -163,7 +163,7 @@ export class PriceBooksBffService {
     }
   }
 
-  private mapEntry(r: any): PriceBookEntry {
+  private mapEntry(r: typeof priceBookEntries.$inferSelect): PriceBookEntry {
     return {
       ...r,
       unitPrice: Number(r.unitPrice) || 0,
@@ -173,7 +173,7 @@ export class PriceBooksBffService {
     }
   }
 
-  private mapInventory(r: any): ProductInventoryLevel {
+  private mapInventory(r: typeof productInventoryLevels.$inferSelect): ProductInventoryLevel {
     return {
       ...r,
       updatedAt: r.updatedAt ? new Date(r.updatedAt).toISOString() : new Date().toISOString(),

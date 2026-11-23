@@ -154,10 +154,10 @@ export class PrmBffService {
     ])
   }
 
-  private mapTier(r: any): PartnerTier {
+  private mapTier(r: typeof partnerTiers.$inferSelect): PartnerTier {
     return {
       ...r,
-      code: r.code as any,
+      code: r.code as PartnerTier['code'],
       minAnnualRevenueUsd: Number(r.minAnnualRevenueUsd) || 0,
       discountMarginPct: Number(r.discountMarginPct) || 0,
       mdfAllowanceUsd: Number(r.mdfAllowanceUsd) || 0,
@@ -167,20 +167,20 @@ export class PrmBffService {
     }
   }
 
-  private mapPartner(r: any): Partner {
+  private mapPartner(r: typeof partners.$inferSelect): Partner {
     return {
       ...r,
-      status: r.status as any,
+      status: r.status as Partner['status'],
       joinedAt: r.joinedAt ? new Date(r.joinedAt).toISOString() : new Date().toISOString(),
       createdAt: r.createdAt ? new Date(r.createdAt).toISOString() : new Date().toISOString(),
       updatedAt: r.updatedAt ? new Date(r.updatedAt).toISOString() : new Date().toISOString(),
     }
   }
 
-  private mapDealReg(r: any): PartnerDealRegistration {
+  private mapDealReg(r: typeof partnerDealRegistrations.$inferSelect): PartnerDealRegistration {
     return {
       ...r,
-      status: r.status as any,
+      status: r.status as PartnerDealRegistration['status'],
       estimatedValueUsd: Number(r.estimatedValueUsd) || 0,
       protectedUntil: r.protectedUntil ? new Date(r.protectedUntil).toISOString() : undefined,
       reviewedAt: r.reviewedAt ? new Date(r.reviewedAt).toISOString() : undefined,

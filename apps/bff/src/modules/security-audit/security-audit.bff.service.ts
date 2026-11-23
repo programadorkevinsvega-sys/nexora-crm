@@ -88,7 +88,7 @@ export class SecurityAuditBffService {
     return rows.map((r) => this.mapAnomaly(r))
   }
 
-  async resolveAnomaly(tenantId: string, anomalyId: string, dto?: ResolveAnomalyDto): Promise<SecurityAnomaly> {
+  async resolveAnomaly(tenantId: string, anomalyId: string, _dto?: ResolveAnomalyDto): Promise<SecurityAnomaly> {
     const [updated] = await this.db
       .update(securityAnomalies)
       .set({
@@ -122,19 +122,19 @@ export class SecurityAuditBffService {
     ])
   }
 
-  private mapLog(r: any): SecurityAccessLog {
+  private mapLog(r: typeof securityAccessLogs.$inferSelect): SecurityAccessLog {
     return {
       ...r,
-      loginStatus: r.loginStatus as any,
+      loginStatus: r.loginStatus as SecurityAccessLog['loginStatus'],
       createdAt: r.createdAt ? new Date(r.createdAt).toISOString() : new Date().toISOString(),
     }
   }
 
-  private mapAnomaly(r: any): SecurityAnomaly {
+  private mapAnomaly(r: typeof securityAnomalies.$inferSelect): SecurityAnomaly {
     return {
       ...r,
-      anomalyType: r.anomalyType as any,
-      severity: r.severity as any,
+      anomalyType: r.anomalyType as SecurityAnomaly['anomalyType'],
+      severity: r.severity as SecurityAnomaly['severity'],
       resolvedAt: r.resolvedAt ? new Date(r.resolvedAt).toISOString() : undefined,
       createdAt: r.createdAt ? new Date(r.createdAt).toISOString() : new Date().toISOString(),
     }
