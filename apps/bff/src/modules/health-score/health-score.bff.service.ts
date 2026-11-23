@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { getDb, customerHealthScores, contacts, notes, supportTickets, deals } from '@crm/database'
-import { eq, and, desc } from 'drizzle-orm'
+import { eq, and } from 'drizzle-orm'
 import { HealthScoreCalculatorHelper } from './health-score-calculator.helper'
 import type { CustomerHealthScore } from '@crm/contracts'
 
@@ -59,7 +59,7 @@ export class HealthScoreBffService {
       .where(and(eq(customerHealthScores.tenantId, tenantId), eq(customerHealthScores.contactId, contactId)))
       .limit(1)
 
-    let record: any
+    let record: typeof customerHealthScores.$inferSelect
     if (existing) {
       const [updated] = await this.db
         .update(customerHealthScores)
@@ -125,7 +125,7 @@ export class HealthScoreBffService {
     return rows.map((r) => this.mapScore(r))
   }
 
-  private mapScore(r: any): CustomerHealthScore {
+  private mapScore(r: typeof customerHealthScores.$inferSelect): CustomerHealthScore {
     return {
       ...r,
       churnProbability: Number(r.churnProbability),

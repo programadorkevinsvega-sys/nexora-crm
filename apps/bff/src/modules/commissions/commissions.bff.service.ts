@@ -1,5 +1,5 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common'
-import { getDb, commissionPlans, commissionRecords, deals } from '@crm/database'
+import { getDb, commissionPlans, commissionRecords } from '@crm/database'
 import { eq, and, desc } from 'drizzle-orm'
 import { CommissionsCalculatorHelper } from './commissions-calculator.helper'
 import type {
@@ -146,7 +146,7 @@ export class CommissionsBffService {
     })
   }
 
-  private mapPlan(r: any): CommissionPlan {
+  private mapPlan(r: typeof commissionPlans.$inferSelect): CommissionPlan {
     return {
       ...r,
       baseRate: Number(r.baseRate) || 0,
@@ -157,7 +157,7 @@ export class CommissionsBffService {
     }
   }
 
-  private mapRecord(r: any): CommissionRecord {
+  private mapRecord(r: typeof commissionRecords.$inferSelect): CommissionRecord {
     return {
       ...r,
       dealValue: Number(r.dealValue) || 0,

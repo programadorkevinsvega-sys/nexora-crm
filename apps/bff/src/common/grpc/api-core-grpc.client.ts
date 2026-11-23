@@ -33,11 +33,11 @@ import type {
   WorkflowDefinition, WorkflowExecution, WorkflowStep,
   LeadScoringRule, LeadScore, ScoringRuleCategory, ScoringCondition,
   Product, ProductTemplate, QuoteApproval, ESignature, ProductPricingType,
-  Customer360Profile, InboxConversation, InboxMessage, InboxChannel, InboxConversationStatus,
+  Customer360Profile, InboxConversation, InboxMessage, InboxChannel,
   RevenueMetrics, FunnelMetrics, CohortMetrics, RevenueForecast,
   KnowledgeBaseCategory, KnowledgeBaseArticle, CustomerPortalOverview,
   DealWinProbability, GeneratedMessageDraft, ContactExecutiveSummary, ChurnRiskPrediction,
-  ApiKey, CreatedApiKey, CreateApiKey, WebhookEndpoint, CreateWebhookEndpoint, WebhookDeliveryLog,
+  ApiKey, CreatedApiKey, WebhookEndpoint, WebhookDeliveryLog,
 } from '@crm/contracts'
 
 interface DeveloperGrpc {
