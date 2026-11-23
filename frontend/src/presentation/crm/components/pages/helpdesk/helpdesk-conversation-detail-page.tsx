@@ -14,7 +14,6 @@ import { Badge } from "@/src/presentation/crm/components/ui/Badge"
 import { ThreadTimeline } from "@/src/presentation/crm/components/modules/helpdesk/thread-timeline"
 import { ConversationSidebar } from "@/src/presentation/crm/components/modules/helpdesk/conversation-sidebar"
 import { ErrorState } from "@/src/presentation/components/error-state"
-import { useAuth } from "@/src/presentation/hooks/use-auth"
 import { useConversation, useResolveConversation, useAssignConversation } from "@src/application/crm/di/hooks"
 import { container } from "@src/application/crm/di/container"
 import { DI_TOKENS } from "@src/application/crm/di/tokens"
@@ -22,7 +21,6 @@ import { DI_TOKENS } from "@src/application/crm/di/tokens"
 export function ConversationDetailPage() {
   const params = useParams()
   const router = useRouter()
-  const { tenantId } = useAuth()
   const [showDelete, setShowDelete] = useState(false)
   const [activeTab, setActiveTab] = useState("threads")
   const id = params.id as string

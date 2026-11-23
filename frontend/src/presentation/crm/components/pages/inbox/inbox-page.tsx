@@ -2,25 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
-import {
-  MessageSquare,
-  Mail,
-  Smartphone,
-  Globe,
-  Search,
-  Send,
-  Flame,
-  User,
-  Star,
-  RefreshCw,
-  Clock,
-  CheckCheck,
-  Check,
-  Building,
-  Briefcase,
-  ExternalLink,
-  Sparkles,
-} from "lucide-react"
+import { MessageSquare, Mail, Smartphone, Globe, Search, Send, Flame, User, Star, RefreshCw, CheckCheck, Check, ExternalLink, Sparkles } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/src/presentation/crm/components/ui/Button"
 import { Card } from "@/src/presentation/crm/components/ui/Card"
@@ -28,7 +10,7 @@ import { Badge } from "@/src/presentation/crm/components/ui/Badge"
 import { Skeleton } from "@/src/presentation/crm/components/ui/Skeleton"
 import { Avatar } from "@/src/presentation/crm/components/ui/Avatar"
 import { ApiInboxRepository } from "@/src/infrastructure/crm/repositories/inbox/api-inbox.repository"
-import type { InboxConversation, InboxChannel, InboxMessage } from "@crm/contracts"
+import type { InboxConversation, InboxChannel } from "@crm/contracts"
 
 export function InboxPage() {
   const router = useRouter()

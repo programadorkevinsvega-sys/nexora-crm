@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Plus, Mail, CheckCircle2 } from "lucide-react"
+import { Plus, Mail } from "lucide-react"
 import { Card } from "@/src/presentation/crm/components/ui/Card"
 import { Button } from "@/src/presentation/crm/components/ui/Button"
 import { PageHeader } from "@/src/presentation/crm/components/common/PageHeader"

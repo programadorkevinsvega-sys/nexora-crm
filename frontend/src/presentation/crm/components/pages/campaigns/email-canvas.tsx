@@ -3,7 +3,7 @@
 import React from "react"
 import { EmailBlock } from "./email-template-types"
 import { EmailBlockRenderer } from "./email-block-renderer"
-import { Layers, Plus } from "lucide-react"
+import { Layers } from "lucide-react"
 
 interface Props {
   blocks: EmailBlock[]
