@@ -18,6 +18,7 @@ export class WorkflowExecution {
     readonly completedAt: Date | null,
     readonly cancelledAt: Date | null,
     readonly errorMessage: string | null,
+    readonly resumeAt: Date | null = null,
   ) {
     if (!Number.isSafeInteger(version) || version < 1) {
       throw new Error('Workflow execution version must be a positive integer')
@@ -48,6 +49,7 @@ export class WorkflowExecution {
       null,
       null,
       null,
+      null,
     )
   }
 
@@ -66,10 +68,14 @@ export class WorkflowExecution {
       null,
       null,
       null,
+      null,
     )
   }
 
-  waitForDelay(stepId: string, updatedContext?: Record<string, unknown>): WorkflowExecution {
+  waitForDelay(stepId: string, resumeAt: Date, updatedContext?: Record<string, unknown>): WorkflowExecution {
+    if (!(resumeAt instanceof Date) || Number.isNaN(resumeAt.getTime())) {
+      throw new Error('Workflow delay resume time must be a valid date')
+    }
     return new WorkflowExecution(
       this.id,
       this.tenantId,
@@ -81,6 +87,33 @@ export class WorkflowExecution {
       stepId,
       updatedContext ?? this.contextData,
       this.startedAt,
+      null,
+      null,
+      null,
+      resumeAt,
+    )
+  }
+
+  resumeFromDelay(nextStepId: string): WorkflowExecution {
+    if (this.status !== 'WAITING_DELAY' || !this.resumeAt) {
+      throw new Error('Only a scheduled workflow delay can be resumed')
+    }
+    if (!nextStepId.trim()) {
+      throw new Error('Next workflow step id is required to resume a delay')
+    }
+
+    return new WorkflowExecution(
+      this.id,
+      this.tenantId,
+      this.workflowId,
+      this.version,
+      this.entityType,
+      this.entityId,
+      'RUNNING',
+      nextStepId,
+      this.contextData,
+      this.startedAt,
+      null,
       null,
       null,
       null,
@@ -102,6 +135,7 @@ export class WorkflowExecution {
       new Date(),
       null,
       null,
+      null,
     )
   }
 
@@ -120,6 +154,7 @@ export class WorkflowExecution {
       null,
       new Date(),
       reason ?? 'Cancelled by rule or user',
+      null,
     )
   }
 
@@ -138,6 +173,7 @@ export class WorkflowExecution {
       null,
       null,
       errorMessage,
+      null,
     )
   }
 }
