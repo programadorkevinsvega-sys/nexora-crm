@@ -31,7 +31,7 @@ export class PaymentsBffController {
   @Public()
   @Post('webhook/stripe')
   @ApiOperation({ summary: 'Recepción de webhooks de confirmación de pago de Stripe' })
-  async handleStripeWebhook(@Body() event: Record<string, any>): Promise<{ received: boolean }> {
+  async handleStripeWebhook(@Body() event: Record<string, unknown>): Promise<{ received: boolean }> {
     return this.service.handleStripeWebhook(event)
   }
 }

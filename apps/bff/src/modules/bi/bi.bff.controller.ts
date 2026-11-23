@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Delete, Param, Body, Headers } from '@nestjs/common'
 import { ApiTags, ApiOperation } from '@nestjs/swagger'
 import { BiBffService } from './bi.bff.service'
+import type { BiFeedRow } from './bi-data-feed.helper'
 import type { BiReport, CreateBiReportDto } from '@crm/contracts'
 
 @ApiTags('Business Intelligence & Power BI Hub')
@@ -10,9 +11,7 @@ export class BiBffController {
 
   @Get('reports')
   @ApiOperation({ summary: 'Listar dashboards y reportes de Power BI disponibles' })
-  async listReports(
-    @Headers('x-tenant-id') tenantId = '00000000-0000-0000-0000-000000000001',
-  ): Promise<BiReport[]> {
+  async listReports(@Headers('x-tenant-id') tenantId = '00000000-0000-0000-0000-000000000001'): Promise<BiReport[]> {
     return this.service.listReports(tenantId)
   }
 
@@ -40,7 +39,7 @@ export class BiBffController {
   async getDataFeed(
     @Headers('x-tenant-id') tenantId = '00000000-0000-0000-0000-000000000001',
     @Param('entity') entity: string,
-  ): Promise<any[]> {
+  ): Promise<BiFeedRow[]> {
     return this.service.getDataFeed(tenantId, entity)
   }
 }
