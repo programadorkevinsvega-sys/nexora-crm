@@ -87,11 +87,21 @@ describe('CustomerPortalQuotesBffService', () => {
     })
   })
 
-  it('does not allow decisions on a quote that is not sent', async () => {
+  it('does not disclose draft quotes through decision endpoints', async () => {
     api.getQuote.mockResolvedValueOnce({ ...quote, status: 'DRAFT' })
-    await expect(service.acceptQuote(user, quote.id)).rejects.toBeInstanceOf(ConflictException)
+    await expect(service.acceptQuote(user, quote.id)).rejects.toBeInstanceOf(NotFoundException)
+    expect(api.getDeal).not.toHaveBeenCalled()
     expect(api.acceptQuote).not.toHaveBeenCalled()
   })
+
+  it.each(['ACCEPTED', 'REJECTED', 'EXPIRED'])(
+    'does not allow decisions on a quote with status %s',
+    async (status) => {
+      api.getQuote.mockResolvedValueOnce({ ...quote, status })
+      await expect(service.acceptQuote(user, quote.id)).rejects.toBeInstanceOf(ConflictException)
+      expect(api.acceptQuote).not.toHaveBeenCalled()
+    },
+  )
 
   it('does not allow decisions on an expired quote', async () => {
     api.getQuote.mockResolvedValueOnce({ ...quote, validUntil: '2026-01-01' })
