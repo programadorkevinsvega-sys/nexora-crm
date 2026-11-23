@@ -4,7 +4,9 @@ import { WorkflowExecution } from '../../domain/entities/workflow-execution.enti
 import { WorkflowStepExecution } from '../../domain/entities/workflow-step-execution.entity'
 import { WorkflowStep } from '@crm/contracts'
 import { ConditionEvaluator } from '../../domain/services/condition-evaluator.service'
-import { WorkflowExecutionRepository } from '../../domain/repositories/workflow-execution.repository'
+import { calculateWorkflowResumeAt } from '../../domain/services/workflow-delay.parser'
+import { WorkflowExecutionRepository, WorkflowDelayScheduleMessage } from '../../domain/repositories/workflow-execution.repository'
+import { WorkflowDefinitionRepository } from '../../domain/repositories/workflow-definition.repository'
 import { OutboxService } from '../../../../common/outbox/outbox.service'
 import {
   WorkflowStepCompletedEvent,
@@ -17,6 +19,7 @@ export class WorkflowEngineService {
 
   constructor(
     private readonly executionRepo: WorkflowExecutionRepository,
+    private readonly definitionRepo: WorkflowDefinitionRepository,
     private readonly outbox: OutboxService,
   ) {}
 
@@ -36,11 +39,50 @@ export class WorkflowEngineService {
         )
         break
       }
-
       currentExec = await this.executeStep(currentExec, definition, step)
     }
 
     return currentExec
+  }
+
+  async resumeScheduledExecution(message: WorkflowDelayScheduleMessage): Promise<WorkflowExecution | null> {
+    const execution = await this.executionRepo.findById(message.tenantId, message.executionId)
+    if (!execution || execution.resumeToken !== message.resumeToken) return null
+
+    let ready: WorkflowExecution
+    if (execution.status === 'WAITING_DELAY') {
+      if (execution.currentStepId !== message.stepId) return null
+      if (!execution.resumeAt) throw new Error('Waiting workflow execution has no persisted resumeAt')
+      if (execution.resumeAt.getTime() > Date.now()) {
+        throw new Error('JetStream delivered a workflow delay before its persisted resumeAt')
+      }
+
+      if (!message.nextStepId) {
+        const completed = execution.complete()
+        await this.executionRepo.save(completed)
+        await this.outbox.publish(new WorkflowExecutionCompletedEvent(completed.id, message.workflowId))
+        return completed
+      }
+
+      ready = execution.resumeFromDelay(message.nextStepId)
+      await this.executionRepo.save(ready)
+    } else if (execution.status === 'FAILED') {
+      ready = execution.retry()
+      await this.executionRepo.save(ready)
+    } else if (execution.status === 'RUNNING' && !execution.resumeAt) {
+      // A worker may have stopped after persisting the resume transition.
+      // The durable JetStream delivery can safely continue from the stored step.
+      ready = execution
+    } else {
+      return null
+    }
+
+    const definition = await this.definitionRepo.findById(message.tenantId, message.workflowId)
+    if (!definition || definition.version !== message.workflowVersion) {
+      throw new Error('Pinned workflow definition version is unavailable')
+    }
+
+    return this.processExecution(ready, definition)
   }
 
   private async executeStep(
@@ -48,20 +90,38 @@ export class WorkflowEngineService {
     definition: WorkflowDefinition,
     step: WorkflowStep,
   ): Promise<WorkflowExecution> {
+    const attempt = await this.executionRepo.getNextStepAttempt(
+      execution.tenantId,
+      execution.id,
+      step.id,
+    )
     const stepExec = WorkflowStepExecution.create({
       tenantId: execution.tenantId,
       executionId: execution.id,
       stepId: step.id,
+      attempt,
     })
     await this.executionRepo.saveStepExecution(stepExec.markExecuting())
 
     try {
       if (step.type === 'DELAY') {
-        const waitingExec = execution.waitForDelay(step.id)
-        await this.executionRepo.save(waitingExec)
-        await this.executionRepo.saveStepExecution(
-          stepExec.markSuccess({ delayedDuration: step.duration ?? '1h' }),
-        )
+        const resumeAt = calculateWorkflowResumeAt(step.duration)
+        const waitingExec = execution.waitForDelay(step.id, resumeAt)
+        const completedStep = stepExec.markSuccess({
+          delayedDuration: step.duration ?? '1h',
+          resumeAt: resumeAt.toISOString(),
+        })
+        const message: WorkflowDelayScheduleMessage = {
+          tenantId: execution.tenantId,
+          executionId: execution.id,
+          workflowId: definition.id,
+          workflowVersion: definition.version,
+          stepId: step.id,
+          nextStepId: step.nextStepId ?? null,
+          resumeAt: resumeAt.toISOString(),
+          resumeToken: waitingExec.resumeToken!,
+        }
+        await this.executionRepo.scheduleDelay(waitingExec, completedStep, message)
         return waitingExec
       }
 
@@ -89,7 +149,6 @@ export class WorkflowEngineService {
         return advanced
       }
 
-      // Action Step (ACTION / WEBHOOK / TASK)
       const actionOutput = await this.performAction(execution, step)
       await this.executionRepo.saveStepExecution(stepExec.markSuccess(actionOutput))
       await this.outbox.publish(

@@ -58,6 +58,8 @@ export const workflowExecutions = pgTable(
     status: varchar('status', { length: 50 }).default('RUNNING').notNull(),
     currentStepId: varchar('current_step_id', { length: 100 }).notNull(),
     contextData: jsonb('context_data'),
+    resumeAt: timestamp('resume_at', { withTimezone: true }),
+    resumeToken: uuid('resume_token'),
     startedAt: timestamp('started_at', { withTimezone: true }).defaultNow().notNull(),
     completedAt: timestamp('completed_at', { withTimezone: true }),
     cancelledAt: timestamp('cancelled_at', { withTimezone: true }),
@@ -66,6 +68,7 @@ export const workflowExecutions = pgTable(
   (table) => ({
     tenantStatusIdx: index('workflow_executions_tenant_status_idx').on(table.tenantId, table.status),
     entityIdx: index('workflow_executions_entity_idx').on(table.tenantId, table.entityType, table.entityId),
+    resumeAtIdx: index('workflow_executions_resume_at_idx').on(table.resumeAt),
     tenantIdIdx: uniqueIndex('workflow_executions_tenant_id_unique').on(table.tenantId, table.id),
     tenantIdFk: foreignKey({
       name: 'workflow_executions_tenant_id_fk',

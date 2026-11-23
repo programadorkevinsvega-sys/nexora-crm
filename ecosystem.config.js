@@ -21,6 +21,20 @@ module.exports = {
       time: true,
     },
     {
+      name: 'nexora-workflow-worker',
+      cwd: './apps/api',
+      script: 'dist/workflow-worker.main.js',
+      instances: 1,
+      exec_mode: 'fork',
+      autorestart: true,
+      watch: false,
+      max_memory_restart: '768M',
+      env: {
+        NODE_ENV: 'production',
+      },
+      time: true,
+    },
+    {
       name: 'nexora-bff',
       cwd: './apps/bff',
       script: 'dist/main.js',

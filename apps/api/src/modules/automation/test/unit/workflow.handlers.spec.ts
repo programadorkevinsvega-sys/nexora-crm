@@ -31,21 +31,22 @@ describe('Workflow Command Handlers', () => {
 
     execRepo = {
       save: jest.fn().mockResolvedValue(undefined),
+      scheduleDelay: jest.fn().mockResolvedValue(undefined),
       findById: jest.fn(),
       findRunningByEntity: jest.fn(),
       listExecutions: jest.fn(),
+      getNextStepAttempt: jest.fn().mockResolvedValue(1),
       saveStepExecution: jest.fn().mockResolvedValue(undefined),
       findStepExecutionByIdempotencyKey: jest.fn(),
       listStepExecutions: jest.fn(),
-    }
+    } as any
 
     engine = {
       processExecution: jest.fn().mockImplementation((exec) => Promise.resolve(exec)),
+      resumeScheduledExecution: jest.fn(),
     } as any
 
-    outbox = {
-      publish: jest.fn().mockResolvedValue(undefined),
-    } as any
+    outbox = { publish: jest.fn().mockResolvedValue(undefined) } as any
   })
 
   it('CreateWorkflowHandler should persist a new workflow in DRAFT status', async () => {
@@ -59,7 +60,6 @@ describe('Workflow Command Handlers', () => {
         'Sends WhatsApp to lead',
       ),
     )
-
     expect(result.id).toBeDefined()
     expect(defRepo.save).toHaveBeenCalledTimes(1)
   })
@@ -72,13 +72,9 @@ describe('Workflow Command Handlers', () => {
       stepsGraph: [{ id: 's1', type: 'ACTION' }],
     })
     defRepo.findById.mockResolvedValue(existing)
-
     const handler = new ActivateWorkflowHandler(defRepo)
     await handler.execute(new ActivateWorkflowCommand('tenant-1', existing.id))
-
-    expect(defRepo.save).toHaveBeenCalledWith(
-      expect.objectContaining({ status: 'ACTIVE' }),
-    )
+    expect(defRepo.save).toHaveBeenCalledWith(expect.objectContaining({ status: 'ACTIVE' }))
   })
 
   it('TriggerEventHandler should instantiate and process execution for matching active workflows', async () => {
@@ -88,7 +84,6 @@ describe('Workflow Command Handlers', () => {
       triggerEvent: 'crm.contact.created',
       stepsGraph: [{ id: 's1', type: 'ACTION', action: 'SEND_EMAIL' }],
     }).activate()
-
     defRepo.findActiveByTrigger.mockResolvedValue([activeWorkflow])
 
     const handler = new TriggerEventHandler(defRepo, execRepo, engine, outbox)
