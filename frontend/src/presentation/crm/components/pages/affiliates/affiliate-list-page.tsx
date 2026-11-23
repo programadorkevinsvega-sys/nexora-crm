@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useState } from "react"
-import { Plus, Handshake, CheckCircle2, Copy } from "lucide-react"
+import { Plus, Handshake } from "lucide-react"
 import { DataTable, type ColumnDef } from "@/src/presentation/crm/components/common/DataTable"
 import { PageHeader } from "@/src/presentation/crm/components/common/PageHeader"
 import { SearchInput } from "@/src/presentation/crm/components/common/SearchInput"

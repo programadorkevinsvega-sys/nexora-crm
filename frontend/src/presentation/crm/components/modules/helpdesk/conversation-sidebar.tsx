@@ -10,7 +10,7 @@ export interface ConversationSidebarProps {
   onAssign: (userId: string) => void
 }
 
-export function ConversationSidebar({ conversation, onAssign }: ConversationSidebarProps) {
+export function ConversationSidebar({ conversation, onAssign: _onAssign }: ConversationSidebarProps) {
   const hours = conversation.estimatedHours ?? 0
   const worked = conversation.workedHours ?? 0
   const percent = hours > 0 ? Math.round((worked / hours) * 100) : 0

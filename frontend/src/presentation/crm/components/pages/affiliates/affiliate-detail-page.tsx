@@ -10,13 +10,11 @@ import { Skeleton } from "@/src/presentation/crm/components/ui/Skeleton"
 import { CommissionTable } from "@/src/presentation/crm/components/modules/affiliates/commission-table"
 import { PayoutTable } from "@/src/presentation/crm/components/modules/affiliates/payout-table"
 import { ErrorState } from "@/src/presentation/components/error-state"
-import { useAuth } from "@/src/presentation/hooks/use-auth"
 import { useState } from "react"
 import { useAffiliate } from "@src/application/crm/di/hooks"
 
 export function AffiliateDetailPage() {
   const params = useParams()
-  const { tenantId } = useAuth()
   const [activeTab, setActiveTab] = useState("details")
   const id = params.id as string
 
