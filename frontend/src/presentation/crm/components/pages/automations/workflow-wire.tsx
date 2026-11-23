@@ -14,7 +14,7 @@ interface WorkflowWireProps {
 }
 
 export function WorkflowWire({
-  _id,
+  id: _id,
   startX,
   startY,
   endX,
