@@ -7,6 +7,8 @@ services:
       - .env
     command:
       - "-js"
+      - "-sd"
+      - "/data"
       - "-m"
       - "8222"
       - "--user"

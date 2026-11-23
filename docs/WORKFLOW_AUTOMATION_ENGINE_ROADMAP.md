@@ -146,7 +146,7 @@ Las etiquetas `done` y `active` del Gantt son parte del plan histórico; no refl
 **Objetivo:** Ejecutar tareas diferidas sin bloquear Node.js, con persistencia, reintentos y DLQ sobre la infraestructura NATS existente; no se añade BullMQ ni se convierte Redis en broker de workflows.
 
 - [ ] **3.1 Streams y consumidores JetStream:**
-  - Stream `workflow_runtime` con almacenamiento de archivo y scheduling habilitado.
+  - Stream `workflow_runtime` con almacenamiento de archivo y scheduling habilitado. El servidor se inicia con `-sd /data` y el volumen `nats_data` montado, de modo que JetStream usa almacenamiento persistente, no `/tmp`.
   - Subjects separados `workflow.schedule` y `workflow.resume`; consumidor pull durable con ACK explícito.
   - Worker en proceso PM2 separado para escalarlo sin aumentar réplicas HTTP.
 - [ ] **3.2 Delays no bloqueantes:**
