@@ -1,12 +1,11 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import {
   getDb,
   branches,
   tenantTaxConfigurations,
   tenantCurrencies,
-  tenantExchangeRates,
 } from '@crm/database'
-import { eq, and, desc } from 'drizzle-orm'
+import { eq, desc } from 'drizzle-orm'
 import type {
   Branch,
   CreateBranchDto,
@@ -89,7 +88,7 @@ export class TenantConfigBffService {
       tenantId: r.tenantId,
       taxName: r.taxName,
       taxPercentage: Number(r.taxPercentage),
-      taxType: (r.taxType as any) || 'SALES',
+      taxType: r.taxType as TenantTax['taxType'],
       description: r.description,
       isActive: r.isActive ?? true,
       createdAt: r.createdAt.toISOString(),
@@ -115,7 +114,7 @@ export class TenantConfigBffService {
       tenantId: created.tenantId,
       taxName: created.taxName,
       taxPercentage: Number(created.taxPercentage),
-      taxType: (created.taxType as any) || 'SALES',
+      taxType: created.taxType as TenantTax['taxType'],
       description: created.description,
       isActive: created.isActive ?? true,
       createdAt: created.createdAt.toISOString(),

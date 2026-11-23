@@ -1,5 +1,5 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common'
-import { getDb, paymentTransactions, quotes, contracts, deals, notes } from '@crm/database'
+import { Injectable, Logger } from '@nestjs/common'
+import { getDb, paymentTransactions, quotes, contracts } from '@crm/database'
 import { eq, and, desc } from 'drizzle-orm'
 import { StripeDispatcher } from '../integrations/dispatchers/stripe.dispatcher'
 import type { CreatePaymentLinkDto, PaymentTransaction } from '@crm/contracts'
@@ -62,14 +62,26 @@ export class PaymentsBffService {
     return this.mapTx(created)
   }
 
-  async handleStripeWebhook(event: Record<string, any>): Promise<{ received: boolean }> {
-    const type = event.type
-    const dataObject = event.data?.object || {}
+  async handleStripeWebhook(event: Record<string, unknown>): Promise<{ received: boolean }> {
+    const type = typeof event.type === 'string' ? event.type : 'unknown'
+    const eventData = typeof event.data === 'object' && event.data !== null && !Array.isArray(event.data)
+      ? event.data as Record<string, unknown>
+      : {}
+    const rawObject = eventData.object
+    const dataObject = typeof rawObject === 'object' && rawObject !== null && !Array.isArray(rawObject)
+      ? rawObject as Record<string, unknown>
+      : {}
     this.logger.log(`Received Stripe Webhook: ${type}`)
 
     if (type === 'checkout.session.completed' || type === 'payment_intent.succeeded') {
-      const paymentLinkId = dataObject.payment_link || dataObject.id
-      const customerEmail = dataObject.customer_details?.email || dataObject.receipt_email
+      const customerDetails = typeof dataObject.customer_details === 'object' && dataObject.customer_details !== null
+        && !Array.isArray(dataObject.customer_details)
+        ? dataObject.customer_details as Record<string, unknown>
+        : {}
+      const paymentLinkId = typeof dataObject.payment_link === 'string' ? dataObject.payment_link
+        : typeof dataObject.id === 'string' ? dataObject.id : undefined
+      const customerEmail = typeof customerDetails.email === 'string' ? customerDetails.email
+        : typeof dataObject.receipt_email === 'string' ? dataObject.receipt_email : undefined
 
       const [tx] = await this.db
         .select()
@@ -117,7 +129,7 @@ export class PaymentsBffService {
     return rows.map((r) => this.mapTx(r))
   }
 
-  private mapTx(r: any): PaymentTransaction {
+  private mapTx(r: typeof paymentTransactions.$inferSelect): PaymentTransaction {
     return {
       ...r,
       amount: Number(r.amount),

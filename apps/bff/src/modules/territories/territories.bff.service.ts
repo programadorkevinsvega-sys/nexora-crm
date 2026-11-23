@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { getDb, salesTerritories, territoryMembers } from '@crm/database'
 import { eq, and, desc } from 'drizzle-orm'
 import { TerritoryRouterHelper } from './territory-router.helper'
@@ -134,7 +134,7 @@ export class TerritoriesBffService {
     ])
   }
 
-  private mapTerritory(r: any): SalesTerritory {
+  private mapTerritory(r: typeof salesTerritories.$inferSelect): SalesTerritory {
     return {
       ...r,
       countryCodes: Array.isArray(r.countryCodes) ? r.countryCodes : [],
@@ -146,7 +146,7 @@ export class TerritoriesBffService {
     }
   }
 
-  private mapMember(r: any): TerritoryMember {
+  private mapMember(r: typeof territoryMembers.$inferSelect): TerritoryMember {
     return {
       ...r,
       role: r.role as TerritoryMemberRole,
