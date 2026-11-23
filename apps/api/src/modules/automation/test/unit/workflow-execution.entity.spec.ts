@@ -55,12 +55,42 @@ describe('WorkflowExecution Entity', () => {
     expect(advanced.contextData?.whatsappSent).toBe(true)
   })
 
-  it('should transition to WAITING_DELAY on delay step', () => {
+  it('persists the delay due time and resumes from the next step', () => {
     const execution = WorkflowExecution.start(startProps)
-    const delayed = execution.waitForDelay('step_delay_24h')
+    const resumeAt = new Date(Date.now() + 60_000)
+    const delayed = execution.waitForDelay('step_delay_24h', resumeAt)
 
     expect(delayed.status).toBe('WAITING_DELAY')
     expect(delayed.currentStepId).toBe('step_delay_24h')
+    expect(delayed.resumeAt).toEqual(resumeAt)
+
+    const resumed = delayed.resumeFromDelay('step_2')
+    expect(resumed.status).toBe('RUNNING')
+    expect(resumed.currentStepId).toBe('step_2')
+    expect(resumed.resumeAt).toBeNull()
+  })
+
+  it('does not resume an unscheduled legacy WAITING_DELAY execution', () => {
+    const execution = WorkflowExecution.start(startProps)
+    const legacyWaiting = new WorkflowExecution(
+      execution.id,
+      execution.tenantId,
+      execution.workflowId,
+      execution.version,
+      execution.entityType,
+      execution.entityId,
+      'WAITING_DELAY',
+      'step_delay_legacy',
+      execution.contextData,
+      execution.startedAt,
+      null,
+      null,
+      null,
+    )
+
+    expect(() => legacyWaiting.resumeFromDelay('step_2')).toThrow(
+      'Only a scheduled workflow delay can be resumed',
+    )
   })
 
   it('should complete, cancel, or fail with appropriate timestamps', () => {
