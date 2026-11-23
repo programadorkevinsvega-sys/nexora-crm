@@ -1,6 +1,4 @@
-import {
-  Controller, Get, Post, Param, Body, Req, Headers, Ip,
-} from '@nestjs/common'
+import { Controller, Get, Post, Param, Body, Req, Headers, Ip } from '@nestjs/common'
 import type { Request } from 'express'
 import { Public } from '../../common/decorators/public.decorator'
 import { Throttle } from '../../common/decorators/throttle.decorator'
@@ -21,12 +19,15 @@ export class PublicFormsBffController {
   @Post(':idOrSlug/submit')
   async submitForm(
     @Param('idOrSlug') idOrSlug: string,
-    @Body() body: Record<string, any>,
+    @Body() body: Record<string, unknown>,
     @Req() req: Request,
     @Ip() ip: string,
     @Headers('user-agent') userAgent?: string,
   ) {
-    const formData = body.formData || body
+    const rawFormData = body.formData
+    const formData = typeof rawFormData === 'object' && rawFormData !== null && !Array.isArray(rawFormData)
+      ? rawFormData as Record<string, unknown>
+      : body
     return this.service.submitPublic(idOrSlug, formData, ip || req.ip, userAgent)
   }
 }
