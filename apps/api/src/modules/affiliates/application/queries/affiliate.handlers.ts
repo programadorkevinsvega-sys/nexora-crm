@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { AffiliateProgramRepository } from '../../domain/repositories/affiliate-program.repository'
 import { AffiliateRepository } from '../../domain/repositories/affiliate.repository'
 import { CommissionRepository } from '../../domain/repositories/commission.repository'
-import { NotFoundError, ConflictError } from '@crm/shared'
+import { NotFoundError } from '@crm/shared'
 import {
   GetProgramQuery,
   ListProgramsQuery,

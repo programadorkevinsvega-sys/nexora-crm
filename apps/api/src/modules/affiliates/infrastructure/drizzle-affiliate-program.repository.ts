@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { eq, ilike, and, asc, or, gt } from 'drizzle-orm'
+import { eq, ilike, and, asc, gt } from 'drizzle-orm'
 import { getDb, affiliatePrograms as affiliateProgramsTable } from '@crm/database'
 import { AffiliateProgramRepository, ProgramFilter, PaginatedPrograms } from '../domain/repositories/affiliate-program.repository'
 import { AffiliateProgram } from '../domain/entities/affiliate-program.entity'
