@@ -13,7 +13,7 @@ permissions:
 jobs:
   validate-backend:
     name: Validate Backend & Packages
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       postgres:
         image: postgres:16-alpine
@@ -67,7 +67,7 @@ jobs:
 
   validate-frontend:
     name: Validate Frontend Next.js
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout repository
@@ -100,7 +100,7 @@ jobs:
       - validate-backend
       - validate-frontend
     if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment: production
     concurrency:
       group: production-deploy

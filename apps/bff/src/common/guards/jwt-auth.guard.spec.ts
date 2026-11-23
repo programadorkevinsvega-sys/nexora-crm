@@ -81,8 +81,14 @@ describe('BffJwtAuthGuard', () => {
   })
 
   it('rejects a token with an invalid signature', () => {
-    const token = tokenFor({ sub: 'user-1', tenantId: 'tenant-1', exp: Math.floor(Date.now() / 1000) + 300 })
-    const request: TestRequest = { path: '/api/contacts', headers: { authorization: `Bearer ${token.slice(0, -1)}x` } }
+    const [header, payload] = tokenFor({
+      sub: 'user-1',
+      tenantId: 'tenant-1',
+      exp: Math.floor(Date.now() / 1000) + 300,
+    }).split('.')
+    const invalidSignature = Buffer.from('known-invalid-signature').toString('base64url')
+    const token = `${header}.${payload}.${invalidSignature}`
+    const request: TestRequest = { path: '/api/contacts', headers: { authorization: `Bearer ${token}` } }
     expect(() => guard.canActivate(contextFor(request))).toThrow(UnauthorizedException)
   })
 

@@ -16,6 +16,15 @@ describe('customer portal JWT allowlist', () => {
     expect(isAllowedCustomerPortalPath('GET', '/api/customer-portal/tickets/not-a-uuid')).toBe(false)
   })
 
+  it('allows only customer-owned quote details and explicit decisions', () => {
+    const quoteId = '66666666-6666-4666-8666-666666666666'
+    expect(isAllowedCustomerPortalPath('GET', `/api/customer-portal/quotes/${quoteId}`)).toBe(true)
+    expect(isAllowedCustomerPortalPath('POST', `/api/customer-portal/quotes/${quoteId}/accept`)).toBe(true)
+    expect(isAllowedCustomerPortalPath('POST', `/api/customer-portal/quotes/${quoteId}/reject`)).toBe(true)
+    expect(isAllowedCustomerPortalPath('PUT', `/api/customer-portal/quotes/${quoteId}/accept`)).toBe(false)
+    expect(isAllowedCustomerPortalPath('GET', '/api/customer-portal/quotes/not-a-uuid')).toBe(false)
+  })
+
   it('allows read-only public knowledge-base operations', () => {
     expect(isAllowedCustomerPortalPath('GET', '/api/kb/categories')).toBe(true)
     expect(isAllowedCustomerPortalPath('GET', '/api/kb/articles')).toBe(true)

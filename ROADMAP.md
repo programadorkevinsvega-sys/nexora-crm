@@ -54,6 +54,7 @@ Los hitos anteriores y cualquier etiqueta «completado» de versiones previas de
 - [x] P0.3 — Aislamiento del portal del cliente por identidad firmada y contacto (PR #10, integrado).
 - [x] P0.4 — Invitaciones seguras y aceptación de miembros internos del tenant (PR #11, integrado).
 - [x] P0.5 — Onboarding seguro de clientes externos al portal: invitación verificada desde el contacto, cuenta separada de usuarios CRM, JWT de mínimo privilegio y refresh token rotatorio. PR #12 integrado en main.
-- [ ] P0.6 — Autoservicio del cliente: consulta de detalle/historial de tickets, respuestas públicas del cliente con aislamiento por contacto, ocultamiento de notas internas y centro de ayuda público dentro del portal. En implementación en feat/p0.6-customer-portal-support-self-service.
+- [x] P0.6 — Autoservicio del cliente: detalle e historial de tickets, respuestas públicas aisladas por contacto, ocultamiento de notas internas y centro de ayuda público. PR #13 integrado en main.
+- [ ] P0.7 — Autoservicio de cotizaciones: detalle para el contacto propietario, aceptación/rechazo autenticados, validación de vigencia y trazabilidad del actor en eventos de negocio. En implementación en feat/p0.7-customer-portal-quotes.
 
-P0.5 y P0.6 están limitados al portal de clientes y no cambian la administración interna de la plataforma.
+P0.5, P0.6 y P0.7 están limitados al portal de clientes y no cambian la administración interna de la plataforma.

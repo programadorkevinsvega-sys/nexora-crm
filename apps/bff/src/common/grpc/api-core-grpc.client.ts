@@ -204,8 +204,8 @@ interface QuoteGrpc {
   getQuote: (data: { tenantId: string; id: string }) => Observable<{ json: string }>
   listQuotes: (data: unknown) => Observable<{ jsonItems: string[]; nextCursor?: string }>
   sendQuote: (data: { tenantId: string; id: string }) => Observable<Record<string, never>>
-  acceptQuote: (data: { tenantId: string; id: string }) => Observable<Record<string, never>>
-  rejectQuote: (data: unknown) => Observable<Record<string, never>>
+  acceptQuote: (data: { tenantId: string; id: string; actorId?: string; actorType?: string }) => Observable<Record<string, never>>
+  rejectQuote: (data: { tenantId: string; id: string; reason?: string; actorId?: string; actorType?: string }) => Observable<Record<string, never>>
 }
 
 interface ContractGrpc {
@@ -1031,11 +1031,11 @@ export class ApiCoreGrpcClient implements OnModuleInit {
     await lastValueFrom(this.quotes.sendQuote(data))
   }
 
-  async acceptQuote(data: { tenantId: string; id: string }): Promise<void> {
+  async acceptQuote(data: { tenantId: string; id: string; actorId?: string; actorType?: string }): Promise<void> {
     await lastValueFrom(this.quotes.acceptQuote(data))
   }
 
-  async rejectQuote(data: { tenantId: string; id: string; reason?: string }): Promise<void> {
+  async rejectQuote(data: { tenantId: string; id: string; reason?: string; actorId?: string; actorType?: string }): Promise<void> {
     await lastValueFrom(this.quotes.rejectQuote(data))
   }
 

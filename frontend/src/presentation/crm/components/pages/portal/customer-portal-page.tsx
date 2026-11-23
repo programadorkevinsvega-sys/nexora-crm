@@ -262,7 +262,12 @@ export function CustomerPortalPage() {
           ) : (
             <div className="divide-y text-xs">
               {myQuotes.map((quote) => (
-                <div key={quote.id} className="py-3 flex items-center justify-between hover:bg-muted/20 px-2 rounded">
+                <button
+                  key={quote.id}
+                  type="button"
+                  onClick={() => router.push(`/portal/quotes/${quote.id}`)}
+                  className="w-full text-left py-3 flex items-center justify-between hover:bg-muted/20 px-2 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                >
                   <div>
                     <div className="font-semibold text-foreground">{quote.quoteNumber || "Cotización"}</div>
                     <div className="text-[11px] text-muted-foreground">
@@ -273,7 +278,7 @@ export function CustomerPortalPage() {
                     <Badge variant="outline" className="text-[10px]">{quote.status}</Badge>
                     <span className="text-[10px] text-muted-foreground">Vence: {quote.validUntil}</span>
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           )}

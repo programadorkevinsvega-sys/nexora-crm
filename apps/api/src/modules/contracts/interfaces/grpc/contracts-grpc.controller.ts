@@ -94,17 +94,17 @@ export class ContractsGrpcController {
   }
 
   @GrpcMethod('QuoteService', 'AcceptQuote')
-  async acceptQuote(data: { tenantId: string; id: string }) {
+  async acceptQuote(data: { tenantId: string; id: string; actorId?: string; actorType?: string }) {
     await this.acceptQuoteHandler.execute(
-      new AcceptQuoteCommand(data.tenantId, data.id),
+      new AcceptQuoteCommand(data.tenantId, data.id, data.actorId, data.actorType),
     )
     return {}
   }
 
   @GrpcMethod('QuoteService', 'RejectQuote')
-  async rejectQuote(data: { tenantId: string; id: string; reason: string }) {
+  async rejectQuote(data: { tenantId: string; id: string; reason: string; actorId?: string; actorType?: string }) {
     await this.rejectQuoteHandler.execute(
-      new RejectQuoteCommand(data.tenantId, data.id, data.reason),
+      new RejectQuoteCommand(data.tenantId, data.id, data.reason, data.actorId, data.actorType),
     )
     return {}
   }
