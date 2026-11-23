@@ -1,4 +1,6 @@
 import { ExecutionContext, HttpException } from '@nestjs/common'
+import { Reflector } from '@nestjs/core'
+import { CacheService } from '../cache/cache.service'
 import { RateLimiterGuard } from './rate-limiter.guard'
 import { THROTTLE_LIMIT_KEY, THROTTLE_TTL_KEY } from '../decorators/throttle.decorator'
 
@@ -7,7 +9,7 @@ describe('RateLimiterGuard', () => {
   let mockReflector: { getAllAndOverride: jest.Mock }
   let mockCache: { increment: jest.Mock }
 
-  const createMockContext = (req: any = {}, res: any = {}): ExecutionContext => ({
+  const createMockContext = (req: Record<string, unknown> = {}, res: Record<string, unknown> = {}): ExecutionContext => ({
     switchToHttp: () => ({
       getRequest: () => ({
         headers: {},
@@ -21,12 +23,12 @@ describe('RateLimiterGuard', () => {
     }),
     getHandler: jest.fn(),
     getClass: jest.fn(),
-  } as any)
+  } as unknown as ExecutionContext)
 
   beforeEach(() => {
     mockReflector = { getAllAndOverride: jest.fn() }
     mockCache = { increment: jest.fn() }
-    guard = new RateLimiterGuard(mockReflector as any, mockCache as any)
+    guard = new RateLimiterGuard(mockReflector as unknown as Reflector, mockCache as unknown as CacheService)
   })
 
   it('allows request within rate limit', async () => {
