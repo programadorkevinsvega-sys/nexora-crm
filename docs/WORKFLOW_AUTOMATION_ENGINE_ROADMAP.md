@@ -105,53 +105,27 @@ Las etiquetas `done` y `active` del Gantt son parte del plan histórico; no refl
 ### 🔹 FASE 1: Modelado de Datos y Persistencia Transaccional
 **Objetivo:** Crear la estructura de almacenamiento con versionado inmutable, soporte multi-tenant (RLS) y claves únicas de idempotencia.
 
-- [ ] **1.1 Persistencia y versionado inmutable (implementación en PR):**
-  - Reutiliza las tres tablas ya creadas en la migración 0034; la migración 0040 endurece su integridad sin recrearlas.
-  - Las definiciones son snapshots append-only: identidad, nombre, filtros y grafo no se editan ni se eliminan; solo se permiten transiciones de estado válidas. Cualquier cambio de contenido crea una nueva versión.
-  - Cada ejecución referencia mediante FK compuesta el tenant, ID y versión exactos de la definición. Los registros de ejecución y de pasos conservan su identidad.
-  - Estados de definición: `DRAFT`, `ACTIVE`, `PAUSED`, `ARCHIVED`. Estados de ejecución: `RUNNING`, `WAITING_DELAY`, `COMPLETED`, `CANCELLED`, `FAILED`.
-  - Clave de paso: `executionId_stepId_attempt`, única por tenant, con restricción SQL que verifica su correspondencia con las columnas.
-  - RLS habilitado y forzado en las tres tablas; cada operación del repositorio establece `app.tenant_id` dentro de su propia transacción.
-  - La programación y reanudación efectiva de delays no se implementa en 1.1; permanece fuera de este alcance.
-
-  - `id`: UUID (Primary Key).
-  - `tenant_id`: UUID (Foreign Key `tenants.id`, indexado con RLS).
-  - `name`: `varchar(200)`.
-  - `description`: `text` nullable.
-  - `version`: `integer NOT NULL DEFAULT 1`.
-  - `status`: `enum('DRAFT', 'ACTIVE', 'PAUSED', 'ARCHIVED')`.
-  - `trigger_event`: `varchar(150)` (ej. `crm.contact.created`, `crm.deal.stage_changed`).
-  - `trigger_filter`: `jsonb` (condiciones para que el trigger active el flujo).
-  - `steps_graph`: `jsonb` (árbol con nodos de tipo `ACTION`, `DELAY`, `CONDITION`, `BRANCH`).
-  - `created_at`, `updated_at`.
-  - **Restricción:** Clave única `(tenant_id, name, version)`.
-
-- [ ] **1.2 Tabla `workflow_executions`:**
-  - `id`: UUID (Primary Key).
-  - `tenant_id`: UUID (RLS).
-  - `workflow_id`: UUID (Foreign Key `workflow_definitions.id`).
-  - `version`: `integer` (versión congelada con la que inició el registro).
-  - `entity_type`: `varchar(50)` (`contact`, `deal`, `ticket`, `quote`).
-  - `entity_id`: UUID (ID del contacto, oportunidad o ticket asociado).
-  - `status`: `enum('RUNNING', 'WAITING_DELAY', 'COMPLETED', 'CANCELLED', 'FAILED')`.
-  - `current_step_id`: `varchar(100)` (identificador del nodo actual en el grafo).
-  - `context_data`: `jsonb` (estado acumulado y variables recogidas en la ejecución).
-  - `started_at`, `completed_at`, `cancelled_at`, `error_message`.
-  - **Índices:** `(tenant_id, status)`, `(entity_type, entity_id)`.
-
-- [ ] **1.3 Tabla `workflow_step_executions` (Historial & Idempotencia):**
-  - `id`: UUID (Primary Key).
-  - `tenant_id`: UUID (RLS).
-  - `execution_id`: UUID (Foreign Key `workflow_executions.id` ON DELETE CASCADE).
-  - `step_id`: `varchar(100)`.
-  - `idempotency_key`: `varchar(255) NOT NULL UNIQUE` (formato: `${executionId}_${stepId}_${attempt}`).
-  - `status`: `enum('PENDING', 'EXECUTING', 'SUCCESS', 'FAILED', 'SKIPPED')`.
-  - `attempts`: `integer DEFAULT 1`.
-  - `output_data`: `jsonb` (respuestas de APIs externas o resultados).
-  - `error_message`: `text`.
-  - `started_at`, `completed_at`.
+- [ ] **1.1 Persistencia y Versionado Inmutable (en verificación CI del PR):**
+  - **`workflow_definitions`:**
+    - `id`: UUID (Primary Key); `tenant_id`: UUID (FK a `tenants.tenants.id`, RLS).
+    - `name`: `varchar(200)`; `description`: `text`; `version`: entero positivo desde 1.
+    - `status`: `DRAFT`, `ACTIVE`, `PAUSED`, `ARCHIVED`.
+    - `trigger_event`, `trigger_filter`, `steps_graph`, `created_at`, `updated_at`.
+    - Clave única `(tenant_id, name, version)`. Una versión persistida no permite editar su contenido ni eliminarse; los cambios se guardan como una nueva versión. Solo se permiten transiciones válidas de estado.
+  - **`workflow_executions`:**
+    - `id`, `tenant_id`, `workflow_id`, `version`, `entity_type`, `entity_id`, `current_step_id`, `context_data` y marcas de tiempo/error.
+    - Estados: `RUNNING`, `WAITING_DELAY`, `COMPLETED`, `CANCELLED`, `FAILED`.
+    - FK compuesta `(tenant_id, workflow_id, version)` hacia la versión exacta de `workflow_definitions`. La identidad de la ejecución es inmutable.
+  - **`workflow_step_executions`:**
+    - `id`, `tenant_id`, `execution_id`, `step_id`, `idempotency_key`, `status`, `attempts`, `output_data`, `error_message`, `started_at`, `completed_at`.
+    - Estados: `PENDING`, `EXECUTING`, `SUCCESS`, `FAILED`, `SKIPPED`.
+    - Clave `idempotency_key = ${executionId}_${stepId}_${attempt}`, única por tenant, no nula y validada contra las columnas. Cada reintento se registra con otro número de intento; la identidad del registro no se puede cambiar.
+  - Las tres tablas tienen restricciones de tenant y políticas RLS. Cada operación de repositorio establece `app.tenant_id` localmente en su propia transacción.
+  - La migración `0034` ya creó las tablas; la migración `0040_workflow_immutable_persistence.sql` agrega las garantías sin recrear datos.
+  - La programación/reanudación efectiva de delays y los workers no forman parte de 1.1 y no se implementan en esta entrega.
 
 ---
+
 
 ### 🔹 FASE 2: Capa de Dominio y Máquina de Estados Finita (FSM)
 **Objetivo:** Modelar la lógica pura de negocio sin acoplamientos a frameworks ni ORMs.
