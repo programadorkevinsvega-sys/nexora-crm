@@ -118,9 +118,5 @@ export const workflowStepExecutions = pgTable(
       sql`${table.status} IN ('PENDING', 'EXECUTING', 'SUCCESS', 'FAILED', 'SKIPPED')`,
     ),
     attemptsCheck: check('workflow_step_executions_attempts_check', sql`${table.attempts} > 0`),
-    idempotencyKeyCheck: check(
-      'workflow_step_executions_idempotency_key_check',
-      sql`${table.idempotencyKey} = ${table.executionId}::text || '_' || ${table.stepId} || '_' || ${table.attempts}::text`,
-    ),
   }),
 )

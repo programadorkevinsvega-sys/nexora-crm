@@ -94,11 +94,36 @@ ALTER TABLE public.workflow_step_executions
 ALTER TABLE public.workflow_step_executions
   VALIDATE CONSTRAINT workflow_step_executions_attempts_check;
 
+-- Historical rows may contain idempotency keys written before the
+-- canonical execution_step_attempt format was introduced. Those values are
+-- audit identity and must not be rewritten. Enforce the canonical format for
+-- every new row and every attempted identity change, while allowing progress
+-- updates to legacy rows to remain possible.
 ALTER TABLE public.workflow_step_executions
-  ADD CONSTRAINT workflow_step_executions_idempotency_key_check
-  CHECK (idempotency_key = execution_id::text || '_' || step_id || '_' || attempts::text) NOT VALID;
-ALTER TABLE public.workflow_step_executions
-  VALIDATE CONSTRAINT workflow_step_executions_idempotency_key_check;
+  DROP CONSTRAINT IF EXISTS workflow_step_executions_idempotency_key_check;
+
+CREATE OR REPLACE FUNCTION public.enforce_workflow_step_idempotency_key()
+RETURNS trigger
+LANGUAGE plpgsql
+AS '
+BEGIN
+  IF NEW.idempotency_key IS DISTINCT FROM
+    NEW.execution_id::text || ''_'' || NEW.step_id || ''_'' || NEW.attempts::text THEN
+    RAISE EXCEPTION ''Workflow step idempotency key must match execution, step, and attempt''
+      USING ERRCODE = ''23514'';
+  END IF;
+
+  RETURN NEW;
+END;
+';
+
+DROP TRIGGER IF EXISTS workflow_step_executions_idempotency_key_trigger
+  ON public.workflow_step_executions;
+CREATE TRIGGER workflow_step_executions_idempotency_key_trigger
+BEFORE INSERT OR UPDATE OF execution_id, step_id, attempts, idempotency_key
+ON public.workflow_step_executions
+FOR EACH ROW
+EXECUTE FUNCTION public.enforce_workflow_step_idempotency_key();
 
 -- Definition content is append-only. Only a controlled lifecycle status
 -- transition may update an existing row; edits require a new version row.

@@ -8,7 +8,7 @@ Este documento conserva el diseño objetivo y el plan original del **Motor de Au
 
 | Requisito | Estado | Evidencia y brecha encontrada |
 |---|---|---|
-| 1.1 Persistencia y versionado inmutable | CI aprobado; integración pendiente (PR #15) | Las tablas existentes se endurecen con la migración `0040_workflow_immutable_persistence.sql`: snapshots inmutables, referencia de ejecución a tenant/definición/versión exactos, estados restringidos, claves idempotentes validadas y RLS transaccional `app.tenant_id`. |
+| 1.1 Persistencia y versionado inmutable | Integrada en `main`; despliegue pendiente de corrección por datos históricos | PR #15 integrada en `main`. El despliegue quedó bloqueado al validar claves idempotentes históricas que no siguen el formato nuevo; el PR correctivo conserva esas identidades y aplica la regla canónica a nuevas filas. |
 | 1.2 Dominio y FSM | Parcial | Hay entidades, estados, `cloneAsNewVersion()` y `ConditionEvaluator`. No se encontró validación completa del grafo/ciclos ni evaluación de expresiones anidadas AND/OR. |
 | 3.1 Colas BullMQ | No implementado en el código revisado | No se encontró BullMQ ni configuración de colas/workers. |
 | 3.2 Delays programados | Parcial | El motor cambia la ejecución a `WAITING_DELAY`; no se encontró programación del job ni proceso que la reanude después del tiempo configurado. |
@@ -105,7 +105,7 @@ Las etiquetas `done` y `active` del Gantt son parte del plan histórico; no refl
 ### 🔹 FASE 1: Modelado de Datos y Persistencia Transaccional
 **Objetivo:** Crear la estructura de almacenamiento con versionado inmutable, soporte multi-tenant (RLS) y claves únicas de idempotencia.
 
-- [ ] **1.1 Persistencia y Versionado Inmutable (PR #15; CI aprobado, pendiente de integración):**
+- [ ] **1.1 Persistencia y Versionado Inmutable (PR #15 integrada en `main`; despliegue productivo pendiente de compatibilidad histórica):**
   - **`workflow_definitions`:**
     - `id`: UUID (Primary Key); `tenant_id`: UUID (FK a `tenants.tenants.id`, RLS).
     - `name`: `varchar(200)`; `description`: `text`; `version`: entero positivo desde 1.
@@ -119,7 +119,7 @@ Las etiquetas `done` y `active` del Gantt son parte del plan histórico; no refl
   - **`workflow_step_executions`:**
     - `id`, `tenant_id`, `execution_id`, `step_id`, `idempotency_key`, `status`, `attempts`, `output_data`, `error_message`, `started_at`, `completed_at`.
     - Estados: `PENDING`, `EXECUTING`, `SUCCESS`, `FAILED`, `SKIPPED`.
-    - Clave `idempotency_key = ${executionId}_${stepId}_${attempt}`, única por tenant, no nula y validada contra las columnas. Cada reintento se registra con otro número de intento; la identidad del registro no se puede cambiar.
+    - Las nuevas filas exigen `idempotency_key = ${executionId}_${stepId}_${attempt}`, única por tenant y validada contra ejecución, paso e intento. Las claves históricas se conservan literalmente como identidad de auditoría, sin reescritura; la base de datos valida la fórmula canónica en inserciones y cambios de identidad, pero permite actualizar el progreso de registros históricos.
   - Las tres tablas tienen restricciones de tenant y políticas RLS. Cada operación de repositorio establece `app.tenant_id` localmente en su propia transacción.
   - La migración `0034` ya creó las tablas; la migración `0040_workflow_immutable_persistence.sql` agrega las garantías sin recrear datos.
   - La programación/reanudación efectiva de delays y los workers no forman parte de 1.1 y no se implementan en esta entrega.

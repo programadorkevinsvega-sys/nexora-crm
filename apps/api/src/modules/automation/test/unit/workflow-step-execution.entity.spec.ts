@@ -36,6 +36,39 @@ describe('WorkflowStepExecution Entity', () => {
     },
   )
 
+
+  it('rehydrates legacy idempotency keys without rewriting historical identity', () => {
+    const legacy = WorkflowStepExecution.rehydrate({
+      id: '22222222-2222-4222-8222-222222222222',
+      tenantId: props.tenantId,
+      executionId: props.executionId,
+      stepId: props.stepId,
+      idempotencyKey: 'legacy-key-from-previous-runtime',
+      status: 'PENDING',
+      attempts: 1,
+      outputData: null,
+      errorMessage: null,
+      startedAt: new Date('2026-01-01T00:00:00.000Z'),
+      completedAt: null,
+    })
+
+    expect(legacy.idempotencyKey).toBe('legacy-key-from-previous-runtime')
+    expect(legacy.markExecuting().idempotencyKey).toBe('legacy-key-from-previous-runtime')
+    expect(() => new WorkflowStepExecution(
+      legacy.id,
+      legacy.tenantId,
+      legacy.executionId,
+      legacy.stepId,
+      legacy.idempotencyKey,
+      legacy.status,
+      legacy.attempts,
+      legacy.outputData,
+      legacy.errorMessage,
+      legacy.startedAt,
+      legacy.completedAt,
+    )).toThrow('Workflow step idempotency key does not match execution, step, and attempt')
+  })
+
   it('keeps recorded step output as an isolated frozen snapshot', () => {
     const output = { delivery: { provider: 'smtp' } }
     const step = WorkflowStepExecution.create(props).markSuccess(output)
