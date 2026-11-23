@@ -9,6 +9,12 @@ import { credentialString, type IntegrationCredentials } from './dispatchers/dis
 
 interface StoredIntegration { credentials?: IntegrationCredentials }
 
+export interface NativeActionResult {
+  success: boolean
+  message: string
+  [key: string]: unknown
+}
+
 export interface NativeActionPayload {
   action: 'SEND_SLACK' | 'SEND_DISCORD' | 'SYNC_ACCOUNTING' | string
   channel?: string; message?: string; title?: string; amount?: number; currency?: string
@@ -38,7 +44,7 @@ export class NativeActionsService {
     return decrypted
   }
 
-  async executeSlack(tenantId: string, payload: NativeActionPayload): Promise<unknown> {
+  async executeSlack(tenantId: string, payload: NativeActionPayload): Promise<NativeActionResult> {
     const creds = await this.getDecryptedCredentials(tenantId, 'SLACK_APP')
     const botToken = credentialString(creds, 'botToken')
     const channel = payload.channel || credentialString(creds, 'defaultChannel') || '#general'

@@ -259,6 +259,7 @@ export class AuthBffController implements OnModuleInit {
   @ApiOperation({ summary: 'Cerrar sesión e invalidar tokens' })
   @ApiBody({ schema: { type: 'object', properties: { sessionId: { type: 'string', example: 'sess_12345' } } } })
   async logout(@Body() body: AuthRequestBody) {
+    if (!body.sessionId) throw new HttpException('Session ID is required', HttpStatus.BAD_REQUEST)
     try {
       await lastValueFrom(this.grpcService.logout({
         tenantId: body.tenantId || '00000000-0000-0000-0000-000000000001',

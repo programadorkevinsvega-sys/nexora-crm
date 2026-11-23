@@ -10,7 +10,6 @@ import {
   TestIntegrationInput,
 } from '@crm/contracts'
 
-@Injectable()
 interface StoredIntegrationConfig {
   provider: IntegrationProvider
   credentials: Record<string, unknown>
@@ -21,6 +20,7 @@ interface StoredIntegrationConfig {
 }
 type IntegrationTestResult = Awaited<ReturnType<IntegrationsDispatcher['dispatchTest']>>
 
+@Injectable()
 export class IntegrationsBffService {
   private readonly logger = new Logger(IntegrationsBffService.name)
 

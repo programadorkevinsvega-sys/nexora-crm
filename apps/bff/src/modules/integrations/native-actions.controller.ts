@@ -1,5 +1,5 @@
 import { Controller, Post, Body, Headers, HttpCode, HttpStatus } from '@nestjs/common'
-import { NativeActionsService, NativeActionPayload } from './native-actions.service'
+import { NativeActionsService, NativeActionPayload, NativeActionResult } from './native-actions.service'
 
 const DEFAULT_TENANT = '00000000-0000-0000-0000-000000000001'
 
@@ -13,7 +13,7 @@ export class NativeActionsController {
     @Body() payload: NativeActionPayload,
     @Headers('x-tenant-id') tenantId?: string,
     @Headers('X-Tenant-Id') altTenantId?: string,
-  ): Promise<{ success: boolean; result: any; message: string }> {
+  ): Promise<{ success: boolean; result: NativeActionResult; message: string }> {
     const tid = tenantId || altTenantId || DEFAULT_TENANT
     const result = await this.service.executeAction(tid, payload)
     return {

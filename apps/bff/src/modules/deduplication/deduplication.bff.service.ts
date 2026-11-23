@@ -1,6 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { getDb, deduplicationRules, deduplicationAuditLogs, contacts, companies } from '@crm/database'
 import { eq, and, desc } from 'drizzle-orm'
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : {}
+}
 import type {
   DeduplicationRule,
   CreateDeduplicationRuleDto,
@@ -132,6 +138,7 @@ export class DeduplicationBffService {
     return {
       ...r,
       entityType: r.entityType as DeduplicationAuditLog['entityType'],
+      mergedDataSnapshot: asRecord(r.mergedDataSnapshot),
       mergedAt: r.mergedAt ? new Date(r.mergedAt).toISOString() : new Date().toISOString(),
     }
   }
