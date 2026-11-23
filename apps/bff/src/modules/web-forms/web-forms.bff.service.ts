@@ -46,7 +46,7 @@ export class WebFormsBffService {
     await this.api.deleteWebForm(tid, id)
   }
 
-  async submitPublic(idOrSlug: string, formData: Record<string, any>, ip?: string, userAgent?: string) {
+  async submitPublic(idOrSlug: string, formData: Record<string, unknown>, ip?: string, userAgent?: string) {
     const res = await this.api.submitPublicWebForm({
       idOrSlug,
       formData,
@@ -60,8 +60,8 @@ export class WebFormsBffService {
       try {
         const contact = await this.api.createContact(res.contactPayload)
         contactId = contact.id
-      } catch (err: any) {
-        this.logger.warn(`Could not create contact for webform submission: ${err.message}`)
+      } catch (err: unknown) {
+        this.logger.warn(`Could not create contact for webform submission: ${err instanceof Error ? err.message : String(err)}`)
       }
     }
 

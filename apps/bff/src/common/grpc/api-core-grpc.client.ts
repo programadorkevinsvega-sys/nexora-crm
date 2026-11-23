@@ -24,6 +24,7 @@ import type { Quote } from '@crm/contracts'
 import type { Contract } from '@crm/contracts'
 import type { SalesTeam } from '@crm/contracts'
 import type { SalesQuota } from '@crm/contracts'
+import type { MetaIntegration, MetaLeadAdLog, SocialComment, SocialAutoResponderRule, WebForm } from '@crm/contracts'
 import type {
   AffiliateProgram, Affiliate, AffiliateCommission, AffiliatePayout,
   HelpdeskConversation, HelpdeskThread, HelpdeskMailbox,
@@ -330,6 +331,26 @@ interface MetaLeadsGrpc {
   disconnect: (data: { tenantId: string }) => Observable<{ success: boolean }>
   listLogs: (data: { tenantId: string; limit?: number }) => Observable<{ jsonItems: string[] }>
   saveLog: (data: { jsonInput: string }) => Observable<{ json: string }>
+}
+
+export interface SubmitPublicWebFormResult {
+  success: boolean
+  message: string
+  redirectUrl: string | null
+  formId: string
+  tenantId: string
+  contactPayload: {
+    tenantId: string
+    firstName: string
+    lastName: string | null
+    email: string | null
+    phone: string | null
+    jobTitle: string | null
+    city: string | null
+    leadSource: string
+    leadStatus: string
+    metadata: Record<string, unknown>
+  }
 }
 
 export interface PaginatedResult<T> {
@@ -2034,43 +2055,43 @@ export class ApiCoreGrpcClient implements OnModuleInit {
 
   // ─── Social Inbox ──────────────────────────────────────────
 
-  async listComments(data: { tenantId: string; platform?: string; status?: string }): Promise<unknown[]> {
+  async listComments(data: { tenantId: string; platform?: string; status?: string }): Promise<SocialComment[]> {
     const res = await lastValueFrom(this.socialInbox.listComments(data))
-    return (res.jsonItems ?? []).map((j: string) => JSON.parse(j))
+    return (res.jsonItems ?? []).map((j: string) => JSON.parse(j) as SocialComment)
   }
 
-  async replyComment(data: { tenantId: string; commentId: string; replyMessage: string; repliedBy: string }): Promise<unknown> {
+  async replyComment(data: { tenantId: string; commentId: string; replyMessage: string; repliedBy: string }): Promise<SocialComment> {
     const res = await lastValueFrom(this.socialInbox.replyComment(data))
-    return JSON.parse(res.json)
+    return JSON.parse(res.json) as SocialComment
   }
 
-  async insertComment(data: unknown): Promise<unknown> {
+  async insertComment(data: unknown): Promise<SocialComment> {
     const res = await lastValueFrom(this.socialInbox.insertComment({ jsonInput: JSON.stringify(data) }))
-    return JSON.parse(res.json)
+    return JSON.parse(res.json) as SocialComment
   }
 
-  async updateCommentBot(data: { tenantId: string; commentId: string; replyMessage: string; repliedBy: string; repliedAt: string }): Promise<unknown> {
+  async updateCommentBot(data: { tenantId: string; commentId: string; replyMessage: string; repliedBy: string; repliedAt: string }): Promise<SocialComment> {
     const res = await lastValueFrom(this.socialInbox.updateCommentBot(data))
-    return JSON.parse(res.json)
+    return JSON.parse(res.json) as SocialComment
   }
 
-  async listRules(tenantId: string): Promise<unknown[]> {
+  async listRules(tenantId: string): Promise<SocialAutoResponderRule[]> {
     const res = await lastValueFrom(this.socialInbox.listRules({ tenantId }))
-    return (res.jsonItems ?? []).map((j: string) => JSON.parse(j))
+    return (res.jsonItems ?? []).map((j: string) => JSON.parse(j) as SocialAutoResponderRule)
   }
 
-  async saveRule(data: unknown): Promise<unknown> {
+  async saveRule(data: unknown): Promise<SocialAutoResponderRule> {
     const res = await lastValueFrom(this.socialInbox.saveRule({ jsonInput: JSON.stringify(data) }))
-    return JSON.parse(res.json)
+    return JSON.parse(res.json) as SocialAutoResponderRule
   }
 
   async deleteRule(tenantId: string, id: string): Promise<void> {
     await lastValueFrom(this.socialInbox.deleteRule({ tenantId, id }))
   }
 
-  async getEnabledRulesForPlatform(tenantId: string, platform: string): Promise<unknown[]> {
+  async getEnabledRulesForPlatform(tenantId: string, platform: string): Promise<SocialAutoResponderRule[]> {
     const res = await lastValueFrom(this.socialInbox.getEnabledRulesForPlatform({ tenantId, platform }))
-    return (res.jsonItems ?? []).map((j: string) => JSON.parse(j))
+    return (res.jsonItems ?? []).map((j: string) => JSON.parse(j) as SocialAutoResponderRule)
   }
 
   async autoCreateContact(tenantId: string, authorName: string, platform: string): Promise<void> {
@@ -2079,43 +2100,43 @@ export class ApiCoreGrpcClient implements OnModuleInit {
 
   // ─── Web Forms ──────────────────────────────────────────
 
-  async listWebForms(tenantId: string): Promise<unknown[]> {
+  async listWebForms(tenantId: string): Promise<WebForm[]> {
     const res = await lastValueFrom(this.webForms.listForms({ tenantId }))
-    return (res.jsonItems ?? []).map((j: string) => JSON.parse(j))
+    return (res.jsonItems ?? []).map((j: string) => JSON.parse(j) as WebForm)
   }
 
-  async getWebFormById(tenantId: string, id: string): Promise<unknown> {
+  async getWebFormById(tenantId: string, id: string): Promise<WebForm> {
     const res = await lastValueFrom(this.webForms.getFormById({ tenantId, id }))
-    return JSON.parse(res.json)
+    return JSON.parse(res.json) as WebForm
   }
 
-  async getPublicWebForm(idOrSlug: string): Promise<unknown> {
+  async getPublicWebForm(idOrSlug: string): Promise<WebForm> {
     const res = await lastValueFrom(this.webForms.getPublicForm({ idOrSlug }))
-    return JSON.parse(res.json)
+    return JSON.parse(res.json) as WebForm
   }
 
-  async createWebForm(data: unknown): Promise<unknown> {
+  async createWebForm(data: unknown): Promise<WebForm> {
     const res = await lastValueFrom(this.webForms.createForm({ jsonInput: JSON.stringify(data) }))
-    return JSON.parse(res.json)
+    return JSON.parse(res.json) as WebForm
   }
 
-  async updateWebForm(data: unknown): Promise<unknown> {
+  async updateWebForm(data: unknown): Promise<WebForm> {
     const res = await lastValueFrom(this.webForms.updateForm({ jsonInput: JSON.stringify(data) }))
-    return JSON.parse(res.json)
+    return JSON.parse(res.json) as WebForm
   }
 
   async deleteWebForm(tenantId: string, id: string): Promise<void> {
     await lastValueFrom(this.webForms.deleteForm({ tenantId, id }))
   }
 
-  async submitPublicWebForm(data: { idOrSlug: string; formData: Record<string, unknown>; ipAddress?: string; userAgent?: string }): Promise<unknown> {
+  async submitPublicWebForm(data: { idOrSlug: string; formData: Record<string, unknown>; ipAddress?: string; userAgent?: string }): Promise<SubmitPublicWebFormResult> {
     const res = await lastValueFrom(this.webForms.submitPublicForm({
       idOrSlug: data.idOrSlug,
       formDataJson: JSON.stringify(data.formData),
       ipAddress: data.ipAddress,
       userAgent: data.userAgent,
     }))
-    return JSON.parse(res.json)
+    return JSON.parse(res.json) as SubmitPublicWebFormResult
   }
 
   async listWebFormSubmissions(tenantId: string, formId: string): Promise<unknown[]> {
@@ -2125,33 +2146,33 @@ export class ApiCoreGrpcClient implements OnModuleInit {
 
   // ─── Meta Leads ─────────────────────────────────────────
 
-  async getMetaStatus(tenantId: string): Promise<unknown> {
+  async getMetaStatus(tenantId: string): Promise<MetaIntegration> {
     const res = await lastValueFrom(this.metaLeads.getStatus({ tenantId }))
-    return JSON.parse(res.json)
+    return JSON.parse(res.json) as MetaIntegration
   }
 
-  async connectMetaPage(data: unknown): Promise<unknown> {
+  async connectMetaPage(data: unknown): Promise<MetaIntegration> {
     const res = await lastValueFrom(this.metaLeads.connectPage({ jsonInput: JSON.stringify(data) }))
-    return JSON.parse(res.json)
+    return JSON.parse(res.json) as MetaIntegration
   }
 
-  async updateMetaConfig(data: unknown): Promise<unknown> {
+  async updateMetaConfig(data: unknown): Promise<MetaIntegration> {
     const res = await lastValueFrom(this.metaLeads.updateConfig({ jsonInput: JSON.stringify(data) }))
-    return JSON.parse(res.json)
+    return JSON.parse(res.json) as MetaIntegration
   }
 
   async disconnectMeta(tenantId: string): Promise<void> {
     await lastValueFrom(this.metaLeads.disconnect({ tenantId }))
   }
 
-  async listMetaLogs(tenantId: string, limit = 50): Promise<unknown[]> {
+  async listMetaLogs(tenantId: string, limit = 50): Promise<MetaLeadAdLog[]> {
     const res = await lastValueFrom(this.metaLeads.listLogs({ tenantId, limit }))
-    return (res.jsonItems ?? []).map((j: string) => JSON.parse(j))
+    return (res.jsonItems ?? []).map((j: string) => JSON.parse(j) as MetaLeadAdLog)
   }
 
-  async saveMetaLeadLog(data: unknown): Promise<unknown> {
+  async saveMetaLeadLog(data: unknown): Promise<MetaLeadAdLog> {
     const res = await lastValueFrom(this.metaLeads.saveLog({ jsonInput: JSON.stringify(data) }))
-    return JSON.parse(res.json)
+    return JSON.parse(res.json) as MetaLeadAdLog
   }
 }
 

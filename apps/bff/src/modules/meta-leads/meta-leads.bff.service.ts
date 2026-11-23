@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { ApiCoreGrpcClient } from '../../common/grpc/api-core-grpc.client'
 import type {
@@ -88,12 +87,14 @@ export class MetaLeadsBffService {
   async syncForms(tenantId?: string): Promise<MetaLeadForm[]> {
     const tid = tenantId || DEFAULT_TENANT_ID
     const integration = await this.getStatus(tid)
-    let forms: MetaLeadForm[] = (integration.leadGenForms as MetaLeadForm[]) || []
+    let forms: MetaLeadForm[] = integration.leadGenForms || []
 
-    if (integration.selectedPageId && (integration as any).pageAccessToken) {
+    const integrationSecrets = integration as MetaIntegration & { pageAccessToken?: unknown }
+    const pageAccessToken = integrationSecrets.pageAccessToken
+    if (integration.selectedPageId && typeof pageAccessToken === 'string' && pageAccessToken.length > 0) {
       const fetched = await MetaGraphApiHelper.fetchLeadGenForms(
         integration.selectedPageId,
-        (integration as any).pageAccessToken,
+        pageAccessToken,
       )
       if (fetched.length > 0) {
         forms = fetched
