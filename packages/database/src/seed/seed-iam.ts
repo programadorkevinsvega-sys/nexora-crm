@@ -35,7 +35,7 @@ export async function seedIamData(db: ReturnType<typeof getDb>, tenantId: string
 
   for (const r of rolesData) {
     const existing = await db.query.roles.findFirst({
-      where: eq(roles.name, r.name) as any,
+      where: eq(roles.name, r.name),
     })
     if (existing) continue
 
@@ -73,7 +73,7 @@ export async function seedIamData(db: ReturnType<typeof getDb>, tenantId: string
     const roleNames = ['admin', 'manager', 'agent', 'viewer']
     for (let i = 0; i < Math.min(userIds.length, roleNames.length); i++) {
       const r = await db.query.roles.findFirst({
-        where: eq(roles.name, roleNames[i]) as any,
+        where: eq(roles.name, roleNames[i]),
       })
       if (r && userIds[i]) {
         await db.insert(userRoles).values({

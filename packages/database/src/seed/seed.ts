@@ -4,7 +4,6 @@ import {
   users as usersTable,
   naturalPersonProfiles as naturalPersonTable,
   passwordPolicies as passwordPoliciesTable,
-  oauthProviders as oauthProvidersTable,
   ipRestrictions as ipRestrictionsTable,
 } from '@crm/database'
 import bcrypt from 'bcrypt'

@@ -1,6 +1,6 @@
 import { getDb } from '@crm/database'
 import {
-  tenants, branches, tenantBranding, tenantLanguages, tenantCurrencies,
+  tenants, branches, tenantBranding,
   companies, contacts, tags, contactTags,
   pipelines, pipelineStages, deals,
 } from '@crm/database'
@@ -116,7 +116,7 @@ export async function seedCoreData(db: ReturnType<typeof getDb>, tenantId: strin
       phone: c.ph,
       whatsappNumber: c.wa,
       jobTitle: c.title,
-      leadStatus: c.lead as any,
+      leadStatus: c.lead,
       leadScore: c.score,
       city: c.city,
       country: c.country,
@@ -192,8 +192,8 @@ export async function seedCoreData(db: ReturnType<typeof getDb>, tenantId: strin
       name: d.name,
       amount: d.amt,
       currency: d.curr,
-      forecastCategory: d.cat as any,
-      status: d.stat as any,
+      forecastCategory: d.cat,
+      status: d.stat,
       expectedCloseDate: new Date(Date.now() + (30 + i * 15) * 86400000).toISOString().split('T')[0],
       createdAt: now,
       updatedAt: now,

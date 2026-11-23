@@ -3,6 +3,13 @@ import postgres from 'postgres'
 import fs from 'node:fs'
 import path from 'node:path'
 
+function isAlreadyExistsError(error: unknown): boolean {
+  if (typeof error !== 'object' || error === null) return false
+  const candidate = error as { code?: unknown; message?: unknown }
+  return candidate.code === '42P07' ||
+    (typeof candidate.message === 'string' && candidate.message.includes('already exists'))
+}
+
 async function main() {
   const connectionString = process.env.DATABASE_URL
   if (!connectionString) {
@@ -51,10 +58,8 @@ async function main() {
     for (const stmt of statements) {
       try {
         await sql.unsafe(stmt)
-      } catch (err: any) {
-        if (err.code === '42P07' || err.message?.includes('already exists')) {
-          continue
-        }
+      } catch (err: unknown) {
+        if (isAlreadyExistsError(err)) continue
         throw err
       }
     }
