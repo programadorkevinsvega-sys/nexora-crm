@@ -26,7 +26,7 @@ describe('IntegrationsBffController - Unit Tests', () => {
   })
 
   it('POST /api/integrations/WHATSAPP_CLOUD should save config', async () => {
-    const mockReq = { headers: {} } as any
+    const mockReq = { headers: {} } as unknown as Parameters<IntegrationsBffController['saveConfig']>[2]
     const body = {
       phoneNumberId: '123456789',
       wabaId: '987654321',
@@ -38,7 +38,7 @@ describe('IntegrationsBffController - Unit Tests', () => {
   })
 
   it('POST /api/integrations/WHATSAPP_CLOUD/test should test connection', async () => {
-    const mockReq = { headers: {} } as any
+    const mockReq = { headers: {} } as unknown as Parameters<IntegrationsBffController['testIntegration']>[2]
     const body = { recipient: '+573001234567', testMessage: 'Hola' }
     const res = await controller.testIntegration('WHATSAPP_CLOUD', body, mockReq)
     expect(res.success).toBe(true)

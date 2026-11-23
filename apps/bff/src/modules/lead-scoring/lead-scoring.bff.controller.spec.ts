@@ -1,8 +1,10 @@
 import { LeadScoringBffController } from './lead-scoring.bff.controller'
+import { LeadScoringBffService } from './lead-scoring.bff.service'
+import { CreateScoringRuleSchema } from '@crm/contracts'
 
 describe('LeadScoringBffController - REST Gateway Tests', () => {
   let controller: LeadScoringBffController
-  let mockService: any
+  let mockService: jest.Mocked<LeadScoringBffService>
 
   beforeEach(() => {
     mockService = {
@@ -32,18 +34,16 @@ describe('LeadScoringBffController - REST Gateway Tests', () => {
       listTopLeads: jest.fn().mockResolvedValue([
         { id: 'ls-1', contactId: 'c-1', score: 95, temperature: 'HOT' },
       ]),
-    }
+    } as unknown as jest.Mocked<LeadScoringBffService>
 
     controller = new LeadScoringBffController(mockService)
   })
 
   it('should call createRule on service when POST /api/scoring/rules is called', async () => {
-    const payload = {
-      name: 'C-Level Boost',
-      category: 'DEMOGRAPHIC' as const,
-      condition: { field: 'contact.jobTitle', operator: 'CONTAINS' as const, value: 'CEO' },
-      points: 30,
-    }
+    const payload = CreateScoringRuleSchema.parse({
+      name: 'C-Level Boost', eventType: 'CONTACT_CREATED', points: 30,
+      conditionJson: { field: 'contact.jobTitle', operator: 'CONTAINS', value: 'CEO' },
+    })
     const result = await controller.createRule(payload, 'tenant-1')
 
     expect(mockService.createRule).toHaveBeenCalledWith(payload, 'tenant-1')
