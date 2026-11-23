@@ -11,13 +11,13 @@ import {
 import { WorkflowDefinition } from '../../domain/entities/workflow-definition.entity'
 import { WorkflowDefinitionRepository } from '../../domain/repositories/workflow-definition.repository'
 import { WorkflowExecutionRepository } from '../../domain/repositories/workflow-execution.repository'
-import { WorkflowEngineService } from '../../application/services/workflow-engine.service'
+import { WorkflowQueueService } from '../../infrastructure/workflow-queue.service'
 import { OutboxService } from '../../../../common/outbox/outbox.service'
 
 describe('Workflow Command Handlers', () => {
   let defRepo: jest.Mocked<WorkflowDefinitionRepository>
   let execRepo: jest.Mocked<WorkflowExecutionRepository>
-  let engine: jest.Mocked<WorkflowEngineService>
+  let workflowQueue: jest.Mocked<WorkflowQueueService>
   let outbox: jest.Mocked<OutboxService>
 
   beforeEach(() => {
@@ -39,8 +39,8 @@ describe('Workflow Command Handlers', () => {
       listStepExecutions: jest.fn(),
     }
 
-    engine = {
-      processExecution: jest.fn().mockImplementation((exec) => Promise.resolve(exec)),
+    workflowQueue = {
+      enqueueExecution: jest.fn().mockResolvedValue(undefined),
     } as any
 
     outbox = {
@@ -91,7 +91,7 @@ describe('Workflow Command Handlers', () => {
 
     defRepo.findActiveByTrigger.mockResolvedValue([activeWorkflow])
 
-    const handler = new TriggerEventHandler(defRepo, execRepo, engine, outbox)
+    const handler = new TriggerEventHandler(defRepo, execRepo, workflowQueue, outbox)
     const res = await handler.execute(
       new TriggerEventCommand(
         'tenant-1',
@@ -105,6 +105,11 @@ describe('Workflow Command Handlers', () => {
     expect(res.triggeredCount).toBe(1)
     expect(execRepo.save).toHaveBeenCalledTimes(1)
     expect(outbox.publish).toHaveBeenCalledTimes(1)
-    expect(engine.processExecution).toHaveBeenCalledTimes(1)
+    expect(workflowQueue.enqueueExecution).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: 'RUNNING',
+        workflowId: activeWorkflow.id,
+      }),
+    )
   })
 })
