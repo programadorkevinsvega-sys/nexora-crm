@@ -100,7 +100,6 @@ export class WorkflowStepExecution {
       null,
       new Date(),
       null,
-      this.hasLegacyIdempotencyKey,
     )
   }
 
