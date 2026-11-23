@@ -32,10 +32,10 @@ services:
       retries: 5
 
   nats:
-    image: nats:2.10-alpine
+    image: nats:2.15.3-alpine
     container_name: crm-dev-nats
     restart: unless-stopped
-    command: ["-js", "-m", "8222"]
+    command: ["-js", "-sd", "/data", "-m", "8222"]
     ports:
       - "4222:4222"
       - "8222:8222"
@@ -59,4 +59,3 @@ volumes:
   crm_dev_postgres_data:
   crm_dev_redis_data:
   crm_dev_nats_data:
-

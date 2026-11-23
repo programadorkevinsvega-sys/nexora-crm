@@ -9,7 +9,8 @@
     "lint": "eslint src/",
     "typecheck": "tsc --noEmit",
     "test": "jest --passWithNoTests",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "start:workflow-worker": "node dist/workflow-worker.main"
   },
   "dependencies": {
     "@crm/contracts": "workspace:*",

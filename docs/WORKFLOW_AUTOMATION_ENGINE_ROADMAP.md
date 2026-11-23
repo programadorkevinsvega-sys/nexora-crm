@@ -8,12 +8,12 @@ Este documento conserva el diseño objetivo y el plan original del **Motor de Au
 
 | Requisito | Estado | Evidencia y brecha encontrada |
 |---|---|---|
-| 1.1 Persistencia y versionado inmutable | Integrada en `main`; despliegue pendiente de corrección por datos históricos | PR #15 integrada en `main`. El despliegue quedó bloqueado al validar claves idempotentes históricas que no siguen el formato nuevo; el PR correctivo conserva esas identidades y aplica la regla canónica a nuevas filas. |
+| 1.1 Persistencia y versionado inmutable | Integrada y desplegada | PR #16 corrigió la compatibilidad de claves históricas; CI y despliegue principal finalizaron correctamente en el run #204. |
 | 1.2 Dominio y FSM | Parcial | Hay entidades, estados, `cloneAsNewVersion()` y `ConditionEvaluator`. No se encontró validación completa del grafo/ciclos ni evaluación de expresiones anidadas AND/OR. |
-| 3.1 Colas BullMQ | No implementado en el código revisado | No se encontró BullMQ ni configuración de colas/workers. |
-| 3.2 Delays programados | Parcial | El motor cambia la ejecución a `WAITING_DELAY`; no se encontró programación del job ni proceso que la reanude después del tiempo configurado. |
-| 3.3 Locks distribuidos Redlock | No implementado en el código revisado | No se encontró Redlock ni un lock de ejecución específico para workflows. |
-| 3.4 Reintentos y DLQ de workflows | No implementado como flujo de workflow | Hay utilidades generales de retry y componentes NATS, pero no se encontró política de reintentos BullMQ ni cola DLQ asociada a estos pasos. |
+| 3.1 Runtime de workflow con NATS JetStream | En implementación en `feat/workflow-jetstream-delayed-jobs` | Se incorpora stream persistente, consumidor pull durable y worker dedicado; pendiente de CI y despliegue. Redis permanece para caché. |
+| 3.2 Delays programados | En implementación en rama | Se agregan `resume_at`, `resume_token`, Outbox transaccional y scheduler JetStream; falta validar contra un broker real. |
+| 3.3 Idempotencia de reanudación | En implementación en rama | El token de reanudación evita que un mensaje atrasado o duplicado reactive una espera distinta; la exclusión concurrente debe validarse en integración. |
+| 3.4 Reintentos y DLQ de workflows | En implementación en rama | Backoff exponencial de aplicación, MaxDeliver del broker y advisory durable para trasladar a `workflow_dlq` los mensajes agotados incluso tras caída del worker; pendiente prueba de fallo real. |
 | 4.1 Consumidor NATS | Parcial | `AutomationConsumerService` se suscribe a una lista explícita de eventos y llama al handler. No se suscribe a todo `crm.*.*`. |
 | 4.2 Filtros e idempotencia de evento | Parcial | Se buscan workflows activos y se evalúa el filtro; el paso tiene clave idempotente. No se encontró deduplicación de creación de ejecución por `event_id`. |
 | 5.1–5.3 Acciones WhatsApp, SMS, email y acciones internas | No implementado en el motor actual | `WorkflowEngineService.performAction()` registra la acción y devuelve datos de configuración; no ejecuta el efecto externo/interno. Los dispatchers generales de Inbox no demuestran integración con cada paso del workflow. |
@@ -25,16 +25,16 @@ Este documento conserva el diseño objetivo y el plan original del **Motor de Au
 | 7.2 Constructor visual | Presente parcialmente | Existe `/automations/new` y componentes de canvas/nodos; no se verificó toda la funcionalidad de ramas, delays y acciones reales. |
 | 7.3 Monitor/depurador | Parcial | La API expone consulta de ejecuciones y pasos; no se encontró la ruta de monitor dedicada descrita en el plan ni reintento manual de paso. |
 | 8.1 Pruebas unitarias | Parcial | Hay pruebas de entidades, evaluador y handlers; no se midió cobertura y no se afirma 100%. |
-| 8.2 Pruebas de integración | Parcial | Existe prueba de repositorio Drizzle; no hay evidencia de integración BullMQ/Redis ni de reanudación de delays. |
+| 8.2 Pruebas de integración | Parcial | Existe prueba de repositorio Drizzle; falta ejecutar integración real con NATS JetStream y PostgreSQL para validar scheduling, reanudación y DLQ. |
 | 8.3 Pruebas E2E | Parcial | `frontend/e2e/automations.spec.ts` valida renderizado del dashboard y diseñador; no ejecuta el ciclo completo evento → acción → delay → finalización. |
 
-El motor en su forma actual no debe describirse como runtime distribuido completo: las ejecuciones, filtros y transiciones tienen código, pero el despacho de acciones y la reanudación de delays descritos en el plan no se localizaron.
+El motor aún no debe describirse como runtime distribuido completo. La rama actual incorpora el runtime diferido JetStream; el despacho real de acciones externas/internas y varias capacidades de dominio siguen pendientes.
 
 ---
 
 ## 🏛️ 1. Arquitectura objetivo (no as-built)
 
-El diagrama conserva componentes planificados. BullMQ/Redlock y políticas RLS no se encontraron en el código/configuración revisados; no representa el runtime actual completo.
+El diagrama describe el objetivo del runtime. La implementación JetStream de esta rama aún está pendiente de CI y despliegue.
 
 ```text
                   NEXORA CRM BUSINESS CORE
@@ -53,10 +53,10 @@ El diagrama conserva componentes planificados. BullMQ/Redlock y políticas RLS n
                ┌─────────────┴─────────────┐
                │                           │
                ▼                           ▼
-      💾 PostgreSQL (RLS)           🔴 Redis + BullMQ
-  • workflow_definitions (v1, v2)   • Delayed Jobs (24h, 10m)
-  • workflow_executions             • Retry Policies & Backoff
-  • workflow_step_executions        • Distributed Locks
+      💾 PostgreSQL (RLS)           ⚡ NATS JetStream
+  • workflow_definitions (v1, v2)   • Scheduled messages (10m, 24h, 30d)
+  • workflow_executions             • Durable pull consumer
+  • resume_at + resume_token        • Retry backoff + workflow_dlq
                │                           │
                └─────────────┬─────────────┘
                              ▼
@@ -82,9 +82,9 @@ gantt
     section Fase 2: Dominio & FSM
     Agregados, Entidades & Máquina Estados :active, f2, after f1, 4d
     Evaluador de Reglas JSON               :f2b, after f1, 3d
-    section Fase 3: Runtime BullMQ
-    Integración BullMQ + Redis            :f3, after f2, 4d
-    Manejo de Delays & Locks              :f3b, after f3, 3d
+    section Fase 3: Runtime JetStream
+    Stream y worker durable               :f3, after f2, 4d
+    Scheduling, retries y DLQ             :f3b, after f3, 3d
     section Fase 4: Eventos NATS
     Ingesta de Eventos & Filtros          :f4, after f3, 3d
     section Fase 5: Acciones
@@ -105,7 +105,7 @@ Las etiquetas `done` y `active` del Gantt son parte del plan histórico; no refl
 ### 🔹 FASE 1: Modelado de Datos y Persistencia Transaccional
 **Objetivo:** Crear la estructura de almacenamiento con versionado inmutable, soporte multi-tenant (RLS) y claves únicas de idempotencia.
 
-- [ ] **1.1 Persistencia y Versionado Inmutable (PR #15 integrada en `main`; despliegue productivo pendiente de compatibilidad histórica):**
+- [x] **1.1 Persistencia y Versionado Inmutable (PR #16 integrada en `main`; CI y despliegue productivo verificados):**
   - **`workflow_definitions`:**
     - `id`: UUID (Primary Key); `tenant_id`: UUID (FK a `tenants.tenants.id`, RLS).
     - `name`: `varchar(200)`; `description`: `text`; `version`: entero positivo desde 1.
@@ -142,22 +142,26 @@ Las etiquetas `done` y `active` del Gantt son parte del plan histórico; no refl
 
 ---
 
-### 🔹 FASE 3: Runtime Asíncrono con BullMQ y Redis
-**Objetivo:** Ejecutar tareas en segundo plano, gestionar delays prolongados sin bloquear Node.js y garantizar reintentos exponenciales.
+### 🔹 FASE 3: Runtime Asíncrono con NATS JetStream
+**Objetivo:** Ejecutar tareas diferidas sin bloquear Node.js, con persistencia, reintentos y DLQ sobre la infraestructura NATS existente; no se añade BullMQ ni se convierte Redis en broker de workflows.
 
-- [ ] **3.1 Configuración de Colas BullMQ:**
-  - `workflow-trigger-queue`: Ingesta inicial de eventos disparadores.
-  - `workflow-step-queue`: Ejecución de pasos inmediatos o diferidos.
-- [ ] **3.2 Manejo de Delays (Atrasos en el tiempo):**
-  - Al llegar a un nodo `DELAY (duration: "24h")`:
-    - Se registra el estado `WAITING_DELAY` en Postgres.
-    - Se encola el job en BullMQ con `delay: 86400000` (24h).
-    - El hilo de Node.js queda libre inmediatamente.
-- [ ] **3.3 Locks Distribuidos (`Redlock`):**
-  - Garantizar que una misma ejecución (`execution_id`) no sea procesada concurrentemente por dos workers si llegan eventos simultáneos.
-- [ ] **3.4 Políticas de Reintento y Dead Letter Queue (DLQ):**
-  - Estrategia de reintento: 3 intentos con retroceso exponencial (`backoff: { type: 'exponential', delay: 5000 }`).
-  - Fallos irrecuperables se envían a cola de dead-letter con alerta de auditoría.
+- [ ] **3.1 Streams y consumidores JetStream:**
+  - Stream `workflow_runtime` con almacenamiento de archivo y scheduling habilitado. El servidor se inicia con `-sd /data` y el volumen `nats_data` montado, de modo que JetStream usa almacenamiento persistente, no `/tmp`.
+  - Subjects separados `workflow.schedule` y `workflow.resume`; consumidor pull durable con ACK explícito.
+  - Worker en proceso PM2 separado para escalarlo sin aumentar réplicas HTTP.
+- [ ] **3.2 Delays no bloqueantes:**
+  - Parsear duraciones `10m`, `24h`, `30d` (máximo 365 días).
+  - Persistir `WAITING_DELAY`, `resume_at`, `resume_token` y el evento Outbox en una misma transacción PostgreSQL.
+  - El relay programa `Nats-Schedule: @at` y `Nats-Schedule-Target: workflow.resume`; si vuelve después del vencimiento, publica la reanudación inmediatamente.
+- [ ] **3.3 Reanudación e idempotencia:**
+  - El token vincula el mensaje con la espera vigente y descarta mensajes obsoletos o duplicados.
+  - La ejecución continúa desde `nextStepId`; no vuelve a ejecutar el nodo `DELAY`.
+  - Cada retry crea una nueva identidad de intento del paso; las identidades históricas permanecen inmutables.
+- [ ] **3.4 Reintentos y Dead Letter Queue (DLQ):**
+  - ACK explícito y heartbeat durante trabajos largos; el broker vuelve a entregar mensajes ante caídas.
+  - Backoff exponencial de aplicación y límite de cinco entregas (cap de 5 minutos).
+  - Los fallos detectados por la aplicación se publican idempotentemente en `workflow_dlq` antes de confirmar el mensaje. Los agotamientos por caída del worker se capturan mediante advisory JetStream persistido en `workflow_advisories`, se copian a DLQ y luego se eliminan del stream runtime.
+  - Los streams tienen límites de edad y bytes; se deben monitorizar uso del volumen y crecimiento de DLQ.
 
 ---
 
@@ -220,7 +224,7 @@ Las etiquetas `done` y `active` del Gantt son parte del plan histórico; no refl
   - Transiciones de estado de `WorkflowExecution`.
 - [ ] **8.2 Tests de Integración:**
   - Persistencia en PostgreSQL con Drizzle y aislamiento de inquilinos con RLS.
-  - Encolado de Delays en Redis + BullMQ y reanudación precisa de workers.
+  - Scheduling de delays en NATS JetStream, reanudación de workers, backoff y persistencia en DLQ.
   - Verificación de no-duplicidad con `idempotency_key`.
 - [ ] **8.3 Tests E2E:**
   - Disparo de evento `ContactCreated` ➔ Inicio de flujo ➔ Paso 1 WhatsApp ➔ Delay simulado ➔ Evaluación de condición ➔ Finalización con éxito.
@@ -235,6 +239,6 @@ La tabla siguiente expresa la organización prevista. Las filas no certifican qu
 |---|---|---|
 | `@crm/database` | `packages/database` | Esquemas de tablas `workflow_*`, migraciones Drizzle y RLS. |
 | `@crm/contracts` | `packages/contracts` | Schemas Zod, validaciones de grafos y DTOs tipados. |
-| `AutomationModule` | `apps/api` | Lógica DDD, FSM, listeners NATS, BullMQ Workers y gRPC. |
+| `AutomationModule` | `apps/api` | Lógica DDD, FSM, listeners NATS y gRPC. El proceso `WorkflowWorkerModule` ejecuta el runtime diferido JetStream. |
 | `AutomationsBff` | `apps/bff` | API Gateway REST, autenticación, autorización y swagger docs. |
 | `AutomationsUI` | `frontend` | Constructor de flujos, monitor de auditoría y métricas. |

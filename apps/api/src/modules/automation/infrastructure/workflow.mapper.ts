@@ -44,6 +44,8 @@ export class WorkflowMapper {
       row.completedAt ? new Date(row.completedAt) : null,
       row.cancelledAt ? new Date(row.cancelledAt) : null,
       row.errorMessage ?? null,
+      row.resumeAt ? new Date(row.resumeAt) : null,
+      row.resumeToken ?? null,
     )
   }
 
@@ -93,6 +95,7 @@ export class WorkflowMapper {
       startedAt: exec.startedAt.toISOString(),
       completedAt: exec.completedAt?.toISOString() ?? null,
       cancelledAt: exec.cancelledAt?.toISOString() ?? null,
+      resumeAt: exec.resumeAt?.toISOString() ?? null,
       errorMessage: exec.errorMessage,
     }
   }
