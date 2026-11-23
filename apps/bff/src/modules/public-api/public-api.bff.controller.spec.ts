@@ -84,13 +84,13 @@ describe('PublicApiBffController - Comprehensive Tests', () => {
 
   it('GET /api/v1/contacts should list contacts', async () => {
     mockService.listContacts.mockResolvedValue({ data: [], nextCursor: null } as never)
-    const res = await controller.listContacts({ limit: '10' }, mockReq)
+    await controller.listContacts({ limit: '10' }, mockReq)
     expect(mockService.listContacts).toHaveBeenCalledWith(tenantId, { limit: 10 })
   })
 
   it('GET /api/v1/contacts/:id/360 should return Customer 360 profile', async () => {
     mockService.getCustomer360.mockResolvedValue({ contact: { id: 'c-1' } } as never)
-    const res = await controller.getCustomer360('c-1', mockReq)
+    await controller.getCustomer360('c-1', mockReq)
     expect(mockService.getCustomer360).toHaveBeenCalledWith(tenantId, 'c-1')
   })
 
@@ -102,19 +102,19 @@ describe('PublicApiBffController - Comprehensive Tests', () => {
 
   it('POST /api/v1/deals/:id/win should mark deal as WON', async () => {
     mockService.winDeal.mockResolvedValue({ id: 'd-1', status: 'WON', amount: 50000 } as never)
-    const res = await controller.winDeal('d-1', 50000, mockReq)
+    await controller.winDeal('d-1', 50000, mockReq)
     expect(mockService.winDeal).toHaveBeenCalledWith(tenantId, 'd-1', 50000)
   })
 
   it('POST /api/v1/notes should create note', async () => {
     mockService.createNote.mockResolvedValue({ id: 'n-1', content: 'Met with client' } as never)
-    const res = await controller.createNote({ content: 'Met with client' }, mockReq)
+    await controller.createNote({ content: 'Met with client' }, mockReq)
     expect(mockService.createNote).toHaveBeenCalled()
   })
 
   it('POST /api/v1/tickets/:id/reply should add ticket reply', async () => {
     mockService.addTicketReply.mockResolvedValue({ id: 'tr-1', message: 'Resolved' } as never)
-    const res = await controller.addTicketReply('t-1', 'Resolved', mockReq)
+    await controller.addTicketReply('t-1', 'Resolved', mockReq)
     expect(mockService.addTicketReply).toHaveBeenCalledWith(tenantId, 't-1', 'Resolved')
   })
 

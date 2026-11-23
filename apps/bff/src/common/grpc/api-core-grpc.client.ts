@@ -332,7 +332,7 @@ interface MetaLeadsGrpc {
   saveLog: (data: { jsonInput: string }) => Observable<{ json: string }>
 }
 
-interface PaginatedResult<T> {
+export interface PaginatedResult<T> {
   data: T[]
   nextCursor: string | null
 }

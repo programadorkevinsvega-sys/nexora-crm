@@ -160,30 +160,30 @@ export class QuotesApprovalBffService {
     ])
   }
 
-  private mapRule(r: any): DiscountApprovalRule {
+  private mapRule(r: typeof discountApprovalRules.$inferSelect): DiscountApprovalRule {
     return {
       ...r,
       minDiscountPct: Number(r.minDiscountPct) || 0,
       maxDiscountPct: Number(r.maxDiscountPct) || 0,
-      approverRole: r.approverRole as any,
+      approverRole: r.approverRole as DiscountApprovalRule['approverRole'],
       createdAt: r.createdAt ? new Date(r.createdAt).toISOString() : new Date().toISOString(),
     }
   }
 
-  private mapRequest(r: any): QuoteApprovalRequest {
+  private mapRequest(r: typeof quoteApprovalRequests.$inferSelect): QuoteApprovalRequest {
     return {
       ...r,
-      status: r.status as any,
+      status: r.status as QuoteApprovalRequest['status'],
       requestedDiscountPct: Number(r.requestedDiscountPct) || 0,
       reviewedAt: r.reviewedAt ? new Date(r.reviewedAt).toISOString() : undefined,
       createdAt: r.createdAt ? new Date(r.createdAt).toISOString() : new Date().toISOString(),
     }
   }
 
-  private mapAcceptance(r: any): CustomerQuoteAcceptance {
+  private mapAcceptance(r: typeof customerQuoteAcceptances.$inferSelect): CustomerQuoteAcceptance {
     return {
       ...r,
-      status: r.status as any,
+      status: r.status as CustomerQuoteAcceptance['status'],
       acceptedAt: r.acceptedAt ? new Date(r.acceptedAt).toISOString() : undefined,
       createdAt: r.createdAt ? new Date(r.createdAt).toISOString() : new Date().toISOString(),
     }
