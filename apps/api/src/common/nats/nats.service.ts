@@ -42,7 +42,7 @@ export class NatsService implements OnModuleInit, OnModuleDestroy {
   private async ensureWorkflowStreams(): Promise<void> {
     if (!this.jsm) throw new Error('JetStream manager is not initialized')
 
-    const runtimeConfig = {
+    const runtimeConfig: Parameters<JetStreamManager['streams']['add']>[0] = {
       name: 'workflow_runtime',
       subjects: ['workflow.schedule', 'workflow.resume'],
       retention: 'limits',
@@ -55,12 +55,12 @@ export class NatsService implements OnModuleInit, OnModuleDestroy {
     }
 
     try {
-      await this.jsm.streams.add(runtimeConfig as any)
+      await this.jsm.streams.add(runtimeConfig)
     } catch {
-      await this.jsm.streams.update('workflow_runtime', runtimeConfig as any)
+      await this.jsm.streams.update('workflow_runtime', runtimeConfig)
     }
 
-    const dlqConfig = {
+    const dlqConfig: Parameters<JetStreamManager['streams']['add']>[0] = {
       name: 'workflow_dlq',
       subjects: ['workflow.dlq'],
       retention: 'limits',
@@ -72,12 +72,12 @@ export class NatsService implements OnModuleInit, OnModuleDestroy {
     }
 
     try {
-      await this.jsm.streams.add(dlqConfig as any)
+      await this.jsm.streams.add(dlqConfig)
     } catch {
-      await this.jsm.streams.update('workflow_dlq', dlqConfig as any)
+      await this.jsm.streams.update('workflow_dlq', dlqConfig)
     }
 
-    const advisoryConfig = {
+    const advisoryConfig: Parameters<JetStreamManager['streams']['add']>[0] = {
       name: 'workflow_advisories',
       subjects: ['$JS.EVENT.ADVISORY.CONSUMER.MAX_DELIVERIES.workflow_runtime.workflow-runtime-worker'],
       retention: 'limits',
@@ -88,9 +88,9 @@ export class NatsService implements OnModuleInit, OnModuleDestroy {
     }
 
     try {
-      await this.jsm.streams.add(advisoryConfig as any)
+      await this.jsm.streams.add(advisoryConfig)
     } catch {
-      await this.jsm.streams.update('workflow_advisories', advisoryConfig as any)
+      await this.jsm.streams.update('workflow_advisories', advisoryConfig)
     }
   }
 
@@ -104,7 +104,7 @@ export class NatsService implements OnModuleInit, OnModuleDestroy {
       // The durable pull consumer is created on first worker startup.
     }
 
-    await this.jsm.consumers.add('workflow_runtime', {
+    const consumerConfig: Parameters<JetStreamManager['consumers']['add']>[1] = {
       durable_name: 'workflow-runtime-worker',
       filter_subject: 'workflow.resume',
       ack_policy: 'explicit',
@@ -118,7 +118,8 @@ export class NatsService implements OnModuleInit, OnModuleDestroy {
         300 * 1_000_000_000,
       ],
       replay_policy: 'instant',
-    } as any)
+    }
+    await this.jsm.consumers.add('workflow_runtime', consumerConfig)
   }
 
 
@@ -132,7 +133,7 @@ export class NatsService implements OnModuleInit, OnModuleDestroy {
       // The durable advisory consumer is created on first worker startup.
     }
 
-    await this.jsm.consumers.add('workflow_advisories', {
+    const advisoryConsumerConfig: Parameters<JetStreamManager['consumers']['add']>[1] = {
       durable_name: 'workflow-dlq-advisory-worker',
       filter_subject: '$JS.EVENT.ADVISORY.CONSUMER.MAX_DELIVERIES.workflow_runtime.workflow-runtime-worker',
       ack_policy: 'explicit',
@@ -140,7 +141,8 @@ export class NatsService implements OnModuleInit, OnModuleDestroy {
       max_deliver: -1,
       max_ack_pending: 16,
       replay_policy: 'instant',
-    } as any)
+    }
+    await this.jsm.consumers.add('workflow_advisories', advisoryConsumerConfig)
   }
 
   getJetStreamManager(): JetStreamManager | null {
