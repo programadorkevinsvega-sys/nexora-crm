@@ -18,7 +18,7 @@ import { NoteCreatedEvent, NoteUpdatedEvent, NoteDeletedEvent } from '../../doma
 import { TaskCreatedEvent, TaskUpdatedEvent, TaskCompletedEvent, TaskDeletedEvent } from '../../domain/events/task.events'
 import { CallCreatedEvent } from '../../domain/events/call.events'
 import { OutboxService } from '../../../../common/outbox/outbox.service'
-import { NotFoundError, ConflictError } from '@crm/shared'
+import { NotFoundError } from '@crm/shared'
 
 @Injectable()
 export class CreateNoteHandler {

@@ -103,7 +103,7 @@ export class InboxConversationsDrizzleHelper {
         groupedByContact.get(key)!.push(row)
       }
 
-      for (const [key, emList] of groupedByContact.entries()) {
+      for (const emList of groupedByContact.values()) {
         const latest = emList[0]
         let contactName = latest.toAddress
         let score = 0
