@@ -13,7 +13,7 @@ Este documento conserva el diseño objetivo y el plan original del **Motor de Au
 | 3.1 Runtime de workflow con NATS JetStream | En implementación en `feat/workflow-jetstream-delayed-jobs` | Se incorpora stream persistente, consumidor pull durable y worker dedicado; pendiente de CI y despliegue. Redis permanece para caché. |
 | 3.2 Delays programados | En implementación en rama | Se agregan `resume_at`, `resume_token`, Outbox transaccional y scheduler JetStream; falta validar contra un broker real. |
 | 3.3 Idempotencia de reanudación | En implementación en rama | El token de reanudación evita que un mensaje atrasado o duplicado reactive una espera distinta; la exclusión concurrente debe validarse en integración. |
-| 3.4 Reintentos y DLQ de workflows | En implementación en rama | Se agrega backoff exponencial a nivel de worker y publicación idempotente al stream `workflow_dlq`; pendiente prueba de fallos reales. |
+| 3.4 Reintentos y DLQ de workflows | En implementación en rama | Backoff exponencial de aplicación, MaxDeliver del broker y advisory durable para trasladar a `workflow_dlq` los mensajes agotados incluso tras caída del worker; pendiente prueba de fallo real. |
 | 4.1 Consumidor NATS | Parcial | `AutomationConsumerService` se suscribe a una lista explícita de eventos y llama al handler. No se suscribe a todo `crm.*.*`. |
 | 4.2 Filtros e idempotencia de evento | Parcial | Se buscan workflows activos y se evalúa el filtro; el paso tiene clave idempotente. No se encontró deduplicación de creación de ejecución por `event_id`. |
 | 5.1–5.3 Acciones WhatsApp, SMS, email y acciones internas | No implementado en el motor actual | `WorkflowEngineService.performAction()` registra la acción y devuelve datos de configuración; no ejecuta el efecto externo/interno. Los dispatchers generales de Inbox no demuestran integración con cada paso del workflow. |
@@ -160,7 +160,8 @@ Las etiquetas `done` y `active` del Gantt son parte del plan histórico; no refl
 - [ ] **3.4 Reintentos y Dead Letter Queue (DLQ):**
   - ACK explícito y heartbeat durante trabajos largos; el broker vuelve a entregar mensajes ante caídas.
   - Backoff exponencial de aplicación y límite de cinco entregas (cap de 5 minutos).
-  - Al agotar intentos se publica idempotentemente en `workflow_dlq` antes de confirmar el mensaje original.
+  - Los fallos detectados por la aplicación se publican idempotentemente en `workflow_dlq` antes de confirmar el mensaje. Los agotamientos por caída del worker se capturan mediante advisory JetStream persistido en `workflow_advisories`, se copian a DLQ y luego se eliminan del stream runtime.
+  - Los streams tienen límites de edad y bytes; se deben monitorizar uso del volumen y crecimiento de DLQ.
 
 ---
 

@@ -49,6 +49,7 @@ export class NatsService implements OnModuleInit, OnModuleDestroy {
       storage: 'file',
       num_replicas: Number(process.env.NATS_WORKFLOW_REPLICAS ?? 1),
       max_age: 400 * 24 * 60 * 60 * 1_000_000_000,
+      max_bytes: 10 * 1024 * 1024 * 1024,
       duplicate_window: 10 * 60 * 1_000_000_000,
       allow_msg_schedules: true,
     }
@@ -66,12 +67,30 @@ export class NatsService implements OnModuleInit, OnModuleDestroy {
       storage: 'file',
       num_replicas: Number(process.env.NATS_WORKFLOW_REPLICAS ?? 1),
       max_age: 365 * 24 * 60 * 60 * 1_000_000_000,
+      max_bytes: 2 * 1024 * 1024 * 1024,
+      duplicate_window: 7 * 24 * 60 * 60 * 1_000_000_000,
     }
 
     try {
       await this.jsm.streams.add(dlqConfig as any)
     } catch {
       await this.jsm.streams.update('workflow_dlq', dlqConfig as any)
+    }
+
+    const advisoryConfig = {
+      name: 'workflow_advisories',
+      subjects: ['$JS.EVENT.ADVISORY.CONSUMER.MAX_DELIVERIES.workflow_runtime.workflow-runtime-worker'],
+      retention: 'limits',
+      storage: 'file',
+      num_replicas: Number(process.env.NATS_WORKFLOW_REPLICAS ?? 1),
+      max_age: 30 * 24 * 60 * 60 * 1_000_000_000,
+      max_bytes: 512 * 1024 * 1024,
+    }
+
+    try {
+      await this.jsm.streams.add(advisoryConfig as any)
+    } catch {
+      await this.jsm.streams.update('workflow_advisories', advisoryConfig as any)
     }
   }
 
@@ -90,7 +109,7 @@ export class NatsService implements OnModuleInit, OnModuleDestroy {
       filter_subject: 'workflow.resume',
       ack_policy: 'explicit',
       ack_wait: 60 * 1_000_000_000,
-      max_deliver: 100,
+      max_deliver: 5,
       max_ack_pending: 32,
       backoff: [
         60 * 1_000_000_000,
@@ -100,6 +119,32 @@ export class NatsService implements OnModuleInit, OnModuleDestroy {
       ],
       replay_policy: 'instant',
     } as any)
+  }
+
+
+  async ensureWorkflowAdvisoryConsumer(): Promise<void> {
+    if (!this.jsm) throw new Error('JetStream manager is not connected')
+
+    try {
+      await this.jsm.consumers.info('workflow_advisories', 'workflow-dlq-advisory-worker')
+      return
+    } catch {
+      // The durable advisory consumer is created on first worker startup.
+    }
+
+    await this.jsm.consumers.add('workflow_advisories', {
+      durable_name: 'workflow-dlq-advisory-worker',
+      filter_subject: '$JS.EVENT.ADVISORY.CONSUMER.MAX_DELIVERIES.workflow_runtime.workflow-runtime-worker',
+      ack_policy: 'explicit',
+      ack_wait: 60 * 1_000_000_000,
+      max_deliver: 100,
+      max_ack_pending: 16,
+      replay_policy: 'instant',
+    } as any)
+  }
+
+  getJetStreamManager(): JetStreamManager | null {
+    return this.jsm
   }
 
   async onModuleDestroy(): Promise<void> {
