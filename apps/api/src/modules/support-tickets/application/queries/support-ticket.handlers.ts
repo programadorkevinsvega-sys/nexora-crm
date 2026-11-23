@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { TicketRepository } from '../../domain/repositories/ticket.repository'
 import { ReplyRepository } from '../../domain/repositories/reply.repository'
 import { GetTicketQuery, ListTicketsQuery, GetTicketRepliesQuery } from './support-ticket.queries'
-import { NotFoundError, ConflictError } from '@crm/shared'
+import { NotFoundError } from '@crm/shared'
 
 @Injectable()
 export class GetTicketHandler {

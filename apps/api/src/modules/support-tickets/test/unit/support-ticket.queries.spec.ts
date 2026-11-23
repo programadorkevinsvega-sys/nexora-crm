@@ -1,4 +1,4 @@
-import { GetTicketHandler, ListTicketsHandler, GetTicketRepliesHandler } from '../../application/queries/support-ticket.handlers'
+import { GetTicketHandler, ListTicketsHandler } from '../../application/queries/support-ticket.handlers'
 import { SupportTicket } from '../../domain/entities/support-ticket.entity'
 import { TicketReply } from '../../domain/entities/ticket-reply.entity'
 import { NotFoundError } from '@crm/shared'

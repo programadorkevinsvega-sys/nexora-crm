@@ -1,5 +1,4 @@
 import { DrizzleTicketRepository } from '../../infrastructure/drizzle-ticket.repository'
-import { SupportTicket } from '../../domain/entities/support-ticket.entity'
 import * as dbModule from '@crm/database'
 
 describe('DrizzleTicketRepository - Persistence Integration Tests', () => {
