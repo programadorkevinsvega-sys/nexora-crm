@@ -105,17 +105,17 @@ ALTER TABLE public.workflow_step_executions
 CREATE OR REPLACE FUNCTION public.enforce_workflow_step_idempotency_key()
 RETURNS trigger
 LANGUAGE plpgsql
-AS $
+AS '
 BEGIN
   IF NEW.idempotency_key IS DISTINCT FROM
-    NEW.execution_id::text || '_' || NEW.step_id || '_' || NEW.attempts::text THEN
-    RAISE EXCEPTION 'Workflow step idempotency key must match execution, step, and attempt'
-      USING ERRCODE = '23514';
+    NEW.execution_id::text || ''_'' || NEW.step_id || ''_'' || NEW.attempts::text THEN
+    RAISE EXCEPTION ''Workflow step idempotency key must match execution, step, and attempt''
+      USING ERRCODE = ''23514'';
   END IF;
 
   RETURN NEW;
 END;
-$;
+';
 
 DROP TRIGGER IF EXISTS workflow_step_executions_idempotency_key_trigger
   ON public.workflow_step_executions;
