@@ -53,8 +53,20 @@ export class WorkflowQueueService implements OnModuleInit, OnModuleDestroy {
   private readonly prefix = process.env.WORKFLOW_QUEUE_PREFIX?.trim() || 'nexora-crm'
   private readonly attempts = positiveInteger(process.env.WORKFLOW_JOB_ATTEMPTS, 3)
   private readonly backoffMs = positiveInteger(process.env.WORKFLOW_JOB_BACKOFF_MS, 5_000)
+  private initialization: Promise<void> | null = null
 
   async onModuleInit(): Promise<void> {
+    await this.waitUntilReady()
+  }
+
+  async waitUntilReady(): Promise<void> {
+    if (!this.initialization) {
+      this.initialization = this.initialize()
+    }
+    await this.initialization
+  }
+
+  private async initialize(): Promise<void> {
     const redisUrl = process.env.REDIS_URL?.trim()
     if (!redisUrl) {
       throw new Error('REDIS_URL is required to run the workflow queue')
