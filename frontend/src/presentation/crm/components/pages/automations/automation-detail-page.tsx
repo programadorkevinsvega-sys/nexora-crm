@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Play, Pause, Zap, Clock, ShieldCheck, MessageSquare, Layout } from "lucide-react"
+import { ArrowLeft, Play, Pause, Zap, Clock, ShieldCheck, MessageSquare } from "lucide-react"
 import { Button } from "@/src/presentation/crm/components/ui/Button"
 import { Card } from "@/src/presentation/crm/components/ui/Card"
 import { Badge } from "@/src/presentation/crm/components/ui/Badge"

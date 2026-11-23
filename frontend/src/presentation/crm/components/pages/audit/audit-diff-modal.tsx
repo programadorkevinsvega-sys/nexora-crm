@@ -1,6 +1,6 @@
 "use client"
 
-import { X, ShieldCheck, ArrowRight } from "lucide-react"
+import { X, ShieldCheck } from "lucide-react"
 import { Button } from "@/src/presentation/crm/components/ui/Button"
 import { Card } from "@/src/presentation/crm/components/ui/Card"
 import type { AuditLogItem } from "@/src/infrastructure/crm/repositories/audit/api-audit.repository"

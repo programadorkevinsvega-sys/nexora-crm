@@ -20,7 +20,7 @@ import {
 import { Card } from "@/src/presentation/crm/components/ui/Card"
 import { Button } from "@/src/presentation/crm/components/ui/Button"
 import { Badge } from "@/src/presentation/crm/components/ui/Badge"
-import type { WorkflowStep, StepType } from "@/src/domain/crm/automation/workflow.entity"
+import type { WorkflowStep } from "@/src/domain/crm/automation/workflow.entity"
 
 export const ACTION_TYPES = [
   { value: "SEND_WHATSAPP", label: "💬 WhatsApp", icon: MessageSquare, color: "text-emerald-500" },

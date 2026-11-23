@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { Plus, Zap, Play, Pause, ArrowRight, Activity, CheckCircle, Clock } from "lucide-react"
+import { Plus, Zap, Play, Pause, ArrowRight, Activity } from "lucide-react"
 import { Button } from "@/src/presentation/crm/components/ui/Button"
 import { Card } from "@/src/presentation/crm/components/ui/Card"
 import { PageHeader } from "@/src/presentation/crm/components/common/PageHeader"

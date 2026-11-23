@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { X, Settings, Trash2, Check, Clock, ShieldCheck, Zap } from "lucide-react"
+import { X, Settings, Trash2, Check, Clock, ShieldCheck } from "lucide-react"
 import { Button } from "@/src/presentation/crm/components/ui/Button"
 import { WorkflowActionInspector } from "./workflow-action-inspector"
 import type { WorkflowStep } from "@/src/domain/crm/automation/workflow.entity"
