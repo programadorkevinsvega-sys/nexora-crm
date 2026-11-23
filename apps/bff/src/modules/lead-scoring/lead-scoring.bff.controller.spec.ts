@@ -41,8 +41,8 @@ describe('LeadScoringBffController - REST Gateway Tests', () => {
 
   it('should call createRule on service when POST /api/scoring/rules is called', async () => {
     const payload = CreateScoringRuleSchema.parse({
-      name: 'C-Level Boost', eventType: 'CONTACT_CREATED', points: 30,
-      conditionJson: { field: 'contact.jobTitle', operator: 'CONTAINS', value: 'CEO' },
+      name: 'C-Level Boost', category: 'DEMOGRAPHIC', points: 30,
+      condition: { field: 'contact.jobTitle', operator: 'CONTAINS', value: 'CEO' },
     })
     const result = await controller.createRule(payload, 'tenant-1')
 

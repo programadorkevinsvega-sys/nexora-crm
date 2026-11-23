@@ -23,7 +23,7 @@ describe('AutomationBffController - REST Gateway Tests', () => {
 
   it('calls createWorkflow with the validated workflow DTO', async () => {
     const payload = CreateWorkflowSchema.parse({
-      name: 'Welcome Lead Flow', triggerEvent: 'crm.contact.created', nodes: [], edges: [],
+      name: 'Welcome Lead Flow', triggerEvent: 'crm.contact.created', stepsGraph: [],
     })
     const result = await controller.create(payload, 'tenant-1')
     expect(mockService.createWorkflow).toHaveBeenCalledWith(payload, 'tenant-1')
