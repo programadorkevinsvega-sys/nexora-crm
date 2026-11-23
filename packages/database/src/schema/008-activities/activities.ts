@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, text, timestamp, boolean, integer, date, numeric, primaryKey } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, varchar, text, timestamp, boolean, integer, date, primaryKey } from 'drizzle-orm/pg-core'
 
 export const contactNotes = pgTable('crm_contact_notes', {
   id: uuid('id').defaultRandom().primaryKey(),

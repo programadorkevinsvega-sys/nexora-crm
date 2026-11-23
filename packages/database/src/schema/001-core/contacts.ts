@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, integer, numeric, text, timestamp, boolean, jsonb, date, index } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, varchar, integer, numeric, timestamp, boolean, jsonb, date, index } from 'drizzle-orm/pg-core'
 import { companies } from './companies'
 
 export const contacts = pgTable(
