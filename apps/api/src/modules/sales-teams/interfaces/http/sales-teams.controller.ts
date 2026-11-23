@@ -10,7 +10,7 @@ import {
   AddMemberCommand, RemoveMemberCommand,
   SetQuotaCommand, UpdateAchievedCommand,
 } from '../../application/commands/sales-team.commands'
-import { GetTeamQuery, ListTeamsQuery, GetQuotaQuery, ListQuotasQuery, GetTeamMembersQuery } from '../../application/queries/sales-team.queries'
+import { GetTeamQuery, ListTeamsQuery, ListQuotasQuery } from '../../application/queries/sales-team.queries'
 import {
   CreateTeamDto, UpdateTeamDto, AddMemberDto, SetQuotaDto, UpdateAchievedDto,
 } from './dto/sales-team.dto'

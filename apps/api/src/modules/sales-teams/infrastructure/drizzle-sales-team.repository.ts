@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { eq, ilike, and, asc, or, gt } from 'drizzle-orm'
+import { eq, ilike, and, asc, gt } from 'drizzle-orm'
 import { getDb, salesTeams, salesTeamMembers } from '@crm/database'
 import { SalesTeamRepository, SalesTeamFilter, PaginatedSalesTeams, SalesTeamWithMembers, SalesTeamMemberRow } from '../domain/repositories/sales-team.repository'
 import { SalesTeam } from '../domain/entities/sales-team.entity'
