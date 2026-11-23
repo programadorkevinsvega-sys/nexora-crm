@@ -5,12 +5,9 @@ import {
   Sparkles,
   TrendingUp,
   Mail,
-  MessageSquare,
   AlertTriangle,
   CheckCircle2,
   Copy,
-  Send,
-  RefreshCw,
   Zap,
 } from "lucide-react"
 import { Button } from "@/src/presentation/crm/components/ui/Button"
@@ -33,7 +30,6 @@ export function AiCopilotPage() {
   const [channel, setChannel] = useState<"EMAIL" | "WHATSAPP" | "NOTE">("EMAIL")
   const [tone, setTone] = useState<"FORMAL" | "FRIENDLY" | "PERSUASIVE" | "URGENT">("PERSUASIVE")
   const [objective, setObjective] = useState<any>("FOLLOW_UP")
-  const [customInstructions, setCustomInstructions] = useState("")
   const [draft, setDraft] = useState<GeneratedMessageDraft | null>(null)
   const [generatingDraft, setGeneratingDraft] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -86,7 +82,6 @@ export function AiCopilotPage() {
         channel,
         tone,
         objective,
-        customInstructions: customInstructions || undefined,
       })
       setDraft(res)
     } catch (err: any) {

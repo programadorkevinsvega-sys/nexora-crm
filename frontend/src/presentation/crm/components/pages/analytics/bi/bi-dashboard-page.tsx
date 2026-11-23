@@ -1,11 +1,11 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import type { BiReport, BiReportCategory } from '@crm/contracts'
+import type { BiReport } from '@crm/contracts'
 import { ApiBiRepository } from '@src/infrastructure/crm/repositories/bi/api-bi.repository'
 import { BiEmbedViewer } from './bi-embed-viewer'
 import { CreateBiReportModal } from './create-bi-report-modal'
-import { BarChart3, Plus, Sparkles, Layers, ShieldCheck, RefreshCw } from 'lucide-react'
+import { BarChart3, Plus } from 'lucide-react'
 import { Skeleton } from '@/src/presentation/crm/components/ui/Skeleton'
 
 export function BiDashboardPage() {
