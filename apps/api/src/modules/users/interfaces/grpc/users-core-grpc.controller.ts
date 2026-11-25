@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Controller } from '@nestjs/common'
 import { GrpcMethod } from '@nestjs/microservices'
 import {
@@ -19,6 +18,31 @@ import {
   CreateUserSchema, UpdateUserSchema, ListUsersQuerySchema,
 } from '@crm/contracts'
 
+interface UserCoreGrpcRequest {
+  tenantId?: unknown
+  id?: unknown
+  email?: unknown
+  passwordHash?: unknown
+  profileType?: unknown
+  firstName?: unknown
+  lastName?: unknown
+  identificationNumber?: unknown
+  phone?: unknown
+  countryCode?: unknown
+  preferredLanguage?: unknown
+  timezone?: unknown
+  avatarUrl?: unknown
+  legalName?: unknown
+  commercialName?: unknown
+  taxId?: unknown
+  legalAddress?: unknown
+  managerId?: unknown
+  cursor?: unknown
+  limit?: unknown
+  search?: unknown
+  status?: unknown
+}
+
 @Controller()
 export class UsersCoreGrpcController {
   constructor(
@@ -31,7 +55,7 @@ export class UsersCoreGrpcController {
   ) {}
 
   @GrpcMethod('UserService', 'CreateUser')
-  async create(data: any) {
+  async create(data: UserCoreGrpcRequest) {
     const input = validateOrThrow(CreateUserSchema, {
       tenantId: data.tenantId,
       email: data.email,
@@ -96,7 +120,7 @@ export class UsersCoreGrpcController {
   }
 
   @GrpcMethod('UserService', 'ListUsers')
-  async list(data: any) {
+  async list(data: UserCoreGrpcRequest) {
     const filter = validateOrThrow(ListUsersQuerySchema, {
       tenantId: data.tenantId,
       cursor: data.cursor,
@@ -121,7 +145,7 @@ export class UsersCoreGrpcController {
   }
 
   @GrpcMethod('UserService', 'UpdateUser')
-  async update(data: any) {
+  async update(data: UserCoreGrpcRequest) {
     const input = validateOrThrow(UpdateUserSchema, {
       id: data.id,
       tenantId: data.tenantId,
