@@ -26,8 +26,8 @@ export function AutomationListPage() {
       ])
       setWorkflows(wfList)
       setExecutions(execList)
-    } catch (err: any) {
-      setError(err?.message || "Failed to load automations")
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to load automations")
     } finally {
       setLoading(false)
     }
@@ -45,29 +45,12 @@ export function AutomationListPage() {
         await ApiAutomationRepository.activateWorkflow(wf.id)
       }
       await fetchData()
-    } catch (err: any) {
-      alert(`Action failed: ${err.message}`)
+    } catch (err: unknown) {
+      alert(`Action failed: ${err instanceof Error ? err.message : String(err)}`)
     }
   }
 
-  const handleTestTrigger = async (wf: WorkflowDefinition) => {
-    try {
-      const res = await ApiAutomationRepository.triggerEvent({
-        eventName: wf.triggerEvent,
-        entityType: "contact",
-        entityId: "00000000-0000-0000-0000-000000000001",
-        payload: {
-          test: true,
-          leadScore: 90,
-          country: "Colombia",
-        },
-      })
-      alert(`Test event triggered! Executions instantiated: ${res.triggeredCount}`)
-      await fetchData()
-    } catch (err: any) {
-      alert(`Trigger failed: ${err.message}`)
-    }
-  }
+
 
   return (
     <div className="space-y-6">
@@ -152,15 +135,7 @@ export function AutomationListPage() {
                             <Play className="h-3.5 w-3.5 text-primary" />
                           )}
                         </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleTestTrigger(wf)}
-                          title="Simulate Event Trigger"
-                        >
-                          <Activity className="h-3.5 w-3.5" />
-                          Test
-                        </Button>
+
                       </div>
                       <Link href={`/automations/${wf.id}`}>
                         <Button size="sm" variant="ghost">
