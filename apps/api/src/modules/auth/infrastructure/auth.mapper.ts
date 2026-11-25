@@ -28,6 +28,11 @@ function mfaMethodType(value: string): MfaMethod['type'] {
   throw new Error(`Unsupported MFA method type: ${value}`)
 }
 
+function requiredSecret(value: string | null): string {
+  if (value === null || value.length === 0) throw new Error('OAuth provider client secret is missing')
+  return value
+}
+
 function ipRestrictionType(value: string): IpRestriction['type'] {
   if (value === 'ALLOW' || value === 'DENY') return value
   throw new Error(`Unsupported IP restriction type: ${value}`)
@@ -38,7 +43,7 @@ export class AuthMapper {
     return new Session(
       row.id, row.tenantId, row.userId, row.refreshTokenHash,
       row.ipAddress, row.userAgent, row.deviceId,
-      row.expiresAt, row.isRevoked, row.createdAt,
+      row.expiresAt, row.isRevoked ?? false, row.createdAt,
     )
   }
 
@@ -132,7 +137,7 @@ export class AuthMapper {
   static oauthProviderToDomain(row: OAuthProviderRow): OAuthProvider {
     return new OAuthProvider(
       row.id, row.tenantId, row.providerName,
-      row.clientId, row.clientSecret,
+      row.clientId, requiredSecret(row.clientSecret),
       row.isActive ?? true, row.createdAt,
     )
   }
