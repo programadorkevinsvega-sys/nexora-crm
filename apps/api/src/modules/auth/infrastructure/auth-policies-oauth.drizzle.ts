@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { eq, and } from 'drizzle-orm'
+import { eq, and, asc } from 'drizzle-orm'
+import type { SQL } from 'drizzle-orm'
 import {
   getDb,
   ipRestrictions as ipRestrictionsTable,
@@ -18,9 +18,9 @@ export class AuthPoliciesOauthDrizzleHelper {
 
   static async getPasswordPolicy(tenantId: string): Promise<PasswordPolicy | null> {
     const row = await this.db.query.passwordPolicies.findFirst({
-      where: eq(passwordPoliciesTable.tenantId, tenantId) as any,
+      where: eq(passwordPoliciesTable.tenantId, tenantId),
     })
-    return row ? AuthMapper.passwordPolicyToDomain(row as any) : null
+    return row ? AuthMapper.passwordPolicyToDomain(row) : null
   }
 
   static async savePasswordPolicy(policy: PasswordPolicy): Promise<void> {
@@ -33,7 +33,7 @@ export class AuthPoliciesOauthDrizzleHelper {
       expireDays: policy.expireDays,
       preventReuseLastN: policy.preventReuseLastN,
       updatedAt: policy.updatedAt,
-    } as any).onConflictDoUpdate({
+    }).onConflictDoUpdate({
       target: passwordPoliciesTable.tenantId,
       set: {
         minLength: policy.minLength,
@@ -43,17 +43,17 @@ export class AuthPoliciesOauthDrizzleHelper {
         expireDays: policy.expireDays,
         preventReuseLastN: policy.preventReuseLastN,
         updatedAt: policy.updatedAt,
-      } as any,
+      },
     })
   }
 
   static async findPasswordHistoryByUser(userId: string, limit: number): Promise<PasswordHistory[]> {
     const rows = await this.db.query.passwordHistory.findMany({
-      where: eq(passwordHistoryTable.userId, userId) as any,
+      where: eq(passwordHistoryTable.userId, userId),
       limit,
-      orderBy: (cols: any) => [cols.createdAt],
+      orderBy: [asc(passwordHistoryTable.createdAt)],
     })
-    return rows.map((r) => AuthMapper.passwordHistoryToDomain(r as any))
+    return rows.map((r) => AuthMapper.passwordHistoryToDomain(r))
   }
 
   static async savePasswordHistory(history: PasswordHistory): Promise<void> {
@@ -62,23 +62,23 @@ export class AuthPoliciesOauthDrizzleHelper {
       userId: history.userId,
       passwordHash: history.passwordHash,
       createdAt: history.createdAt,
-    } as any)
+    })
   }
 
   static async findIpRestrictionById(id: string): Promise<IpRestriction | null> {
     const row = await this.db.query.ipRestrictions.findFirst({
-      where: eq(ipRestrictionsTable.id, id) as any,
+      where: eq(ipRestrictionsTable.id, id),
     })
-    return row ? AuthMapper.ipRestrictionToDomain(row as any) : null
+    return row ? AuthMapper.ipRestrictionToDomain(row) : null
   }
 
   static async listIpRestrictions(tenantId: string, userId?: string): Promise<IpRestriction[]> {
-    const conditions: any[] = [eq(ipRestrictionsTable.tenantId, tenantId)]
+    const conditions: SQL[] = [eq(ipRestrictionsTable.tenantId, tenantId)]
     if (userId) conditions.push(eq(ipRestrictionsTable.userId, userId))
     const rows = await this.db.query.ipRestrictions.findMany({
-      where: and(...conditions) as any,
+      where: and(...conditions),
     })
-    return rows.map((r) => AuthMapper.ipRestrictionToDomain(r as any))
+    return rows.map((r) => AuthMapper.ipRestrictionToDomain(r))
   }
 
   static async saveIpRestriction(restriction: IpRestriction): Promise<void> {
@@ -90,35 +90,35 @@ export class AuthPoliciesOauthDrizzleHelper {
       type: restriction.type,
       description: restriction.description,
       createdAt: restriction.createdAt,
-    } as any)
+    })
   }
 
   static async deleteIpRestriction(id: string): Promise<void> {
-    await this.db.delete(ipRestrictionsTable).where(eq(ipRestrictionsTable.id, id) as any)
+    await this.db.delete(ipRestrictionsTable).where(eq(ipRestrictionsTable.id, id))
   }
 
   static async findOAuthProviderById(id: string): Promise<OAuthProvider | null> {
     const row = await this.db.query.oauthProviders.findFirst({
-      where: eq(oauthProvidersTable.id, id) as any,
+      where: eq(oauthProvidersTable.id, id),
     })
-    return row ? AuthMapper.oauthProviderToDomain(row as any) : null
+    return row ? AuthMapper.oauthProviderToDomain(row) : null
   }
 
   static async findOAuthProviderByName(tenantId: string, providerName: string): Promise<OAuthProvider | null> {
     const row = await this.db.query.oauthProviders.findFirst({
       where: and(
-        eq(oauthProvidersTable.tenantId, tenantId) as any,
-        eq(oauthProvidersTable.providerName, providerName) as any,
-      ) as any,
+        eq(oauthProvidersTable.tenantId, tenantId),
+        eq(oauthProvidersTable.providerName, providerName),
+      ),
     })
-    return row ? AuthMapper.oauthProviderToDomain(row as any) : null
+    return row ? AuthMapper.oauthProviderToDomain(row) : null
   }
 
   static async listOAuthProviders(tenantId: string): Promise<OAuthProvider[]> {
     const rows = await this.db.query.oauthProviders.findMany({
-      where: eq(oauthProvidersTable.tenantId, tenantId) as any,
+      where: eq(oauthProvidersTable.tenantId, tenantId),
     })
-    return rows.map((r) => AuthMapper.oauthProviderToDomain(r as any))
+    return rows.map((r) => AuthMapper.oauthProviderToDomain(r))
   }
 
   static async saveOAuthProvider(provider: OAuthProvider): Promise<void> {
@@ -130,10 +130,10 @@ export class AuthPoliciesOauthDrizzleHelper {
       clientSecret: provider.clientSecret,
       isActive: provider.isActive,
       createdAt: provider.createdAt,
-    } as any)
+    })
   }
 
   static async deleteOAuthProvider(id: string): Promise<void> {
-    await this.db.delete(oauthProvidersTable).where(eq(oauthProvidersTable.id, id) as any)
+    await this.db.delete(oauthProvidersTable).where(eq(oauthProvidersTable.id, id))
   }
 }
