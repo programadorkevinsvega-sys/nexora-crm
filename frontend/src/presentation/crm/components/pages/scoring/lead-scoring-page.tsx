@@ -18,8 +18,9 @@ type LeadScoringCategory = LeadScoringRule['category']
 
 function parseOperator(value: string): LeadScoringOperator {
   const operators: LeadScoringOperator[] = ['EQUALS', 'NOT_EQUALS', 'GREATER_THAN', 'LESS_THAN', 'CONTAINS', 'IN', 'IS_EMPTY']
-  if (!operators.includes(value as LeadScoringOperator)) throw new TypeError(`Unsupported scoring operator: ${value}`)
-  return value as LeadScoringOperator
+  const operator = operators.find((candidate) => candidate === value)
+  if (!operator) throw new TypeError(`Unsupported scoring operator: ${value}`)
+  return operator
 }
 
 function parseCategory(value: string): LeadScoringCategory {
@@ -380,7 +381,7 @@ export function LeadScoringPage() {
                 <select
                   className="w-full px-3 py-2 border rounded-md text-sm bg-background font-medium"
                   value={newRuleCategory}
-                  onChange={(e) => setNewRuleCategory(parseCategory(e.target.value))
+                  onChange={(e) => setNewRuleCategory(parseCategory(e.target.value))}
                 >
                   <option value="DEMOGRAPHIC">DEMOGRAPHIC (Perfil / Cargo / Empresa)</option>
                   <option value="BEHAVIORAL">BEHAVIORAL (Acciones / Solicitudes)</option>
@@ -413,7 +414,7 @@ export function LeadScoringPage() {
                 <select
                   className="w-full px-2 py-2 border rounded-md text-xs bg-background font-medium"
                   value={newRuleOperator}
-                  onChange={(e) => setNewRuleOperator(parseOperator(e.target.value))
+                  onChange={(e) => setNewRuleOperator(parseOperator(e.target.value))}
                 >
                   <option value="CONTAINS">CONTAINS (Contiene)</option>
                   <option value="EQUALS">EQUALS (Igual)</option>
