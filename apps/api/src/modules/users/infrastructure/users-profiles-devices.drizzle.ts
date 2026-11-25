@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { eq, and } from 'drizzle-orm'
 import {
   getDb,
@@ -17,7 +16,7 @@ export class UsersProfilesDevicesDrizzleHelper {
 
   static async getNaturalPersonProfile(profileId: string): Promise<NaturalPersonProfile | null> {
     const row = await this.db.query.naturalPersonProfiles.findFirst({
-      where: eq(naturalPersonTable.id, profileId) as any,
+      where: eq(naturalPersonTable.id, profileId),
     })
     if (!row) return null
 
@@ -32,7 +31,7 @@ export class UsersProfilesDevicesDrizzleHelper {
 
   static async getLegalEntityProfile(profileId: string): Promise<LegalEntityProfile | null> {
     const row = await this.db.query.legalEntityProfiles.findFirst({
-      where: eq(legalEntityTable.id, profileId) as any,
+      where: eq(legalEntityTable.id, profileId),
     })
     if (!row) return null
 
@@ -58,9 +57,9 @@ export class UsersProfilesDevicesDrizzleHelper {
       createdAt: profile.createdAt,
       updatedAt: profile.updatedAt,
     }
-    await this.db.insert(naturalPersonTable).values(values as any).onConflictDoUpdate({
+    await this.db.insert(naturalPersonTable).values(values).onConflictDoUpdate({
       target: naturalPersonTable.id,
-      set: values as any,
+      set: values,
     })
   }
 
@@ -77,18 +76,18 @@ export class UsersProfilesDevicesDrizzleHelper {
       createdAt: profile.createdAt,
       updatedAt: profile.updatedAt,
     }
-    await this.db.insert(legalEntityTable).values(values as any).onConflictDoUpdate({
+    await this.db.insert(legalEntityTable).values(values).onConflictDoUpdate({
       target: legalEntityTable.id,
-      set: values as any,
+      set: values,
     })
   }
 
   static async findOAuthLink(userId: string, providerName: string): Promise<UserOAuthLink | null> {
     const row = await this.db.query.userOauthLinks.findFirst({
       where: and(
-        eq(oauthLinksTable.userId, userId) as any,
-        eq(oauthLinksTable.providerName, providerName) as any,
-      ) as any,
+        eq(oauthLinksTable.userId, userId),
+        eq(oauthLinksTable.providerName, providerName),
+      ),
     })
     if (!row) return null
 
@@ -97,7 +96,7 @@ export class UsersProfilesDevicesDrizzleHelper {
 
   static async listOAuthLinks(userId: string): Promise<UserOAuthLink[]> {
     const rows = await this.db.query.userOauthLinks.findMany({
-      where: eq(oauthLinksTable.userId, userId) as any,
+      where: eq(oauthLinksTable.userId, userId),
     })
     return rows.map((r) => new UserOAuthLink(r.id, r.userId, r.providerName, r.providerUserId, r.createdAt))
   }
@@ -109,37 +108,37 @@ export class UsersProfilesDevicesDrizzleHelper {
       providerName: link.providerName,
       providerUserId: link.providerUserId,
       createdAt: link.createdAt,
-    } as any)
+    })
   }
 
   static async deleteOAuthLink(id: string): Promise<void> {
-    await this.db.delete(oauthLinksTable).where(eq(oauthLinksTable.id, id) as any)
+    await this.db.delete(oauthLinksTable).where(eq(oauthLinksTable.id, id))
   }
 
   static async findDeviceById(deviceId: string): Promise<UserMobileDevice | null> {
     const row = await this.db.query.userMobileDevices.findFirst({
-      where: eq(devicesTable.id, deviceId) as any,
+      where: eq(devicesTable.id, deviceId),
     })
     if (!row) return null
-    return this.deviceToDomain(row as any)
+    return this.deviceToDomain(row)
   }
 
   static async findDeviceByIdentifier(userId: string, deviceIdentifier: string): Promise<UserMobileDevice | null> {
     const row = await this.db.query.userMobileDevices.findFirst({
       where: and(
-        eq(devicesTable.userId, userId) as any,
-        eq(devicesTable.deviceIdentifier, deviceIdentifier) as any,
-      ) as any,
+        eq(devicesTable.userId, userId),
+        eq(devicesTable.deviceIdentifier, deviceIdentifier),
+      ),
     })
     if (!row) return null
-    return this.deviceToDomain(row as any)
+    return this.deviceToDomain(row)
   }
 
   static async listDevices(userId: string): Promise<UserMobileDevice[]> {
     const rows = await this.db.query.userMobileDevices.findMany({
-      where: eq(devicesTable.userId, userId) as any,
+      where: eq(devicesTable.userId, userId),
     })
-    return rows.map((r) => this.deviceToDomain(r as any))
+    return rows.map((r) => this.deviceToDomain(r))
   }
 
   static async saveDevice(device: UserMobileDevice): Promise<void> {
@@ -157,17 +156,17 @@ export class UsersProfilesDevicesDrizzleHelper {
       createdAt: device.createdAt,
       updatedAt: device.updatedAt,
     }
-    await this.db.insert(devicesTable).values(values as any).onConflictDoUpdate({
+    await this.db.insert(devicesTable).values(values).onConflictDoUpdate({
       target: devicesTable.id,
-      set: values as any,
+      set: values,
     })
   }
 
   static async deleteDevice(deviceId: string): Promise<void> {
-    await this.db.delete(devicesTable).where(eq(devicesTable.id, deviceId) as any)
+    await this.db.delete(devicesTable).where(eq(devicesTable.id, deviceId))
   }
 
-  private static deviceToDomain(row: any): UserMobileDevice {
+  private static deviceToDomain(row: typeof devicesTable.$inferSelect): UserMobileDevice {
     return new UserMobileDevice(
       row.id, row.tenantId, row.userId,
       row.deviceIdentifier, row.platform,
