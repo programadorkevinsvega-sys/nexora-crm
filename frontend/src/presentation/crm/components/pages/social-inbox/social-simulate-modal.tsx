@@ -64,7 +64,7 @@ export function SocialSimulateModal({ open, onClose, onSimulate }: SocialSimulat
             <label className="block font-medium text-foreground mb-1">Red Social</label>
             <select
               value={platform}
-              onChange={(e) => setPlatform(parsePlatform(e.target.value))
+              onChange={(e) => setPlatform(parsePlatform(e.target.value))}
               className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs font-medium"
             >
               <option value="INSTAGRAM">Instagram (Reels / Posts / Ads)</option>
@@ -76,7 +76,7 @@ export function SocialSimulateModal({ open, onClose, onSimulate }: SocialSimulat
             <label className="block font-medium text-foreground mb-1">Tipo de Publicación</label>
             <select
               value={postType}
-              onChange={(e) => setPostType(parsePostType(e.target.value))
+              onChange={(e) => setPostType(parsePostType(e.target.value))}
               className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs"
             >
               <option value="REEL">Reel / Video Corto</option>
