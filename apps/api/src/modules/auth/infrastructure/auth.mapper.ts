@@ -5,41 +5,32 @@ import { PasswordPolicy } from '../domain/entities/password-policy.entity'
 import { PasswordHistory } from '../domain/entities/password-history.entity'
 import { IpRestriction } from '../domain/entities/ip-restriction.entity'
 import { OAuthProvider } from '../domain/entities/oauth-provider.entity'
+import type {
+  sessions,
+  mfaMethods,
+  mfaRecoveryCodes,
+  passwordPolicies,
+  passwordHistory,
+  ipRestrictions,
+  oauthProviders,
+} from '@crm/database'
 
-interface SessionRow {
-  id: string; tenantId: string; userId: string; refreshTokenHash: string
-  ipAddress: string | null; userAgent: string | null; deviceId: string | null
-  expiresAt: Date; isRevoked: boolean; createdAt: Date
+type SessionRow = typeof sessions.$inferSelect
+type MfaMethodRow = typeof mfaMethods.$inferSelect
+type MfaRecoveryCodeRow = typeof mfaRecoveryCodes.$inferSelect
+type PasswordPolicyRow = typeof passwordPolicies.$inferSelect
+type PasswordHistoryRow = typeof passwordHistory.$inferSelect
+type IpRestrictionRow = typeof ipRestrictions.$inferSelect
+type OAuthProviderRow = typeof oauthProviders.$inferSelect
+
+function mfaMethodType(value: string): MfaMethod['type'] {
+  if (value === 'TOTP' || value === 'SMS' || value === 'EMAIL') return value
+  throw new Error(`Unsupported MFA method type: ${value}`)
 }
 
-interface MfaMethodRow {
-  id: string; tenantId: string; userId: string; type: string
-  secret: string; isPrimary: boolean | null; isActive: boolean | null; createdAt: Date
-}
-
-interface MfaRecoveryCodeRow {
-  id: string; userId: string; codeHash: string
-  isUsed: boolean | null; usedAt: Date | null; createdAt: Date
-}
-
-interface PasswordPolicyRow {
-  tenantId: string; minLength: number | null; requireUppercase: boolean | null
-  requireNumbers: boolean | null; requireSymbols: boolean | null
-  expireDays: number | null; preventReuseLastN: number | null; updatedAt: Date
-}
-
-interface PasswordHistoryRow {
-  id: string; userId: string; passwordHash: string; createdAt: Date
-}
-
-interface IpRestrictionRow {
-  id: string; tenantId: string; userId: string | null
-  ipAddress: string; type: string; description: string | null; createdAt: Date
-}
-
-interface OAuthProviderRow {
-  id: string; tenantId: string; providerName: string
-  clientId: string; clientSecret: string; isActive: boolean | null; createdAt: Date
+function ipRestrictionType(value: string): IpRestriction['type'] {
+  if (value === 'ALLOW' || value === 'DENY') return value
+  throw new Error(`Unsupported IP restriction type: ${value}`)
 }
 
 export class AuthMapper {
@@ -67,7 +58,7 @@ export class AuthMapper {
   static mfaMethodToDomain(row: MfaMethodRow): MfaMethod {
     return new MfaMethod(
       row.id, row.tenantId, row.userId,
-      row.type as 'TOTP' | 'SMS' | 'EMAIL',
+      mfaMethodType(row.type),
       row.secret, row.isPrimary ?? false,
       row.isActive ?? true, row.createdAt,
     )
@@ -122,19 +113,19 @@ export class AuthMapper {
   static ipRestrictionToDomain(row: IpRestrictionRow): IpRestriction {
     return new IpRestriction(
       row.id, row.tenantId, row.userId,
-      row.ipAddress, row.type as 'ALLOW' | 'DENY',
+      row.ipAddress, ipRestrictionType(row.type),
       row.description, row.createdAt,
     )
   }
 
-  static ipRestrictionToResponse(r: IpRestriction) {
+  static ipRestrictionToResponse(restriction: IpRestriction) {
     return {
-      id: r.id,
-      userId: r.userId,
-      ipAddress: r.ipAddress,
-      type: r.type,
-      description: r.description,
-      createdAt: r.createdAt.toISOString(),
+      id: restriction.id,
+      userId: restriction.userId,
+      ipAddress: restriction.ipAddress,
+      type: restriction.type,
+      description: restriction.description,
+      createdAt: restriction.createdAt.toISOString(),
     }
   }
 
@@ -146,13 +137,13 @@ export class AuthMapper {
     )
   }
 
-  static oauthProviderToResponse(p: OAuthProvider) {
+  static oauthProviderToResponse(provider: OAuthProvider) {
     return {
-      id: p.id,
-      providerName: p.providerName,
-      clientId: p.clientId,
-      isActive: p.isActive,
-      createdAt: p.createdAt.toISOString(),
+      id: provider.id,
+      providerName: provider.providerName,
+      clientId: provider.clientId,
+      isActive: provider.isActive,
+      createdAt: provider.createdAt.toISOString(),
     }
   }
 }
