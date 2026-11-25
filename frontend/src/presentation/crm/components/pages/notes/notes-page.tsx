@@ -14,6 +14,7 @@ import { ErrorState } from "@/src/presentation/components/error-state"
 import { FormSelect } from "@/src/presentation/crm/components/ui/FormField"
 import { useAuth } from "@/src/presentation/hooks/use-auth"
 import { useNotesList, useCreateNote, useDeleteNote } from "@src/application/crm/di/hooks"
+import type { NoteSentiment } from "@/src/domain/crm/interactions/note.entity"
 
 export function NotesListPage() {
   const { tenantId, userId } = useAuth()
@@ -26,7 +27,7 @@ export function NotesListPage() {
   const [isPrivate, setIsPrivate] = useState(false)
   const [sentiment, setSentiment] = useState<"POSITIVE" | "NEUTRAL" | "NEGATIVE">("NEUTRAL")
 
-  const { data, isLoading, isError, error, refetch } = useNotesList({ tenantId: tenantId!, search })
+  const { data, isLoading, isError, error, refetch } = useNotesList({ tenantId: tenantId ?? undefined, search })
   const { mutate: createNote, isPending: isCreating } = useCreateNote()
   const { mutate: deleteNote } = useDeleteNote()
 
@@ -35,8 +36,9 @@ export function NotesListPage() {
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault()
+    if (!tenantId || !userId) return
     createNote(
-      { tenantId: tenantId!, content: formContent, authorUserId: userId!, isPinned, isPrivate, sentiment } as any,
+      { tenantId, content: formContent, authorUserId: userId, isPinned, isPrivate, sentiment },
       { onSuccess: () => { setShowCreate(false); setFormContent(""); refetch() } }
     )
   }
@@ -65,7 +67,7 @@ export function NotesListPage() {
         <Skeleton className="h-64" />
       ) : data && data.data.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {data.data.map((note: any) => (
+          {data.data.map((note) => (
             <Card key={note.id} className={`p-4 flex flex-col justify-between space-y-3 bg-card border ${note.isPinned ? "border-amber-500/40 bg-amber-500/5" : "border-border"}`}>
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-[11px] text-muted-foreground">
@@ -107,7 +109,7 @@ export function NotesListPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-caption text-foreground font-medium block mb-1">Sentimiento</label>
-              <select value={sentiment} onChange={(e: any) => setSentiment(e.target.value)} className="w-full bg-muted border border-border rounded-md px-3 py-2 text-sm text-foreground">
+              <select value={sentiment} onChange={(e) => setSentiment(e.target.value as NoteSentiment)} className="w-full bg-muted border border-border rounded-md px-3 py-2 text-sm text-foreground">
                 <option value="POSITIVE">Positivo / Oportunidad Clara</option>
                 <option value="NEUTRAL">Neutral / Informativo</option>
                 <option value="NEGATIVE">Negativo / Objeción o Riesgo</option>
