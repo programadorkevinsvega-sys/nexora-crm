@@ -288,7 +288,7 @@ export function ProductsPage() {
         </div>
         <div className="flex flex-wrap gap-1.5">
           {allTemplates.map((t, idx) => {
-            const isCustom = "id" in t && typeof t.id === "string" && t.id.length > 0
+            const customTemplateId = "id" in t && typeof t.id === "string" ? t.id : null
             return (
               <div key={idx} className="flex items-center group">
                 <Button
@@ -306,9 +306,9 @@ export function ProductsPage() {
                   <span className="font-semibold mr-1">{t.name}</span>
                   <span className="text-muted-foreground font-mono">(${t.defaultUnitPrice})</span>
                 </Button>
-                {isCustom && (
+                {customTemplateId && (
                   <button
-                    onClick={() => handleDeleteTemplate(t.id, t.name || "")}
+                    onClick={() => handleDeleteTemplate(customTemplateId, t.name || "")}
                     className="h-7 px-1 text-muted-foreground hover:text-destructive text-[11px] -ml-1 bg-background border border-l-0 rounded-r-md"
                     title="Eliminar plantilla guardada"
                   >
