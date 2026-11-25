@@ -15,14 +15,14 @@ export class DrizzleLoyaltyRepository extends LoyaltyRepository {
 
   async findProfileByContactId(tenantId: string, contactId: string): Promise<LoyaltyProfile | null> {
     const row = await this.db.query.loyaltyProfiles.findFirst({
-      where: and(eq(loyaltyProfilesTable.tenantId, tenantId)!, eq(loyaltyProfilesTable.contactId, contactId)) as any,
+      where: and(eq(loyaltyProfilesTable.tenantId, tenantId)!, eq(loyaltyProfilesTable.contactId, contactId)),
     })
     return row ? LoyaltyMapper.toDomain(row) : null
   }
 
   async findProfileById(tenantId: string, id: string): Promise<LoyaltyProfile | null> {
     const row = await this.db.query.loyaltyProfiles.findFirst({
-      where: and(eq(loyaltyProfilesTable.tenantId, tenantId)!, eq(loyaltyProfilesTable.id, id)) as any,
+      where: and(eq(loyaltyProfilesTable.tenantId, tenantId)!, eq(loyaltyProfilesTable.id, id)),
     })
     return row ? LoyaltyMapper.toDomain(row) : null
   }
@@ -66,7 +66,7 @@ export class DrizzleSegmentRepository extends SegmentRepository {
 
   async findById(tenantId: string, id: string): Promise<CustomerSegment | null> {
     const row = await this.db.query.customerSegments.findFirst({
-      where: and(eq(customerSegmentsTable.tenantId, tenantId)!, eq(customerSegmentsTable.id, id)) as any,
+      where: and(eq(customerSegmentsTable.tenantId, tenantId)!, eq(customerSegmentsTable.id, id)),
     })
     return row ? SegmentMapper.toDomain(row) : null
   }
@@ -115,7 +115,7 @@ export class DrizzleMetricsRepository extends MetricsRepository {
 
   async findByContactId(tenantId: string, contactId: string): Promise<CustomerMetrics | null> {
     const row = await this.db.query.customerMetrics.findFirst({
-      where: and(eq(customerMetricsTable.tenantId, tenantId)!, eq(customerMetricsTable.contactId, contactId)) as any,
+      where: and(eq(customerMetricsTable.tenantId, tenantId)!, eq(customerMetricsTable.contactId, contactId)),
     })
     return row ? MetricsMapper.toDomain(row) : null
   }
