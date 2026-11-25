@@ -4,16 +4,16 @@ import { getDb, processedEvents } from '@crm/database'
 import { NatsService } from './nats.service'
 import { Msg, Subscription } from 'nats'
 
-export interface DomainEventEnvelope {
+export interface DomainEventEnvelope<TPayload extends Record<string, unknown> = Record<string, unknown>> {
   eventId: string
   eventType: string
   aggregateType?: string
   aggregateId?: string
-  payload: Record<string, unknown>
+  payload: TPayload
   occurredOn?: string | Date
 }
 
-export type DomainEventHandler = (envelope: DomainEventEnvelope) => Promise<void>
+export type DomainEventHandler<TPayload extends Record<string, unknown> = Record<string, unknown>> = (envelope: DomainEventEnvelope<TPayload>) => Promise<void>
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
