@@ -80,7 +80,7 @@ export class UsersProfileDevicesGrpcController {
     if (profile instanceof LegalEntityProfile) {
       return { json: JSON.stringify(UserMapper.legalEntityToResponse(profile)) }
     }
-    throw new Error('Unsupported user profile type') }
+    throw new Error('Unsupported user profile type')
   }
 
   @GrpcMethod('UserService', 'UpdateNaturalPersonProfile')
