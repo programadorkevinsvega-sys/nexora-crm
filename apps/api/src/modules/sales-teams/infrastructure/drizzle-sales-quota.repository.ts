@@ -13,7 +13,7 @@ export class DrizzleSalesQuotaRepository extends SalesQuotaRepository {
 
   async findById(tenantId: string, id: string): Promise<SalesQuota | null> {
     const row = await this.db.query.salesQuotas.findFirst({
-      where: and(eq(salesQuotas.tenantId, tenantId)!, eq(salesQuotas.id, id)) as any,
+      where: and(eq(salesQuotas.tenantId, tenantId), eq(salesQuotas.id, id)),
     })
     return row ? SalesQuotaMapper.toDomain(row) : null
   }
@@ -30,7 +30,7 @@ export class DrizzleSalesQuotaRepository extends SalesQuotaRepository {
     if (filter.cursor) conditions.push(gt(salesQuotas.createdAt, new Date(filter.cursor)))
 
     const rows = await this.db.query.salesQuotas.findMany({
-      where: and(...conditions.filter(Boolean)!) as any,
+      where: and(...conditions),
       limit: filter.limit + 1,
       orderBy: [asc(salesQuotas.createdAt), asc(salesQuotas.id)],
     })
@@ -55,7 +55,7 @@ export class DrizzleSalesQuotaRepository extends SalesQuotaRepository {
     if (filter.cursor) conditions.push(gt(salesQuotas.createdAt, new Date(filter.cursor)))
 
     const rows = await this.db.query.salesQuotas.findMany({
-      where: and(...conditions.filter(Boolean)!) as any,
+      where: and(...conditions),
       limit: filter.limit + 1,
       orderBy: [asc(salesQuotas.createdAt), asc(salesQuotas.id)],
     })
