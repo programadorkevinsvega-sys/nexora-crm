@@ -47,7 +47,7 @@ export class LoginHandler {
       try {
         const db = getDb()
         const found = await db.query.users.findFirst({
-          where: eq(usersTable.email, cleanEmail) as any,
+          where: eq(usersTable.email, cleanEmail),
         })
         if (found) {
           user = {
@@ -110,18 +110,18 @@ export class LoginHandler {
       try {
         const db = getDb()
         const userRec = await db.query.users.findFirst({
-          where: eq(usersTable.id, user.id) as any,
+          where: eq(usersTable.id, user.id),
         })
         if (userRec?.profileId) {
           const profile = await db.query.naturalPersonProfiles.findFirst({
-            where: eq(naturalPersonProfiles.id, userRec.profileId) as any,
+            where: eq(naturalPersonProfiles.id, userRec.profileId),
           })
           if (profile) {
             userName = `${profile.firstName} ${profile.lastName}`.trim()
           }
         }
         const tenantRec = await db.query.tenants.findFirst({
-          where: eq(tenantsTable.id, actualTenantId) as any,
+          where: eq(tenantsTable.id, actualTenantId),
         })
         if (tenantRec?.name) {
           companyName = tenantRec.name
