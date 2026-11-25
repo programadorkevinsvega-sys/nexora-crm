@@ -78,7 +78,7 @@ export class AuditEventConsumerService implements OnModuleInit, OnModuleDestroy 
     while (this.running) {
       try {
         if (!this.consumer) throw new Error('Audit JetStream consumer is not initialized')
-        const messages = await this.consumer.fetch({ batch: 10, expires: 5000 })
+        const messages = await this.consumer.fetch({ max_messages: 10, expires: 5000 })
         for await (const msg of messages) {
           let parsedPayload: unknown
           try {
@@ -111,7 +111,7 @@ export class AuditEventConsumerService implements OnModuleInit, OnModuleDestroy 
             this.logger.error(`Processing error on ${msg.subject}: ${message}`)
             const deliveryCount = msg.info?.deliveryCount ?? 1
             if (deliveryCount >= MAX_DELIVER) {
-              await sendToDeadLetter(db, auditEventDeadLetters, msg.subject, message, payload, SERVICE, deliveryCount)
+              await sendToDeadLetter((record) => db.insert(auditEventDeadLetters).values(record).onConflictDoNothing(), msg.subject, message, payload, SERVICE, deliveryCount)
               msg.term()
             } else {
               msg.nak(Math.min(60000, 5000 * Math.pow(2, deliveryCount)))
