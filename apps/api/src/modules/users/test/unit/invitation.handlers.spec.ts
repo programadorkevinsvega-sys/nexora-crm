@@ -56,7 +56,7 @@ describe('tenant member invitation handlers', () => {
       })),
     }
     const invitations = { create: jest.fn<ReturnType<UserInvitationRepository['create']>, Parameters<UserInvitationRepository['create']>>() }
-    const handler = new CreateInvitationHandler(invitations as any, users as any)
+    const handler = new CreateInvitationHandler(invitations as unknown as UserInvitationRepository, users as unknown as UserRepository)
 
     await expect(handler.execute(new CreateInvitationCommand(
       TENANT_ID, 'member@example.com', ROLE_ID, INVITER_ID,
@@ -79,7 +79,7 @@ describe('tenant member invitation handlers', () => {
 
   it('rejects malformed invitation tokens before accessing persistence', async () => {
     const invitations = { findByTokenHash: jest.fn<ReturnType<UserInvitationRepository['findByTokenHash']>, Parameters<UserInvitationRepository['findByTokenHash']>>() }
-    const handler = new GetInvitationByTokenHandler(invitations as any)
+    const handler = new GetInvitationByTokenHandler(invitations as unknown as UserInvitationRepository)
     await expect(handler.execute(new GetInvitationByTokenQuery('not-a-token'))).rejects.toThrow()
     expect(invitations.findByTokenHash).not.toHaveBeenCalled()
   })
@@ -111,10 +111,10 @@ describe('tenant member invitation handlers', () => {
     const token = 'd'.repeat(43)
     const stored = invitation(createHash('sha256').update(token).digest('hex'))
     const invitations = {
-      findByTokenHash: jest.fn().mockResolvedValue(stored),
+      findByTokenHash: jest.fn<ReturnType<UserInvitationRepository['findByTokenHash']>, Parameters<UserInvitationRepository['findByTokenHash']>>().mockResolvedValue(stored),
       prepareAcceptance: jest.fn<ReturnType<UserInvitationRepository['prepareAcceptance']>, Parameters<UserInvitationRepository['prepareAcceptance']>>(),
     }
-    const handler = new PrepareInvitationAcceptanceHandler(invitations as any)
+    const handler = new PrepareInvitationAcceptanceHandler(invitations as unknown as UserInvitationRepository)
 
     await expect(handler.execute(new PrepareInvitationAcceptanceCommand(
       token, 'Ana', 'Pérez', 'weak',
