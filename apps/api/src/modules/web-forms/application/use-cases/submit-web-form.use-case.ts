@@ -1,10 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common'
 import { WebFormsRepository } from '../../domain/repositories/web-forms.repository'
 import { FormField } from '../../domain/entities/web-form.entity'
 
 export interface SubmitWebFormInput {
   idOrSlug: string
-  formData: Record<string, any>
+  formData: Record<string, unknown>
   ipAddress?: string
   userAgent?: string
 }
@@ -25,7 +25,7 @@ export interface SubmitWebFormOutput {
     city: string | null
     leadSource: string
     leadStatus: string
-    metadata: Record<string, any>
+    metadata: Record<string, unknown>
   }
 }
 
@@ -37,9 +37,15 @@ export class SubmitWebFormUseCase {
     const form = await this.repo.findBySlugOrId(input.idOrSlug)
     if (!form) throw new NotFoundException(`Form ${input.idOrSlug} not found or inactive`)
 
-    const fields = (form.fields as FormField[]) || []
-    const contactPayload: any = {
+    const fields: FormField[] = form.fields
+    const contactPayload: SubmitWebFormOutput['contactPayload'] = {
       tenantId: form.tenantId,
+      firstName: '',
+      lastName: null,
+      email: null,
+      phone: null,
+      jobTitle: null,
+      city: null,
       leadSource: form.leadSource || 'Formulario Web',
       leadStatus: form.defaultLeadStatus || 'NEW',
       metadata: { formId: form.id, formSlug: form.slug, rawSubmission: input.formData },
@@ -59,7 +65,9 @@ export class SubmitWebFormUseCase {
     }
 
     if (!contactPayload.firstName) {
-      contactPayload.firstName = contactPayload.email ? contactPayload.email.split('@')[0] : 'Lead Inbound'
+      const emailPrefix = contactPayload.email?.split('@')[0]
+      if (!emailPrefix) throw new BadRequestException('Form submission must include a first name or email address')
+      contactPayload.firstName = emailPrefix
     }
 
     const submissionId = crypto.randomUUID()
