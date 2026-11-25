@@ -10,7 +10,7 @@ import { ApiSocialInboxRepository } from "@/src/infrastructure/crm/repositories/
 import { SocialCommentCard } from "./social-comment-card"
 import { SocialAutoResponderRules } from "./social-auto-responder-rules"
 import { SocialSimulateModal } from "./social-simulate-modal"
-import type { SocialComment, SocialAutoResponderRule } from "@crm/contracts"
+import type { SocialComment, SocialAutoResponderRule, SimulateCommentDto } from "@crm/contracts"
 
 export function SocialInboxPage() {
   const [activeTab, setActiveTab] = useState<"feed" | "rules">("feed")
