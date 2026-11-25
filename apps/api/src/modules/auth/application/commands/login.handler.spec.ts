@@ -21,11 +21,11 @@ describe('LoginHandler MFA enforcement', () => {
   let secret: string
   type RepositoryMock = jest.Mocked<Pick<AuthRepository, 'findMfaMethodsByUser' | 'findUnusedRecoveryCodesByUser' | 'saveRecoveryCode' | 'saveSession'>>
   type OutboxMock = jest.Mocked<Pick<OutboxService, 'publish'>>
-  type JwtMock = jest.Mocked<Pick<JwtService, 'signAsync'>>
   type UserLookupMock = jest.Mocked<Pick<UserLookupService, 'findByTenantAndEmail' | 'findByEmail'>>
   let repository: RepositoryMock
   let outbox: OutboxMock
-  let jwtService: JwtMock
+  let jwtService: JwtService
+  let signAsync: jest.SpyInstance<ReturnType<JwtService['signAsync']>, Parameters<JwtService['signAsync']>>
   let userLookup: UserLookupMock
 
   beforeEach(async () => {
@@ -41,7 +41,8 @@ describe('LoginHandler MFA enforcement', () => {
       saveSession: jest.fn<ReturnType<AuthRepository['saveSession']>, Parameters<AuthRepository['saveSession']>>().mockResolvedValue(undefined),
     }
     outbox = { publish: jest.fn<ReturnType<OutboxService['publish']>, Parameters<OutboxService['publish']>>().mockResolvedValue(undefined) }
-    jwtService = { signAsync: jest.fn<ReturnType<JwtService['signAsync']>, Parameters<JwtService['signAsync']>>().mockResolvedValue('unexpected-token') }
+    jwtService = new JwtService({ secret: 'test-signing-secret' })
+    signAsync = jest.spyOn(jwtService, 'signAsync').mockResolvedValue('unexpected-token')
     userLookup = {
       findByTenantAndEmail: jest.fn<ReturnType<UserLookupService['findByTenantAndEmail']>, Parameters<UserLookupService['findByTenantAndEmail']>>().mockResolvedValue({
         id: userId,
@@ -71,7 +72,7 @@ describe('LoginHandler MFA enforcement', () => {
     })
     expect(result).not.toHaveProperty('accessToken')
     expect(result).not.toHaveProperty('refreshToken')
-    expect(jwtService.signAsync).not.toHaveBeenCalled()
+    expect(signAsync).not.toHaveBeenCalled()
     expect(repository.saveSession).not.toHaveBeenCalled()
     expect(outbox.publish).not.toHaveBeenCalled()
   })
@@ -88,7 +89,7 @@ describe('LoginHandler MFA enforcement', () => {
 
   it('issues a session only after a valid TOTP code', async () => {
     const validCode = authenticator.generate(secret)
-    jwtService.signAsync
+    signAsync
       .mockResolvedValueOnce('access-token')
       .mockResolvedValueOnce('refresh-token')
 
