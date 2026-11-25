@@ -13,7 +13,7 @@ export const ApiIntegrationsRepository = {
 
   async saveConfig(
     providerOrInput: IntegrationProvider | SaveIntegrationInput,
-    credentials?: Record<string, any>,
+    credentials?: Record<string, unknown>,
     isEnabled = true,
   ): Promise<{ ok: boolean }> {
     let payload: SaveIntegrationInput
@@ -29,7 +29,7 @@ export const ApiIntegrationsRepository = {
     provider: IntegrationProvider,
     recipient: string,
     testMessage?: string,
-  ): Promise<{ success: boolean; message: string; details?: any }> {
+  ): Promise<{ success: boolean; message: string; details?: unknown }> {
     const payload: TestIntegrationInput = { provider, recipient, testMessage }
     return api.post<{ success: boolean; message: string; details?: any }>(
       `/api/integrations/${provider}/test`,
