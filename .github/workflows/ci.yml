@@ -75,10 +75,12 @@ jobs:
         with:
           version: 12.21.0
       - name: Install dependencies
+        id: install-dependencies
         run: pnpm install --frozen-lockfile
       - name: Lint every workspace package
         run: pnpm lint
       - name: Enforce repository-wide no-any policy
+        if: always() && steps.install-dependencies.outcome == 'success'
         run: pnpm check:no-any
 
   validate-typecheck:
