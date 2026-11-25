@@ -78,7 +78,7 @@ export class IamEventConsumerService implements OnModuleInit, OnModuleDestroy {
     while (this.running) {
       try {
         if (!this.consumer) throw new Error('IAM JetStream consumer is not initialized')
-        const messages = await this.consumer.fetch({ batch: 5, expires: 5000 })
+        const messages = await this.consumer.fetch({ max_messages: 5, expires: 5000 })
         for await (const msg of messages) {
           let parsedPayload: unknown
           try {
