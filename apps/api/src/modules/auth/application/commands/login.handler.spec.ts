@@ -35,7 +35,7 @@ describe('LoginHandler MFA enforcement', () => {
     secret = authenticator.generateSecret()
 
     repository = {
-      findMfaMethodsByUser: jest.fn<AuthRepository['findMfaMethodsByUser'] extends (...args: infer A) => infer R ? R : never, Parameters<AuthRepository['findMfaMethodsByUser']>>(),
+      findMfaMethodsByUser: jest.fn<ReturnType<AuthRepository['findMfaMethodsByUser']>, Parameters<AuthRepository['findMfaMethodsByUser']>>(),
       findUnusedRecoveryCodesByUser: jest.fn<ReturnType<AuthRepository['findUnusedRecoveryCodesByUser']>, Parameters<AuthRepository['findUnusedRecoveryCodesByUser']>>().mockResolvedValue([]),
       saveRecoveryCode: jest.fn<ReturnType<AuthRepository['saveRecoveryCode']>, Parameters<AuthRepository['saveRecoveryCode']>>().mockResolvedValue(undefined),
       saveSession: jest.fn<ReturnType<AuthRepository['saveSession']>, Parameters<AuthRepository['saveSession']>>().mockResolvedValue(undefined),
