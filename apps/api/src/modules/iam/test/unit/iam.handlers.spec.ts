@@ -16,16 +16,16 @@ describe('IAM Module - Unit Tests', () => {
 
   beforeEach(() => {
     mockRepo = {
-      findRoleByName: jest.fn<IamRepository['findRoleByName']>(),
-      findRoleById: jest.fn<IamRepository['findRoleById']>(),
-      saveRole: jest.fn<IamRepository['saveRole']>().mockResolvedValue(undefined),
-      assignRoleToUser: jest.fn<IamRepository['assignRoleToUser']>().mockResolvedValue(undefined),
+      findRoleByName: jest.fn<ReturnType<IamRepository['findRoleByName']>, Parameters<IamRepository['findRoleByName']>>(),
+      findRoleById: jest.fn<ReturnType<IamRepository['findRoleById']>, Parameters<IamRepository['findRoleById']>>(),
+      saveRole: jest.fn<ReturnType<IamRepository['saveRole']>, Parameters<IamRepository['saveRole']>>().mockResolvedValue(undefined),
+      assignRoleToUser: jest.fn<ReturnType<IamRepository['assignRoleToUser']>, Parameters<IamRepository['assignRoleToUser']>>().mockResolvedValue(undefined),
     }
     mockOutbox = {
-      publish: jest.fn<OutboxService['publish']>().mockResolvedValue(undefined),
+      publish: jest.fn<ReturnType<OutboxService['publish']>, Parameters<OutboxService['publish']>>().mockResolvedValue(undefined),
     }
     mockUsers = {
-      findById: jest.fn<UserRepository['findById']>().mockResolvedValue(
+      findById: jest.fn<ReturnType<UserRepository['findById']>, Parameters<UserRepository['findById']>>().mockResolvedValue(
         User.create({ tenantId: 'tenant-1', email: 'user@example.test', profileType: 'NATURAL_PERSON' }),
       ),
     }
