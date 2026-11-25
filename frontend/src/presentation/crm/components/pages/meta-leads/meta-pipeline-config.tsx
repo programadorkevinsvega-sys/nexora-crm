@@ -25,7 +25,6 @@ export function MetaPipelineConfig({ integration }: MetaPipelineConfigProps) {
     }
   }, [pipelinesList, selectedPipelineId])
 
-  const selectedPipeline = pipelinesList.find((pipeline) => pipeline.id === selectedPipelineId)
   const { data: pipelineBoard } = usePipelineBoard(selectedPipelineId)
   const stages = pipelineBoard?.stages ?? []
 
