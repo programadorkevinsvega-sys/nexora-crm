@@ -84,7 +84,7 @@ export class NatsConsumerService implements OnModuleDestroy {
     const payload = isRecord(rawPayload.payload) ? rawPayload.payload : rawPayload
     const envelope: DomainEventEnvelope = {
       eventId: optionalString(rawPayload.eventId) ?? msg.headers?.get('Nats-Msg-Id') ?? String(Date.now()),
-      eventType: optionalString(rawPayload.eventType) ?? msg.subject.replace(/^crm\./, '') || 'unknown',
+      eventType: optionalString(rawPayload.eventType) ?? (msg.subject.replace(/^crm\./, '') || 'unknown'),
       aggregateType: optionalString(rawPayload.aggregateType),
       aggregateId: optionalString(rawPayload.aggregateId),
       payload,
