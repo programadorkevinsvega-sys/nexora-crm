@@ -13,14 +13,14 @@ export class DrizzleSalesTeamRepository extends SalesTeamRepository {
 
   async findById(tenantId: string, id: string): Promise<SalesTeam | null> {
     const row = await this.db.query.salesTeams.findFirst({
-      where: and(eq(salesTeams.tenantId, tenantId)!, eq(salesTeams.id, id)) as any,
+      where: and(eq(salesTeams.tenantId, tenantId), eq(salesTeams.id, id)),
     })
     return row ? SalesTeamMapper.toDomain(row) : null
   }
 
   async findByName(tenantId: string, name: string): Promise<SalesTeam | null> {
     const row = await this.db.query.salesTeams.findFirst({
-      where: and(eq(salesTeams.tenantId, tenantId)!, eq(salesTeams.name, name)) as any,
+      where: and(eq(salesTeams.tenantId, tenantId), eq(salesTeams.name, name)),
     })
     return row ? SalesTeamMapper.toDomain(row) : null
   }
@@ -30,7 +30,7 @@ export class DrizzleSalesTeamRepository extends SalesTeamRepository {
     if (!team) return null
 
     const members = await this.getMembers(id)
-    return { ...team, members } as unknown as SalesTeamWithMembers
+    return Object.assign(team, { members })
   }
 
   async list(tenantId: string, filter: SalesTeamFilter): Promise<PaginatedSalesTeams> {
@@ -40,7 +40,7 @@ export class DrizzleSalesTeamRepository extends SalesTeamRepository {
     if (filter.search) conditions.push(ilike(salesTeams.name, `%${filter.search}%`))
 
     const rows = await this.db.query.salesTeams.findMany({
-      where: and(...conditions.filter(Boolean)!) as any,
+      where: and(...conditions),
       limit: filter.limit + 1,
       orderBy: [asc(salesTeams.createdAt), asc(salesTeams.id)],
     })
