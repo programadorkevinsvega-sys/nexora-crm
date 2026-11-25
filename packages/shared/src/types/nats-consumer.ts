@@ -105,7 +105,7 @@ export abstract class NatsConsumer {
       const streamName = 'crm'
       const configName = `${this.serviceName}-consumer`
       const manager = await connection.jetstreamManager()
-      const consumerConfig = {
+      const consumerConfig: ConsumerConfig = {
         name: configName,
         durable_name: configName,
         filter_subjects: this.subjects,
