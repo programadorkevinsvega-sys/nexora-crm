@@ -30,11 +30,11 @@ export class DrizzleCompanyRepository extends CompanyRepository {
 
     if (filter.cursor) conditions.push(gt(companiesTable.createdAt, new Date(filter.cursor)))
     if (filter.search) {
-      conditions.push(or(
-          ilike(companiesTable.name, `%${filter.search}%`),
-          ilike(companiesTable.taxId, `%${filter.search}%`),
-        ),
+      const searchCondition = or(
+        ilike(companiesTable.name, `%${filter.search}%`),
+        ilike(companiesTable.taxId, `%${filter.search}%`),
       )
+      if (searchCondition) conditions.push(searchCondition)
     }
     if (filter.industry) conditions.push(eq(companiesTable.industry, filter.industry))
 
