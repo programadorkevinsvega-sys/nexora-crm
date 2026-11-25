@@ -81,7 +81,7 @@ describe('DrizzleAiRepository – generateMessageDraft', () => {
     let mockDb: MockDatabase
 
   beforeEach(() => {
-    mockDb = { select: jest.fn<() => SelectResult>(), insert: makeInsertChain() }
+    mockDb = { select: jest.fn<SelectResult, []>(), insert: makeInsertChain() }
     jest.spyOn(dbModule, 'getDb').mockReturnValue(mockDb as unknown as ReturnType<typeof dbModule.getDb>)
     repository = new DrizzleAiRepository()
   })
@@ -139,8 +139,8 @@ describe('DrizzleAiRepository – generateContactExecutiveSummary', () => {
     let mockDb: MockDatabase
 
   beforeEach(() => {
-    mockDb = { select: jest.fn(), insert: makeInsertChain() }
-    jest.spyOn(dbModule, 'getDb').mockReturnValue(mockDb)
+    mockDb = { select: jest.fn<SelectResult, []>(), insert: makeInsertChain() }
+    jest.spyOn(dbModule, 'getDb').mockReturnValue(mockDb as unknown as ReturnType<typeof dbModule.getDb>)
     repository = new DrizzleAiRepository()
   })
 
@@ -174,8 +174,8 @@ describe('DrizzleAiRepository – predictChurnRisk', () => {
     let mockDb: MockDatabase
 
   beforeEach(() => {
-    mockDb = { select: jest.fn(), insert: makeInsertChain() }
-    jest.spyOn(dbModule, 'getDb').mockReturnValue(mockDb)
+    mockDb = { select: jest.fn<SelectResult, []>(), insert: makeInsertChain() }
+    jest.spyOn(dbModule, 'getDb').mockReturnValue(mockDb as unknown as ReturnType<typeof dbModule.getDb>)
     repository = new DrizzleAiRepository()
   })
 
