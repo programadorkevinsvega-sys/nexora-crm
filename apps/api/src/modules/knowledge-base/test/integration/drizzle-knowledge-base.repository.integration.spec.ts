@@ -93,7 +93,7 @@ describe('DrizzleKnowledgeBaseRepository — Integration', () => {
       }),
     }
 
-    jest.spyOn(dbModule, 'getDb').mockReturnValue(mockDb)
+    jest.spyOn(dbModule, 'getDb').mockReturnValue(mockDb as unknown as ReturnType<typeof dbModule.getDb>)
     repository = new DrizzleKnowledgeBaseRepository()
   })
 
@@ -117,8 +117,8 @@ describe('DrizzleKnowledgeBaseRepository — Integration', () => {
         return chain
       }
       // count query per category — .from().where() is the terminal step
-      const chain: any = {}
-      chain.from = jest.fn().mockReturnValue(chain)
+      const chain = createQueryChain()
+      chain.from.mockReturnValue(chain)
       chain.where.mockImplementation(() => Promise.resolve([{ count: 3 }]))
       return chain
     })
@@ -134,9 +134,9 @@ describe('DrizzleKnowledgeBaseRepository — Integration', () => {
 
   it('2. listCategories — empty tenant returns []', async () => {
     mockDb.select.mockImplementation(() => {
-      const chain: any = {}
-      chain.from = jest.fn().mockReturnValue(chain)
-      chain.where = jest.fn().mockReturnValue(chain)
+      const chain = createQueryChain()
+      chain.from.mockReturnValue(chain)
+      chain.where.mockReturnValue(chain)
       chain.orderBy.mockResolvedValue([])
       return chain
     })
@@ -167,9 +167,9 @@ describe('DrizzleKnowledgeBaseRepository — Integration', () => {
     let selectCall = 0
     mockDb.select.mockImplementation(() => {
       selectCall++
-      const chain: any = {}
-      chain.from = jest.fn().mockReturnValue(chain)
-      chain.where = jest.fn().mockReturnValue(chain)
+      const chain = createQueryChain()
+      chain.from.mockReturnValue(chain)
+      chain.where.mockReturnValue(chain)
       if (selectCall === 1) {
         chain.orderBy.mockResolvedValue([makeArticleRow()])
       } else {
@@ -191,11 +191,11 @@ describe('DrizzleKnowledgeBaseRepository — Integration', () => {
     let selectCall = 0
     mockDb.select.mockImplementation(() => {
       selectCall++
-      const chain: any = {}
-      chain.from = jest.fn().mockReturnValue(chain)
-      chain.where = jest.fn().mockReturnValue(chain)
+      const chain = createQueryChain()
+      chain.from.mockReturnValue(chain)
+      chain.where.mockReturnValue(chain)
       if (selectCall === 1) {
-        chain.orderBy = jest.fn().mockResolvedValue([makeArticleRow()])
+        chain.orderBy.mockResolvedValue([makeArticleRow()])
       } else {
         chain.setResult([])
       }
@@ -214,10 +214,10 @@ describe('DrizzleKnowledgeBaseRepository — Integration', () => {
     let selectCall = 0
     mockDb.select.mockImplementation(() => {
       selectCall++
-      const chain: any = {}
-      chain.from = jest.fn().mockReturnValue(chain)
-      chain.where = jest.fn().mockReturnValue(chain)
-      chain.limit = jest.fn().mockResolvedValue(
+      const chain = createQueryChain()
+      chain.from.mockReturnValue(chain)
+      chain.where.mockReturnValue(chain)
+      chain.limit.mockResolvedValue(
         selectCall === 1 ? [makeArticleRow()] : [],
       )
       return chain
@@ -233,10 +233,10 @@ describe('DrizzleKnowledgeBaseRepository — Integration', () => {
 
   it('7. getArticle — not found returns null', async () => {
     mockDb.select.mockImplementation(() => {
-      const chain: any = {}
-      chain.from = jest.fn().mockReturnValue(chain)
-      chain.where = jest.fn().mockReturnValue(chain)
-      chain.limit = jest.fn().mockResolvedValue([])
+      const chain = createQueryChain()
+      chain.from.mockReturnValue(chain)
+      chain.where.mockReturnValue(chain)
+      chain.limit.mockResolvedValue([])
       return chain
     })
 
@@ -251,10 +251,10 @@ describe('DrizzleKnowledgeBaseRepository — Integration', () => {
     let selectCall = 0
     mockDb.select.mockImplementation(() => {
       selectCall++
-      const chain: any = {}
-      chain.from = jest.fn().mockReturnValue(chain)
-      chain.where = jest.fn().mockReturnValue(chain)
-      chain.limit = jest.fn().mockResolvedValue(
+      const chain = createQueryChain()
+      chain.from.mockReturnValue(chain)
+      chain.where.mockReturnValue(chain)
+      chain.limit.mockResolvedValue(
         selectCall === 1 ? [articleRow] : [],
       )
       return chain
@@ -301,18 +301,18 @@ describe('DrizzleKnowledgeBaseRepository — Integration', () => {
     let selectCall = 0
     mockDb.select.mockImplementation(() => {
       selectCall++
-      const chain: any = {}
-      chain.from = jest.fn().mockReturnValue(chain)
-      chain.where = jest.fn().mockReturnValue(chain)
+      const chain = createQueryChain()
+      chain.from.mockReturnValue(chain)
+      chain.where.mockReturnValue(chain)
 
       if (selectCall === 1) {
         // Contact identity must be scoped by both contact ID and tenant ID.
-        chain.limit = jest.fn().mockResolvedValue([
+        chain.limit.mockResolvedValue([
           { id: 'contact-1', firstName: 'Ana', lastName: 'García', email: 'ana@example.com', companyId: 'company-1' },
         ])
       } else if (selectCall === 2) {
         // Company lookup is also tenant-scoped.
-        chain.limit = jest.fn().mockResolvedValue([
+        chain.limit.mockResolvedValue([
           { id: 'company-1', tenantId: TENANT, name: 'Empresa Ana' },
         ])
       } else if (selectCall === 3) {
@@ -323,10 +323,10 @@ describe('DrizzleKnowledgeBaseRepository — Integration', () => {
         chain.setResult([{ id: 'c1' }, { id: 'c2' }])
       } else if (selectCall === 5) {
         // Featured published articles.
-        chain.orderBy = jest.fn().mockResolvedValue([makeArticleRow()])
+        chain.orderBy.mockResolvedValue([makeArticleRow()])
       } else {
         // Category-name lookup used by the article mapper.
-        chain.then = (res: any) => Promise.resolve([]).then(res)
+        chain.setResult([])
       }
 
       return chain
