@@ -31,8 +31,8 @@ function collectTypeScriptFiles(directory) {
 
 function inspectFile(filePath) {
   const sourceText = readFileSync(filePath, 'utf8')
-  const extension = extname(filePath) === '.tsx' ? ts.ScriptKind.TSX : ts.ScriptKind.TS
-  const sourceFile = ts.createSourceFile(filePath, sourceText, ts.ScriptTarget.Latest, true, extension)
+  const scriptKind = extname(filePath) === '.tsx' ? ts.ScriptKind.TSX : ts.ScriptKind.TS
+  const sourceFile = ts.createSourceFile(filePath, sourceText, ts.ScriptTarget.Latest, true, scriptKind)
 
   function visit(node) {
     if (node.kind === ts.SyntaxKind.AnyKeyword) {
@@ -43,11 +43,12 @@ function inspectFile(filePath) {
   }
   visit(sourceFile)
 
-  const suppressionPattern = /eslint-disable(?:-next-line|-line)?[^\\r\\n]*(?:@typescript-eslint\\/no-explicit-any|no-explicit-any)/g
-  for (const match of sourceText.matchAll(suppressionPattern)) {
-    const line = sourceText.slice(0, match.index).split('\\n').length
-    violations.push(`${relative(repositoryRoot, filePath)}:${line}: ESLint suppression for any-type rule`)
-  }
+  const lines = sourceText.split('\n')
+  lines.forEach((line, index) => {
+    if (line.includes('eslint-disable') && line.includes('no-explicit-any')) {
+      violations.push(`${relative(repositoryRoot, filePath)}:${index + 1}: ESLint suppression for any-type rule`)
+    }
+  })
 }
 
 for (const sourceRoot of sourceRoots) {
@@ -55,9 +56,9 @@ for (const sourceRoot of sourceRoots) {
 }
 
 if (violations.length > 0) {
-  process.stderr.write(`Type policy failed: found ${violations.length} forbidden any usage(s).\\n`)
-  for (const violation of violations) process.stderr.write(` - ${violation}\\n`)
+  process.stderr.write(`Type policy failed: found ${violations.length} forbidden any usage(s).\n`)
+  for (const violation of violations) process.stderr.write(` - ${violation}\n`)
   process.exitCode = 1
 } else {
-  process.stdout.write('Type policy passed: no explicit any types or any-rule suppressions found.\\n')
+  process.stdout.write('Type policy passed: no explicit any types or any-rule suppressions found.\n')
 }
