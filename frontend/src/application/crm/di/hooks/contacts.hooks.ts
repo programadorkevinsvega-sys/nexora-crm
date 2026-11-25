@@ -11,7 +11,7 @@ import type { CreateContactUseCase } from "../../contacts/use-cases/create-conta
 import type { UpdateContactUseCase } from "../../contacts/use-cases/update-contact.use-case"
 import type { DeleteContactUseCase } from "../../contacts/use-cases/delete-contact.use-case"
 
-export function useContactsList(params?: Parameters<ListContactsUseCase['execute']>[0] {
+export function useContactsList(params?: Parameters<ListContactsUseCase['execute']>[0]) {
   return useQuery({
     queryKey: ["contacts", "list", params],
     queryFn: async () => {
