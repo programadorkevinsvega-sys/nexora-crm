@@ -7,13 +7,13 @@ import type {
   Pet, AddPet,
 } from "@crm/contracts"
 import { LifeEventSchema, GiftSchema, DebtSchema, ReminderSchema, PetSchema } from "@crm/contracts"
-import type { z } from "zod"
+import type { ZodType } from "zod"
 
 export type { LifeEvent, CreateLifeEvent, Gift, CreateGift, Debt, CreateDebt, Reminder, CreateReminder, Pet, AddPet }
 export type GiftIdea = Gift
 export type RelationshipReminder = Reminder
 
-function parseList<T>(response: unknown, schema: z.ZodType<T>): { data: T[] } {
+function parseList<T>(response: unknown, schema: ZodType<T>): { data: T[] } {
   const rows = Array.isArray(response)
     ? response
     : typeof response === 'object' && response !== null && 'data' in response && Array.isArray(response.data)
