@@ -143,7 +143,7 @@ export abstract class NatsConsumer {
 
   private async handleMessage(message: JetStreamMessage): Promise<void> {
     try {
-      const parsed: unknown = JSON.parse(message.data.toString())
+      const parsed: unknown = JSON.parse(new TextDecoder().decode(message.data))
       if (!isRecord(parsed)) throw new TypeError('Event payload must be a JSON object')
       const subject = message.subject
       const eventId = typeof parsed.eventId === 'string' && parsed.eventId.length > 0
