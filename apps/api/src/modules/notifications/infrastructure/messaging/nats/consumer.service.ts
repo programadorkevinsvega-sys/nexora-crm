@@ -67,7 +67,7 @@ export class NotificationsEventConsumerService implements OnModuleInit, OnModule
             this.logger.error(`Processing error on ${msg.subject}: ${error.message}`)
             const dc = ((msg as any).info?.deliveryCount ?? (msg as any).deliveryCount ?? 1) as number
             if (dc >= MAX_DELIVER) {
-              await sendToDeadLetter(db, notificationEventDeadLetters, msg.subject, error.message, payload, SERVICE, dc); (msg as any).term()
+              await sendToDeadLetter((record) => db.insert(notificationEventDeadLetters).values(record).onConflictDoNothing(), msg.subject, error.message, payload, SERVICE, dc); (msg as any).term()
             } else {
               msg.nak(Math.min(60000, 5000 * Math.pow(2, dc)))
             }
