@@ -19,10 +19,10 @@ interface QueryChain extends PromiseLike<QueryRow[]> {
 function createQueryChain(initialRows: QueryRow[] = []): QueryChain {
   let rows = initialRows
   const chain: QueryChain = {
-    from: jest.fn<(table: unknown) => QueryChain>().mockImplementation(() => chain),
-    where: jest.fn<(condition: unknown) => QueryChain | Promise<QueryRow[]>>().mockImplementation(() => chain),
-    orderBy: jest.fn<(...args: unknown[]) => Promise<QueryRow[]>>().mockImplementation(async () => rows),
-    limit: jest.fn<(count: number) => Promise<QueryRow[]>>().mockImplementation(async () => rows),
+    from: jest.fn<QueryChain, [unknown]>().mockImplementation(() => chain),
+    where: jest.fn<QueryChain | Promise<QueryRow[]>, [unknown]>().mockImplementation(() => chain),
+    orderBy: jest.fn<Promise<QueryRow[]>, unknown[]>().mockImplementation(async () => rows),
+    limit: jest.fn<Promise<QueryRow[]>, [number]>().mockImplementation(async () => rows),
     setResult(nextRows: QueryRow[]) { rows = nextRows },
     then<TResult1 = QueryRow[], TResult2 = never>(
       onfulfilled?: ((value: QueryRow[]) => TResult1 | PromiseLike<TResult1>) | null,
@@ -82,12 +82,12 @@ describe('DrizzleKnowledgeBaseRepository — Integration', () => {
 
   beforeEach(() => {
     mockDb = {
-      select: jest.fn<() => QueryChain>(),
-      insert: jest.fn<() => { values: ValuesMock }>().mockReturnValue({
+      select: jest.fn<QueryChain, []>(),
+      insert: jest.fn<{ values: ValuesMock }, []>().mockReturnValue({
         values: jest.fn<Promise<unknown>, [unknown]>().mockResolvedValue(undefined),
       }),
-      update: jest.fn<() => { set: jest.MockedFunction<(values: unknown) => { where: WhereUpdateMock }> }>().mockReturnValue({
-        set: jest.fn<(values: unknown) => { where: WhereUpdateMock }>().mockReturnValue({
+      update: jest.fn<{ set: jest.MockedFunction<(values: unknown) => { where: WhereUpdateMock }> }, []>().mockReturnValue({
+        set: jest.fn<{ where: WhereUpdateMock }, [unknown]>().mockReturnValue({
           where: jest.fn<Promise<unknown>, [unknown]>().mockResolvedValue(undefined),
         }),
       }),
