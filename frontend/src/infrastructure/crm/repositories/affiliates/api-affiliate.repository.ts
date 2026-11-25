@@ -48,6 +48,27 @@ export interface AffiliateCreateInput {
   referralCode: string
 }
 
+export interface AffiliateUpdateInput {
+  programId?: string
+  contactId?: string
+  referralCode?: string
+  status?: string
+}
+
+export interface CommissionCreateInput {
+  tenantId: string
+  affiliateId: string
+  amount: number
+  status?: string
+}
+
+export interface PayoutCreateInput {
+  tenantId: string
+  affiliateId: string
+  amount: number
+  status?: string
+}
+
 export interface Commission {
   id: string
   tenantId: string
@@ -81,11 +102,11 @@ export const ApiAffiliateRepository = {
   async create(data: AffiliateCreateInput): Promise<Affiliate> {
     return api.post<Affiliate>("/api/affiliates", data)
   },
-  async update(id: string, data: any): Promise<any> {
-    return Promise.resolve({ id, ...data })
+  async update(id: string, data: AffiliateUpdateInput): Promise<Affiliate> {
+    return api.put<Affiliate>(`/api/affiliates/${id}`, data)
   },
-  async delete(_id: string): Promise<void> {
-    return Promise.resolve()
+  async delete(id: string): Promise<void> {
+    return api.delete(`/api/affiliates/${id}`)
   },
 
   async listPrograms(filters: { isActive?: boolean; tenantId?: string; search?: string; cursor?: string; limit?: number } = {}, pagination?: { cursor?: string; limit?: number }): Promise<PaginatedResult<AffiliateProgram>> {
@@ -149,7 +170,7 @@ export const ApiCommissionRepository = {
   async listByAffiliateId(affiliateId: string, filters: { status?: string; cursor?: string; limit?: number } = {}, pagination?: { cursor?: string; limit?: number }): Promise<PaginatedResult<Commission>> {
     return ApiAffiliateRepository.listCommissions({ ...filters, affiliateId }, pagination)
   },
-  async create(data: any): Promise<Commission> {
+  async create(data: CommissionCreateInput): Promise<Commission> {
     return api.post<Commission>("/api/affiliates/commissions", data)
   },
 }
@@ -158,7 +179,7 @@ export const ApiPayoutRepository = {
   async listByAffiliateId(affiliateId: string, filters: { status?: string; cursor?: string; limit?: number } = {}, pagination?: { cursor?: string; limit?: number }): Promise<PaginatedResult<Payout>> {
     return ApiAffiliateRepository.listPayouts({ ...filters, affiliateId }, pagination)
   },
-  async create(data: any): Promise<Payout> {
+  async create(data: PayoutCreateInput): Promise<Payout> {
     return api.post<Payout>("/api/affiliates/payouts", data)
   },
 }
