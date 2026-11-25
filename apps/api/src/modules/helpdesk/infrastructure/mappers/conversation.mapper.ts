@@ -1,32 +1,9 @@
 import { HelpdeskConversation } from '../../domain/entities/conversation.entity'
 
-type ConversationRow = {
-  id: string
-  tenantId: string
-  mailboxId: string
-  ticketNumber: number | null
-  subject: string
-  customerEmail: string
-  customerId: string | null
-  assigneeUserId: string | null
-  status: string | null
-  priority: string | null
-  sourceChannel: string | null
-  previewText: string | null
-  hasAttachments: boolean | null
-  lastReplyAt: Date | null
-  lastReplyFrom: string | null
-  closedAt: Date | null
-  estimatedHours: string | null
-  workedHours: string | null
-  dueDate: Date | null
-  firstResponseAt: Date | null
-  resolvedAt: Date | null
-  isInternal: boolean | null
-  requiresApproval: boolean | null
-  createdAt: Date
-  updatedAt: Date
-}
+import type { helpdeskConversations } from '@crm/database'
+
+type ConversationRow = typeof helpdeskConversations.$inferSelect
+type ConversationInsert = typeof helpdeskConversations.$inferInsert
 
 export class ConversationMapper {
   static toDomain(row: ConversationRow): HelpdeskConversation {
@@ -59,12 +36,12 @@ export class ConversationMapper {
     )
   }
 
-  static toPersistence(conversation: HelpdeskConversation): ConversationRow {
+  static toPersistence(conversation: HelpdeskConversation): ConversationInsert {
     return {
       id: conversation.id,
       tenantId: conversation.tenantId,
       mailboxId: conversation.mailboxId,
-      ticketNumber: conversation.ticketNumber ?? null,
+      ...(conversation.ticketNumber !== null ? { ticketNumber: conversation.ticketNumber } : {}),
       subject: conversation.subject,
       customerEmail: conversation.customerEmail,
       customerId: conversation.customerId,
