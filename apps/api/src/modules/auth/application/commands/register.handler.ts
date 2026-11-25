@@ -32,7 +32,7 @@ export class RegisterHandler {
 
     // 1. Validar unicidad global de correo electrónico
     const existingUser = await this.db.query.users.findFirst({
-      where: eq(usersTable.email, cleanEmail) as any,
+      where: eq(usersTable.email, cleanEmail),
     })
 
     if (existingUser) {
@@ -41,7 +41,7 @@ export class RegisterHandler {
 
     // 2. Validar unicidad de nombre de empresa / inquilino
     const existingTenant = await this.db.query.tenants.findFirst({
-      where: ilike(tenantsTable.name, cleanCompany) as any,
+      where: ilike(tenantsTable.name, cleanCompany),
     })
 
     if (existingTenant) {
