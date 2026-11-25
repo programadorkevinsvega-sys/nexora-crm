@@ -40,7 +40,7 @@ function isProductTemplate(value: unknown): value is ProductTemplate {
     && typeof value.category === "string"
     && typeof value.defaultUnitPrice === "number"
     && typeof value.defaultCurrency === "string"
-    && typeof value.pricingType === "string"
+    && ProductPricingTypeSchema.safeParse(value.pricingType).success
     && typeof value.defaultTaxRate === "number"
     && typeof value.createdAt === "string"
     && typeof value.updatedAt === "string"
