@@ -1,29 +1,31 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { CreateUserHandler } from '../../application/commands/user.handlers'
 import { GetUserHandler } from '../../application/queries/user.handlers'
 import { CreateUserCommand } from '../../application/commands/user.commands'
 import { GetUserQuery } from '../../application/queries/user.queries'
 import { User } from '../../domain/entities/user.entity'
+import { UserRepository } from '../../domain/repositories/user.repository'
+import { OutboxService } from '../../../../common/outbox/outbox.service'
 
 const TENANT_ID = '00000000-0000-0000-0000-000000000001'
 
 describe('CreateUserHandler', () => {
   let handler: CreateUserHandler
-  let mockRepo: any
-  let mockOutbox: any
+  type CreateUserRepoMock = jest.Mocked<Pick<UserRepository, 'findByEmail' | 'save' | 'saveNaturalPersonProfile' | 'saveLegalEntityProfile' | 'findById'>>
+  let mockRepo: CreateUserRepoMock
+  let mockOutbox: jest.Mocked<Pick<OutboxService, 'publish'>>
 
   beforeEach(() => {
     mockRepo = {
-      findByEmail: jest.fn().mockResolvedValue(null),
-      save: jest.fn().mockResolvedValue(undefined),
-      saveNaturalPersonProfile: jest.fn().mockResolvedValue(undefined),
-      saveLegalEntityProfile: jest.fn().mockResolvedValue(undefined),
-      findById: jest.fn().mockResolvedValue(null),
+      findByEmail: jest.fn<ReturnType<UserRepository['findByEmail']>, Parameters<UserRepository['findByEmail']>>().mockResolvedValue(null),
+      save: jest.fn<ReturnType<UserRepository['save']>, Parameters<UserRepository['save']>>().mockResolvedValue(undefined),
+      saveNaturalPersonProfile: jest.fn<ReturnType<UserRepository['saveNaturalPersonProfile']>, Parameters<UserRepository['saveNaturalPersonProfile']>>().mockResolvedValue(undefined),
+      saveLegalEntityProfile: jest.fn<ReturnType<UserRepository['saveLegalEntityProfile']>, Parameters<UserRepository['saveLegalEntityProfile']>>().mockResolvedValue(undefined),
+      findById: jest.fn<ReturnType<UserRepository['findById']>, Parameters<UserRepository['findById']>>().mockResolvedValue(null),
     }
     mockOutbox = {
-      publish: jest.fn().mockResolvedValue(undefined),
+      publish: jest.fn<ReturnType<OutboxService['publish']>, Parameters<OutboxService['publish']>>().mockResolvedValue(undefined),
     }
-    handler = new CreateUserHandler(mockRepo, mockOutbox)
+    handler = new CreateUserHandler(mockRepo as unknown as UserRepository, mockOutbox as unknown as OutboxService)
   })
 
   it('should create a natural person user', async () => {
@@ -79,11 +81,11 @@ describe('CreateUserHandler', () => {
 
 describe('GetUserHandler', () => {
   let handler: GetUserHandler
-  let mockRepo: any
+  let mockRepo: jest.Mocked<Pick<UserRepository, 'findById'>>
 
   beforeEach(() => {
-    mockRepo = { findById: jest.fn() }
-    handler = new GetUserHandler(mockRepo)
+    mockRepo = { findById: jest.fn<ReturnType<UserRepository['findById']>, Parameters<UserRepository['findById']>>() }
+    handler = new GetUserHandler(mockRepo as unknown as UserRepository)
   })
 
   it('should return user when found', async () => {
