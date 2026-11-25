@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Controller } from '@nestjs/common'
 import { GrpcMethod } from '@nestjs/microservices'
 import {
@@ -22,6 +21,45 @@ import {
   ListSystemModulesQuery, ListInstalledModulesQuery,
 } from '../../application/queries/tenants.queries'
 import { TenantsMapper } from '../../infrastructure/tenants.mapper'
+
+interface TenantFeaturesGrpcRequest {
+  tenantId?: unknown
+  logoUrl?: unknown
+  faviconUrl?: unknown
+  primaryColor?: unknown
+  secondaryColor?: unknown
+  customDomain?: unknown
+  domain?: unknown
+  isPrimary?: unknown
+  metricName?: unknown
+  currentValue?: unknown
+  limitValue?: unknown
+  periodStart?: unknown
+  periodEnd?: unknown
+}
+
+function requiredFeatureString(value: unknown, field: string): string {
+  if (typeof value !== 'string' || value.trim().length === 0) throw new TypeError(`Missing or invalid ${field}`)
+  return value
+}
+
+function optionalFeatureString(value: unknown): string | undefined {
+  return typeof value === 'string' ? value : undefined
+}
+
+function optionalFeatureBoolean(value: unknown): boolean | undefined {
+  return typeof value === 'boolean' ? value : undefined
+}
+
+function optionalFeatureNumber(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined
+}
+
+function requiredFeatureNumber(value: unknown, field: string): number {
+  const number = optionalFeatureNumber(value)
+  if (number === undefined) throw new TypeError(`Missing or invalid ${field}`)
+  return number
+}
 
 @Controller()
 export class TenantsFeaturesGrpcController {
@@ -49,9 +87,9 @@ export class TenantsFeaturesGrpcController {
   }
 
   @GrpcMethod('TenantService', 'UpdateBranding')
-  async updateBranding(data: any) {
+  async updateBranding(data: TenantFeaturesGrpcRequest) {
     await this.updateBrandingHandler.execute(
-      new UpdateBrandingCommand(data.tenantId, data.logoUrl, data.faviconUrl, data.primaryColor, data.secondaryColor, data.customDomain),
+      new UpdateBrandingCommand(requiredFeatureString(data.tenantId, 'tenantId'), optionalFeatureString(data.logoUrl), optionalFeatureString(data.faviconUrl), optionalFeatureString(data.primaryColor), optionalFeatureString(data.secondaryColor), optionalFeatureString(data.customDomain)),
     )
     return {}
   }
@@ -69,8 +107,8 @@ export class TenantsFeaturesGrpcController {
   }
 
   @GrpcMethod('TenantService', 'CreateDomain')
-  async createDomain(data: any) {
-    await this.createDomainHandler.execute(new CreateDomainCommand(data.tenantId, data.domain, data.isPrimary))
+  async createDomain(data: TenantFeaturesGrpcRequest) {
+    await this.createDomainHandler.execute(new CreateDomainCommand(requiredFeatureString(data.tenantId, 'tenantId'), requiredFeatureString(data.domain, 'domain'), optionalFeatureBoolean(data.isPrimary)))
     return {}
   }
 
@@ -99,9 +137,9 @@ export class TenantsFeaturesGrpcController {
   }
 
   @GrpcMethod('TenantService', 'UpsertMetric')
-  async upsertMetric(data: any) {
+  async upsertMetric(data: TenantFeaturesGrpcRequest) {
     const result = await this.upsertMetricHandler.execute(
-      new UpsertMetricCommand(data.tenantId, data.metricName, data.currentValue, data.limitValue, data.periodStart ?? new Date().toISOString(), data.periodEnd ?? new Date().toISOString()),
+      new UpsertMetricCommand(requiredFeatureString(data.tenantId, 'tenantId'), requiredFeatureString(data.metricName, 'metricName'), requiredFeatureNumber(data.currentValue, 'currentValue'), optionalFeatureNumber(data.limitValue), optionalFeatureString(data.periodStart), optionalFeatureString(data.periodEnd)),
     )
     return { json: JSON.stringify(TenantsMapper.metricToResponse(result)) }
   }
