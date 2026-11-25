@@ -13,14 +13,14 @@ export class DrizzleCompanyRepository extends CompanyRepository {
 
   async findById(tenantId: string, id: string): Promise<Company | null> {
     const row = await this.db.query.companies.findFirst({
-      where: and(eq(companiesTable.tenantId, tenantId)!, eq(companiesTable.id, id)) as any,
+      where: and(eq(companiesTable.tenantId, tenantId), eq(companiesTable.id, id)),
     })
     return row ? CompanyMapper.toDomain(row) : null
   }
 
   async findByName(tenantId: string, name: string): Promise<Company | null> {
     const row = await this.db.query.companies.findFirst({
-      where: and(eq(companiesTable.tenantId, tenantId)!, eq(companiesTable.name, name)) as any,
+      where: and(eq(companiesTable.tenantId, tenantId), eq(companiesTable.name, name)),
     })
     return row ? CompanyMapper.toDomain(row) : null
   }
@@ -31,15 +31,15 @@ export class DrizzleCompanyRepository extends CompanyRepository {
     if (filter.cursor) conditions.push(gt(companiesTable.createdAt, new Date(filter.cursor)))
     if (filter.search) {
       conditions.push(or(
-          ilike(companiesTable.name, `%${filter.search}%`)!,
-          ilike(companiesTable.taxId, `%${filter.search}%`)!,
-        )!,
+          ilike(companiesTable.name, `%${filter.search}%`),
+          ilike(companiesTable.taxId, `%${filter.search}%`),
+        ),
       )
     }
     if (filter.industry) conditions.push(eq(companiesTable.industry, filter.industry))
 
     const rows = await this.db.query.companies.findMany({
-      where: and(...conditions.filter(Boolean)!) as any,
+      where: and(...conditions),
       limit: filter.limit + 1,
       orderBy: [asc(companiesTable.createdAt), asc(companiesTable.id)],
     })
