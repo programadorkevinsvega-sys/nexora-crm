@@ -8,6 +8,18 @@ import { GetContactUseCase } from '../../../application/use-cases/GetContactUseC
 import { ListContactsUseCase } from '../../../application/use-cases/ListContactsUseCase'
 import { ContactsProtoMapper } from '../dto/ContactsProtoMapper'
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function contactIdentity(input: unknown): { tenantId: string; id: string } {
+  if (!isRecord(input)) throw new TypeError('Contact identity request must be an object')
+  const tenantId = input.tenantId ?? input.tenant_id
+  if (typeof tenantId !== 'string' || tenantId.trim().length === 0) throw new TypeError('tenantId is required')
+  if (typeof input.id !== 'string' || input.id.trim().length === 0) throw new TypeError('id is required')
+  return { tenantId, id: input.id }
+}
+
 @Controller()
 @UseFilters(GrpcDomainErrorFilter)
 export class ContactsGrpcController {
@@ -20,7 +32,7 @@ export class ContactsGrpcController {
   ) {}
 
   @GrpcMethod('ContactService', 'CreateContact')
-  async create(data: any) {
+  async create(data: unknown) {
     const input = ContactsProtoMapper.toCreateInput(data)
     const result = await this.createUseCase.execute(input)
     const contact = await this.getUseCase.execute({ tenantId: input.tenantId, id: result.id })
@@ -28,14 +40,14 @@ export class ContactsGrpcController {
   }
 
   @GrpcMethod('ContactService', 'GetContact')
-  async getById(data: { tenantId?: string; tenant_id?: string; id: string }) {
-    const tenantId = data.tenantId || data.tenant_id || ''
-    const contact = await this.getUseCase.execute({ tenantId, id: data.id })
+  async getById(data: unknown) {
+    const identity = contactIdentity(data)
+    const contact = await this.getUseCase.execute(identity)
     return { json: JSON.stringify(contact) }
   }
 
   @GrpcMethod('ContactService', 'ListContacts')
-  async list(data: any) {
+  async list(data: unknown) {
     const input = ContactsProtoMapper.toListInput(data)
     const result = await this.listUseCase.execute(input)
     return {
@@ -45,16 +57,15 @@ export class ContactsGrpcController {
   }
 
   @GrpcMethod('ContactService', 'UpdateContact')
-  async update(data: any) {
+  async update(data: unknown) {
     const input = ContactsProtoMapper.toUpdateInput(data)
     await this.updateUseCase.execute(input)
     return {}
   }
 
   @GrpcMethod('ContactService', 'DeleteContact')
-  async delete(data: { tenantId?: string; tenant_id?: string; id: string }) {
-    const tenantId = data.tenantId || data.tenant_id || ''
-    await this.deleteUseCase.execute({ tenantId, id: data.id })
+  async delete(data: unknown) {
+    await this.deleteUseCase.execute(contactIdentity(data))
     return {}
   }
 }
