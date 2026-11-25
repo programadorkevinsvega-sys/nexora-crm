@@ -29,13 +29,13 @@ export function DiscordConfigModal({ isOpen, onClose, onSuccess }: DiscordConfig
     setTestResult(null)
     try {
       const res = await ApiIntegrationsRepository.testIntegration(
-        "DISCORD" as any,
-        "default-channel",
+        "DISCORD",
+        webhookUrl.trim(),
         "🚀 Prueba de alerta en vivo desde Nexora CRM hacia Discord"
       )
       setTestResult(res)
-    } catch (err: any) {
-      setTestResult({ success: false, message: err?.message || "Error al conectar con Discord" })
+    } catch (err: unknown) {
+      setTestResult({ success: false, message: err instanceof Error ? err.message : "Error al conectar con Discord" })
     } finally {
       setTesting(false)
     }
@@ -47,7 +47,7 @@ export function DiscordConfigModal({ isOpen, onClose, onSuccess }: DiscordConfig
     setSaving(true)
     try {
       await ApiIntegrationsRepository.saveConfig({
-        provider: "DISCORD" as any,
+        provider: "DISCORD",
         isEnabled: true,
         credentials: {
           webhookUrl: webhookUrl.trim(),
@@ -57,8 +57,8 @@ export function DiscordConfigModal({ isOpen, onClose, onSuccess }: DiscordConfig
       })
       onSuccess()
       onClose()
-    } catch (err: any) {
-      alert(`Error al guardar: ${err?.message}`)
+    } catch (err: unknown) {
+      alert(`Error al guardar: ${err instanceof Error ? err.message : String(err)}`)
     } finally {
       setSaving(false)
     }
