@@ -111,7 +111,7 @@ export class IamEventConsumerService implements OnModuleInit, OnModuleDestroy {
             this.logger.error(`Processing error on ${msg.subject}: ${message}`)
             const deliveryCount = msg.info?.deliveryCount ?? 1
             if (deliveryCount >= MAX_DELIVER) {
-              await sendToDeadLetter(db, iamEventDeadLetters, msg.subject, message, payload, SERVICE, deliveryCount)
+              await sendToDeadLetter((record) => db.insert(iamEventDeadLetters).values(record).onConflictDoNothing(), msg.subject, message, payload, SERVICE, deliveryCount)
               msg.term()
             } else {
               msg.nak(Math.min(60000, 5000 * Math.pow(2, deliveryCount)))
