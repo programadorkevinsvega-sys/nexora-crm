@@ -13,14 +13,14 @@ export class DrizzleAffiliateRepository extends AffiliateRepository {
 
   async findById(tenantId: string, id: string): Promise<Affiliate | null> {
     const row = await this.db.query.affiliates.findFirst({
-      where: and(eq(affiliatesTable.tenantId, tenantId)!, eq(affiliatesTable.id, id)) as any,
+      where: and(eq(affiliatesTable.tenantId, tenantId), eq(affiliatesTable.id, id)),
     })
     return row ? AffiliateMapper.affiliateToDomain(row) : null
   }
 
   async findByReferralCode(tenantId: string, referralCode: string): Promise<Affiliate | null> {
     const row = await this.db.query.affiliates.findFirst({
-      where: and(eq(affiliatesTable.tenantId, tenantId)!, eq(affiliatesTable.referralCode, referralCode)) as any,
+      where: and(eq(affiliatesTable.tenantId, tenantId), eq(affiliatesTable.referralCode, referralCode)),
     })
     return row ? AffiliateMapper.affiliateToDomain(row) : null
   }
@@ -33,7 +33,7 @@ export class DrizzleAffiliateRepository extends AffiliateRepository {
     if (filter.status) conditions.push(eq(affiliatesTable.status, filter.status))
 
     const rows = await this.db.query.affiliates.findMany({
-      where: and(...conditions.filter(Boolean)!) as any,
+      where: and(...conditions),
       limit: filter.limit + 1,
       orderBy: [asc(affiliatesTable.createdAt), asc(affiliatesTable.id)],
     })
