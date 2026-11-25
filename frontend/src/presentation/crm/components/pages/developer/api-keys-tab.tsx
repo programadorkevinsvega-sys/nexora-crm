@@ -66,8 +66,8 @@ export function ApiKeysTab({ keys, onRefresh, onKeyCreated }: Props) {
       setScopes([])
       setExpiresAt('')
       onKeyCreated(created)
-    } catch (err: any) {
-      setError(err?.message || 'Error al crear la clave de API')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Error al crear la clave de API')
     } finally {
       setSaving(false)
     }
@@ -79,8 +79,8 @@ export function ApiKeysTab({ keys, onRefresh, onKeyCreated }: Props) {
       await ApiDeveloperRepository.revokeApiKey(revokeId)
       setRevokeId(null)
       onRefresh()
-    } catch (err: any) {
-      alert(err?.message || 'Error al revocar la clave')
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Error al revocar la clave')
     }
   }
 
@@ -90,8 +90,8 @@ export function ApiKeysTab({ keys, onRefresh, onKeyCreated }: Props) {
       await ApiDeveloperRepository.deleteApiKey(deleteId)
       setDeleteId(null)
       onRefresh()
-    } catch (err: any) {
-      alert(err?.message || 'Error al eliminar la clave de API')
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Error al eliminar la clave de API')
     }
   }
 
