@@ -48,15 +48,10 @@ export function CampaignMemberList({ campaignId }: CampaignMemberListProps) {
   })
 
   const addMutation = useMutation({
-    mutationFn: (formData: MemberFormData) => {
-      const repoPromise = import("@/src/infrastructure/crm/repositories/campaigns/api-campaign.repository")
-      return repoPromise.then(({ ApiCampaignRepository }) =>
-        ApiCampaignRepository.addMember({
-          tenantId: tenantId ?? (() => { throw new Error('Tenant context is required to add a campaign member') })(),
-          campaignId,
-          contactId: formData.contactId,
-        })
-      )
+    mutationFn: async (formData: MemberFormData) => {
+      if (!tenantId) throw new Error('Tenant context is required to add a campaign member')
+      const { ApiCampaignRepository } = await import("@/src/infrastructure/crm/repositories/campaigns/api-campaign.repository")
+      return ApiCampaignRepository.addMember({ tenantId, campaignId, contactId: formData.contactId })
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["campaign-members", campaignId] })
