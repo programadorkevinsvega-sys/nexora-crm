@@ -1,50 +1,29 @@
 "use client"
 
 import React from "react"
-import {
-  MessageSquare,
-  Mail,
-  Smartphone,
-  Send,
-  Zap,
-  TrendingUp,
-  Clock,
-  ShieldCheck,
-  CheckSquare,
-  Globe,
-  Flame,
-  Plus,
-  Sparkles,
-} from "lucide-react"
+import { Clock, ShieldCheck, Plus } from "lucide-react"
 import { Card } from "@/src/presentation/crm/components/ui/Card"
 import type { WorkflowStep } from "@/src/domain/crm/automation/workflow.entity"
 
-export const PALETTE_ITEMS = [
+type PaletteStepType = WorkflowStep['type']
+type PaletteAction = WorkflowStep['action']
+
+interface PaletteItem {
+  type: PaletteStepType
+  action?: PaletteAction
+  label: string
+  desc: string
+  icon: typeof Clock | typeof ShieldCheck
+  color: string
+  duration?: string
+}
+
+export const PALETTE_ITEMS: Array<{ category: string; items: PaletteItem[] }> = [
   {
-    category: "💬 Comunicación & Mensajería",
-    items: [
-      { type: "ACTION", action: "SEND_WHATSAPP", label: "WhatsApp Oficial", desc: "Meta Cloud API", icon: MessageSquare, color: "text-emerald-500" },
-      { type: "ACTION", action: "SEND_EMAIL", label: "Email Transaccional", desc: "SMTP / AWS SES", icon: Mail, color: "text-blue-500" },
-      { type: "ACTION", action: "SEND_SMS", label: "SMS Twilio", desc: "Texto directo", icon: Smartphone, color: "text-indigo-500" },
-      { type: "ACTION", action: "AI_DRAFT_MESSAGE", label: "Redactar con IA Bot", desc: "Copilot RAG automático", icon: Sparkles, color: "text-purple-400" },
-    ],
-  },
-  {
-    category: "🚀 Integraciones Externas Nativas",
-    items: [
-      { type: "ACTION", action: "SEND_SLACK", label: "Slack Notificación", desc: "Canal o DM directo", icon: Zap, color: "text-amber-500" },
-      { type: "ACTION", action: "SEND_DISCORD", label: "Discord Bot Embed", desc: "Canal con embed", icon: Send, color: "text-purple-500" },
-      { type: "ACTION", action: "SYNC_ACCOUNTING", label: "Factura Contable", desc: "ERP / Facturación", icon: TrendingUp, color: "text-emerald-600" },
-      { type: "ACTION", action: "TRIGGER_WEBHOOK", label: "Webhook HTTP", desc: "REST payload", icon: Globe, color: "text-rose-500" },
-    ],
-  },
-  {
-    category: "⚙️ Lógica & Control de Flujo",
+    category: "⚙️ Control de Flujo",
     items: [
       { type: "DELAY", label: "Temporizador (Espera)", desc: "1h, 24h, 7 días", icon: Clock, color: "text-amber-500", duration: "1h" },
       { type: "CONDITION", label: "Bifurcación Condicional", desc: "Regla Si / No", icon: ShieldCheck, color: "text-purple-500" },
-      { type: "ACTION", action: "CREATE_TASK", label: "Crear Tarea en CRM", desc: "Asignar a agente", icon: CheckSquare, color: "text-amber-500" },
-      { type: "ACTION", action: "UPDATE_LEAD_SCORE", label: "Ajustar Lead Score", desc: "Calificación lead", icon: Flame, color: "text-orange-500" },
     ],
   },
 ]
@@ -78,10 +57,10 @@ export function WorkflowPalette({ onAddStep }: WorkflowPaletteProps) {
                     key={item.label}
                     onClick={() =>
                       onAddStep({
-                        type: item.type as any,
-                        action: (item as any).action,
+                        type: item.type,
+                        ...(item.action ? { action: item.action } : {}),
                         name: item.label,
-                        duration: (item as any).duration,
+                        ...(item.duration ? { duration: item.duration } : {}),
                       })
                     }
                     className="w-full text-left p-2 rounded-lg border border-border/50 hover:border-primary/50 hover:bg-muted/40 transition-all flex items-center gap-2.5 group"
