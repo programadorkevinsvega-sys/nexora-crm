@@ -1,22 +1,23 @@
+import { NatsConnection } from 'nats'
 import { NatsConsumerService } from './nats-consumer.service'
 import { NatsService } from './nats.service'
 
 describe('NatsConsumerService', () => {
   let service: NatsConsumerService
-  let mockNatsService: jest.Mocked<Partial<NatsService>>
+  type NatsServiceMock = jest.Mocked<Pick<NatsService, 'getConnection' | 'getStringCodec' | 'publish'>>
+  let mockNatsService: NatsServiceMock
 
   beforeEach(() => {
+    const codec: ReturnType<NatsService['getStringCodec']> = {
+      decode: (data: Uint8Array) => Buffer.from(data).toString('utf8'),
+      encode: (value: string) => Buffer.from(value),
+    }
     mockNatsService = {
       getConnection: jest.fn().mockReturnValue(null),
-      getStringCodec: jest.fn().mockReturnValue({
-        decode: jest.fn((data: any) =>
-          Buffer.isBuffer(data) ? data.toString('utf8') : typeof data === 'string' ? data : JSON.stringify(data),
-        ),
-        encode: jest.fn((str: string) => Buffer.from(str)),
-      } as any),
-      publish: jest.fn(),
+      getStringCodec: jest.fn().mockReturnValue(codec),
+      publish: jest.fn().mockResolvedValue(undefined),
     }
-    service = new NatsConsumerService(mockNatsService as NatsService)
+    service = new NatsConsumerService(mockNatsService as unknown as NatsService)
   })
 
   it('should be defined', () => {
@@ -34,13 +35,11 @@ describe('NatsConsumerService', () => {
   it('should register subscription and process incoming events when connection is active', async () => {
     const handler = jest.fn().mockResolvedValue(undefined)
     const mockMsg = {
-      data: Buffer.from(
-        JSON.stringify({
-          eventId: 'evt-12345',
-          eventType: 'contacts.created',
-          payload: { contactId: 'cnt-1', tenantId: 'ten-1' },
-        }),
-      ),
+      data: Buffer.from(JSON.stringify({
+        eventId: 'evt-12345',
+        eventType: 'contacts.created',
+        payload: { contactId: 'cnt-1', tenantId: 'ten-1' },
+      })),
       headers: { get: jest.fn() },
       subject: 'crm.contacts.created',
     }
@@ -54,11 +53,10 @@ describe('NatsConsumerService', () => {
 
     mockNatsService.getConnection = jest.fn().mockReturnValue({
       subscribe: jest.fn().mockReturnValue(mockSub),
-    } as any)
+    } as unknown as NatsConnection)
 
     await service.subscribe('crm.contacts.created', 'scoring-group', handler)
 
-    // Wait for the async loop to tick
     await new Promise((resolve) => setTimeout(resolve, 50))
 
     expect(handler).toHaveBeenCalledWith(
