@@ -145,7 +145,7 @@ export class DrizzleNotificationsRepository extends NotificationsRepository {
   }
 
   async listLogs(tenantId?: string, channelType?: string, cursor?: string, limit = 20): Promise<{ data: NotificationLog[]; nextCursor: string | null }> {
-    const conditions: any[] = []
+    const conditions: SQL[] = []
     if (tenantId) conditions.push(eq(logsTable.tenantId, tenantId))
     if (channelType) conditions.push(eq(logsTable.channelType, channelType))
     if (cursor) conditions.push(gt(logsTable.sentAt, new Date(cursor)))
@@ -163,14 +163,14 @@ export class DrizzleNotificationsRepository extends NotificationsRepository {
   // ── Preferences ──
 
   async findPreference(userId: string, channelType: string, tenantId?: string): Promise<NotificationPreference | null> {
-    const conditions: any[] = [eq(prefsTable.userId, userId), eq(prefsTable.channelType, channelType)]
+    const conditions: SQL[] = [eq(prefsTable.userId, userId), eq(prefsTable.channelType, channelType)]
     if (tenantId) conditions.push(eq(prefsTable.tenantId, tenantId))
     const row = await this.db.query.notificationPreferences.findFirst({ where: and(...conditions) })
     return row ? NotificationsMapper.preferenceToDomain(row) : null
   }
 
   async listPreferences(userId: string, tenantId?: string): Promise<NotificationPreference[]> {
-    const conditions: any[] = [eq(prefsTable.userId, userId)]
+    const conditions: SQL[] = [eq(prefsTable.userId, userId)]
     if (tenantId) conditions.push(eq(prefsTable.tenantId, tenantId))
     const rows = await this.db.query.notificationPreferences.findMany({ where: and(...conditions) })
     return rows.map(r => NotificationsMapper.preferenceToDomain(r))
