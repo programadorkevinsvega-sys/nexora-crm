@@ -129,7 +129,7 @@ export class InboxConversationsDrizzleHelper {
           const sc = await this.db.select().from(leadScores).where(eq(leadScores.contactId, latest.contactId)).limit(1)
           if (sc.length > 0) {
             score = sc[0].score
-            temp = sc[0].temperature as any
+            temp = toLeadTemperature(sc[0].temperature)
           }
         }
 
