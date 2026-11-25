@@ -18,7 +18,7 @@ export interface DeadLetterRecord {
 }
 
 export async function sendToDeadLetter(
-  persist: (record: DeadLetterRecord) => Promise<void>,
+  persist: (record: DeadLetterRecord) => PromiseLike<unknown> | unknown,
   subject: string,
   reason: string,
   payload: Record<string, unknown>,
