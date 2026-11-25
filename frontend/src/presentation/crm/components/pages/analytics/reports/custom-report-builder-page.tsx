@@ -106,8 +106,12 @@ export function CustomReportBuilderPage() {
       const statusField = dataSource === "contacts" ? "leadStatus" : "status"
       if (statusFilter !== "ALL" && String(row[statusField]) !== statusFilter) return false
 
-      if (dateRange !== "ALL" && row.createdAt) {
-        const rowDate = new Date(row.createdAt).getTime()
+      const createdAt = row.createdAt
+      if (
+        dateRange !== "ALL" &&
+        (typeof createdAt === "string" || typeof createdAt === "number" || createdAt instanceof Date)
+      ) {
+        const rowDate = new Date(createdAt).getTime()
         const now = Date.now()
         const dayMs = 86400000
         if (dateRange === "TODAY" && now - rowDate > dayMs) return false
