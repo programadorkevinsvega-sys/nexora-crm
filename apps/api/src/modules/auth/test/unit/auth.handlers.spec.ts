@@ -1,5 +1,5 @@
 import * as bcrypt from 'bcrypt'
-import { LoginHandler, UserLookupService, UserLookup } from '../../application/commands/auth.handlers'
+import { LoginHandler, UserLookupService } from '../../application/commands/auth.handlers'
 import { AuthRepository } from '../../domain/repositories/auth.repository'
 import { OutboxService } from '../../../../common/outbox/outbox.service'
 import { JwtService } from '@nestjs/jwt'
@@ -27,7 +27,6 @@ describe('LoginHandler', () => {
   let mockOutbox: jest.Mocked<Pick<OutboxService, 'publish'>>
   let mockJwt: JwtService
   let mockUserLookup: MockUserLookupService
-  let jwtSign: jest.SpyInstance<ReturnType<JwtService['signAsync']>, Parameters<JwtService['signAsync']>>
 
   beforeEach(() => {
     mockRepo = {
@@ -36,7 +35,7 @@ describe('LoginHandler', () => {
     }
     mockOutbox = { publish: jest.fn<ReturnType<OutboxService['publish']>, Parameters<OutboxService['publish']>>().mockResolvedValue(undefined) }
     mockJwt = new JwtService({ secret: 'unit-test-signing-key' })
-    jwtSign = jest.spyOn(mockJwt, 'signAsync').mockResolvedValue('mock-token')
+    jest.spyOn(mockJwt, 'signAsync').mockResolvedValue('mock-token')
     mockUserLookup = new MockUserLookupService()
     handler = new LoginHandler(mockRepo as unknown as AuthRepository, mockOutbox as unknown as OutboxService, mockJwt, mockUserLookup)
   })
