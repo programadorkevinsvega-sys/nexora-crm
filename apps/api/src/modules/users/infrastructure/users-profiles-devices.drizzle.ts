@@ -9,7 +9,12 @@ import {
 import { NaturalPersonProfile } from '../domain/entities/natural-person-profile.entity'
 import { LegalEntityProfile } from '../domain/entities/legal-entity-profile.entity'
 import { UserOAuthLink } from '../domain/entities/user-oauth-link.entity'
-import { UserMobileDevice } from '../domain/entities/user-mobile-device.entity'
+import { UserMobileDevice, DevicePlatform } from '../domain/entities/user-mobile-device.entity'
+
+function toDevicePlatform(value: string): DevicePlatform {
+  if (value === 'IOS' || value === 'ANDROID' || value === 'WEB' || value === 'OTHER') return value
+  throw new Error(`Unsupported device platform: ${value}`)
+}
 
 export class UsersProfilesDevicesDrizzleHelper {
   private static get db() { return getDb() }
@@ -169,7 +174,7 @@ export class UsersProfilesDevicesDrizzleHelper {
   private static deviceToDomain(row: typeof devicesTable.$inferSelect): UserMobileDevice {
     return new UserMobileDevice(
       row.id, row.tenantId, row.userId,
-      row.deviceIdentifier, row.platform,
+      row.deviceIdentifier, toDevicePlatform(row.platform),
       row.deviceModel, row.osVersion,
       row.pushNotificationToken, row.isTrustedDevice,
       row.lastActiveAt, row.createdAt, row.updatedAt,
