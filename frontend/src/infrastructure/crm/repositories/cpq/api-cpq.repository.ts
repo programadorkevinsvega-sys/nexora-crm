@@ -1,4 +1,5 @@
 import { api } from "../../api/api-client"
+import { ProductPricingTypeSchema } from '@crm/contracts'
 import type {
   Product,
   ProductTemplate,
@@ -24,7 +25,7 @@ function isProduct(value: unknown): value is Product {
     && typeof value.name === "string"
     && typeof value.unitPrice === "number"
     && typeof value.currency === "string"
-    && typeof value.pricingType === "string"
+    && ProductPricingTypeSchema.safeParse(value.pricingType).success
     && typeof value.taxRate === "number"
     && typeof value.isActive === "boolean"
     && typeof value.createdAt === "string"
