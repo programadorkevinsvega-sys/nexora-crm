@@ -4,8 +4,20 @@ import * as dbModule from '@crm/database'
 
 describe('DrizzleIamRepository - Persistence Integration Tests', () => {
   let repository: DrizzleIamRepository
-  let mockDb: any
-  let mockTx: any
+  let mockDb: {
+    query: {
+      roles: { findFirst: jest.Mock; findMany: jest.Mock }
+      permissions: { findFirst: jest.Mock }
+      userRoles: { findFirst: jest.Mock }
+    }
+    insert: jest.Mock
+    transaction: jest.Mock
+  }
+  let mockTx: {
+    query: { roles: { findFirst: jest.Mock } }
+    execute: jest.Mock
+    insert: jest.Mock
+  }
 
   beforeEach(() => {
     const insert = jest.fn().mockReturnValue({
@@ -36,10 +48,10 @@ describe('DrizzleIamRepository - Persistence Integration Tests', () => {
         },
       },
       insert,
-      transaction: jest.fn(async (callback: (tx: any) => Promise<unknown>) => callback(mockTx)),
+      transaction: jest.fn(async (callback: (tx: typeof mockTx) => Promise<unknown>) => callback(mockTx)),
     }
 
-    jest.spyOn(dbModule, 'getDb').mockReturnValue(mockDb)
+    jest.spyOn(dbModule, 'getDb').mockReturnValue(mockDb as unknown as ReturnType<typeof dbModule.getDb>)
     repository = new DrizzleIamRepository()
   })
 
@@ -49,6 +61,7 @@ describe('DrizzleIamRepository - Persistence Integration Tests', () => {
       tenantId: 'tenant-1',
       name: 'SuperAdmin',
       description: 'Full permissions',
+      isSystemRole: false,
       createdAt: new Date(),
       updatedAt: new Date(),
     })
