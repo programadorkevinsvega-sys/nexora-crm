@@ -261,7 +261,7 @@ describe('DrizzleKnowledgeBaseRepository — Integration', () => {
     })
 
     const whereMock = jest.fn<Promise<unknown>, [unknown]>().mockResolvedValue(undefined)
-    const setMock = jest.fn<(values: unknown) => { where: WhereUpdateMock }>().mockReturnValue({ where: whereMock })
+    const setMock = jest.fn<{ where: WhereUpdateMock }, [unknown]>().mockReturnValue({ where: whereMock })
     mockDb.update.mockReturnValue({ set: setMock })
 
     const result = await repository.voteArticle(TENANT, 'art-1', true)
