@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Controller } from '@nestjs/common'
 import { GrpcMethod } from '@nestjs/microservices'
 import {
@@ -25,6 +24,54 @@ import {
 } from '../../application/queries/iam.queries'
 import { IamMapper } from '../../infrastructure/iam.mapper'
 
+interface CreateRoleRequest {
+  tenantId: string
+  name: string
+  description?: string
+}
+
+interface ListRolesRequest {
+  tenantId: string
+  search?: string
+  cursor?: string
+  limit?: number
+}
+
+interface UpdateRoleRequest {
+  tenantId: string
+  id: string
+  name?: string
+  description?: string
+}
+
+interface CreatePermissionRequest {
+  module: string
+  action: string
+  description?: string
+}
+
+interface AssignRoleRequest {
+  tenantId: string
+  userId: string
+  roleId: string
+  branchId?: string
+}
+
+interface ReplaceUserRoleRequest {
+  tenantId: string
+  userId: string
+  roleId: string
+  branchId?: string
+}
+
+interface CheckPermissionRequest {
+  tenantId: string
+  userId: string
+  module: string
+  action: string
+  branchId?: string
+}
+
 @Controller()
 export class IamGrpcController {
   constructor(
@@ -47,7 +94,7 @@ export class IamGrpcController {
   ) {}
 
   @GrpcMethod('IamService', 'CreateRole')
-  async createRole(data: any) {
+  async createRole(data: CreateRoleRequest) {
     const result = await this.createRoleHandler.execute(
       new CreateRoleCommand(data.tenantId, data.name, data.description),
     )
@@ -61,7 +108,7 @@ export class IamGrpcController {
   }
 
   @GrpcMethod('IamService', 'ListRoles')
-  async listRoles(data: any) {
+  async listRoles(data: ListRolesRequest) {
     const result = await this.listRolesHandler.execute(
       new ListRolesQuery(data.tenantId, data.search, data.cursor, data.limit ?? 20),
     )
@@ -72,7 +119,7 @@ export class IamGrpcController {
   }
 
   @GrpcMethod('IamService', 'UpdateRole')
-  async updateRole(data: any) {
+  async updateRole(data: UpdateRoleRequest) {
     await this.updateRoleHandler.execute(
       new UpdateRoleCommand(data.tenantId, data.id, data.name, data.description),
     )
@@ -86,7 +133,7 @@ export class IamGrpcController {
   }
 
   @GrpcMethod('IamService', 'CreatePermission')
-  async createPermission(data: any) {
+  async createPermission(data: CreatePermissionRequest) {
     const result = await this.createPermissionHandler.execute(
       new CreatePermissionCommand(data.module, data.action, data.description),
     )
@@ -130,7 +177,7 @@ export class IamGrpcController {
   }
 
   @GrpcMethod('IamService', 'AssignRole')
-  async assignRole(data: any) {
+  async assignRole(data: AssignRoleRequest) {
     await this.assignRoleHandler.execute(
       new AssignRoleCommand(data.tenantId, data.userId, data.roleId, data.branchId),
     )
@@ -146,7 +193,7 @@ export class IamGrpcController {
   }
 
   @GrpcMethod('IamService', 'ReplaceUserRole')
-  async replaceUserRole(data: any) {
+  async replaceUserRole(data: ReplaceUserRoleRequest) {
     await this.replaceUserRoleHandler.execute(
       new ReplaceUserRoleCommand(data.tenantId, data.userId, data.roleId, data.branchId),
     )
@@ -164,7 +211,7 @@ export class IamGrpcController {
   }
 
   @GrpcMethod('IamService', 'CheckPermission')
-  async checkPermission(data: any) {
+  async checkPermission(data: CheckPermissionRequest) {
     const allowed = await this.checkPermissionHandler.execute(
       new CheckPermissionQuery(data.tenantId, data.userId, data.module, data.action, data.branchId),
     )
