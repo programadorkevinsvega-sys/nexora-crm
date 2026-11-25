@@ -13,21 +13,21 @@ export class DrizzlePipelineStageRepository extends PipelineStageRepository {
 
   async findById(tenantId: string, id: string): Promise<PipelineStage | null> {
     const row = await this.db.query.pipelineStages.findFirst({
-      where: and(eq(pipelineStagesTable.tenantId, tenantId)!, eq(pipelineStagesTable.id, id)) as any,
+      where: and(eq(pipelineStagesTable.tenantId, tenantId), eq(pipelineStagesTable.id, id)),
     })
     return row ? PipelineMapper.stageToDomain(row) : null
   }
 
   async findByPipelineId(tenantId: string, pipelineId: string): Promise<PipelineStage[]> {
     const rows = await this.db.query.pipelineStages.findMany({
-      where: and(eq(pipelineStagesTable.tenantId, tenantId)!, eq(pipelineStagesTable.pipelineId, pipelineId)) as any,
+      where: and(eq(pipelineStagesTable.tenantId, tenantId), eq(pipelineStagesTable.pipelineId, pipelineId)),
     })
     return rows.map(PipelineMapper.stageToDomain)
   }
 
   async listOrdered(tenantId: string, pipelineId: string): Promise<PipelineStage[]> {
     const rows = await this.db.query.pipelineStages.findMany({
-      where: and(eq(pipelineStagesTable.tenantId, tenantId)!, eq(pipelineStagesTable.pipelineId, pipelineId)) as any,
+      where: and(eq(pipelineStagesTable.tenantId, tenantId), eq(pipelineStagesTable.pipelineId, pipelineId)),
       orderBy: [asc(pipelineStagesTable.displayOrder), asc(pipelineStagesTable.createdAt)],
     })
     return rows.map(PipelineMapper.stageToDomain)
