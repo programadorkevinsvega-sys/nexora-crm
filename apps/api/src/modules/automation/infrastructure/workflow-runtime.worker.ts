@@ -1,12 +1,11 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common'
-import { consumerOpts } from 'nats'
 import type { JsMsg, NatsConnection } from 'nats'
 import { WorkflowEngineService } from '../application/services/workflow-engine.service'
 import type { WorkflowDelayScheduleMessage } from '../domain/repositories/workflow-execution.repository'
 import { NatsService } from '../../../common/nats/nats.service'
 
 const MAX_WORKFLOW_DELIVERIES = 5
-type PullSubscription = Awaited<ReturnType<ReturnType<NatsConnection['jetstream']>['pullSubscribe']>>
+type DurableConsumer = Awaited<ReturnType<ReturnType<NatsConnection['jetstream']>['consumers']['get']>>
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -44,8 +43,8 @@ function errorMessage(error: unknown): string {
 @Injectable()
 export class WorkflowRuntimeWorker implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(WorkflowRuntimeWorker.name)
-  private subscription: PullSubscription | null = null
-  private advisorySubscription: PullSubscription | null = null
+  private consumer: DurableConsumer | null = null
+  private advisoryConsumer: DurableConsumer | null = null
   private running = false
 
   constructor(
@@ -65,10 +64,8 @@ export class WorkflowRuntimeWorker implements OnModuleInit, OnModuleDestroy {
 
   async onModuleDestroy(): Promise<void> {
     this.running = false
-    this.subscription?.unsubscribe()
-    this.advisorySubscription?.unsubscribe()
-    this.subscription = null
-    this.advisorySubscription = null
+    this.consumer = null
+    this.advisoryConsumer = null
   }
 
   private async consume(): Promise<void> {
@@ -77,17 +74,14 @@ export class WorkflowRuntimeWorker implements OnModuleInit, OnModuleDestroy {
     if (!connection) throw new Error('NATS connection is unavailable for workflow worker')
 
     const js = connection.jetstream()
-    const consumerOptions = consumerOpts()
-    consumerOptions.bind('workflow_runtime', 'workflow-runtime-worker')
-    consumerOptions.manualAck()
-    this.subscription = await js.pullSubscribe('', consumerOptions)
+    this.consumer = await js.consumers.get('workflow_runtime', 'workflow-runtime-worker')
 
     this.logger.log('Workflow JetStream durable pull consumer is ready')
     while (this.running) {
       try {
-        const subscription = this.subscription
-        if (!subscription) break
-        const batch = await subscription.fetch(10, { maxWait: 5_000 })
+        const consumer = this.consumer
+        if (!consumer) break
+        const batch = await consumer.fetch({ max_messages: 10, expires: 5_000 })
         for await (const message of batch) await this.processMessage(message)
       } catch (error: unknown) {
         if (this.running) {
@@ -159,17 +153,14 @@ export class WorkflowRuntimeWorker implements OnModuleInit, OnModuleDestroy {
     if (!connection) throw new Error('NATS connection is unavailable for workflow DLQ advisory worker')
 
     const js = connection.jetstream()
-    const consumerOptions = consumerOpts()
-    consumerOptions.bind('workflow_advisories', 'workflow-dlq-advisory-worker')
-    consumerOptions.manualAck()
-    this.advisorySubscription = await js.pullSubscribe('', consumerOptions)
+    this.advisoryConsumer = await js.consumers.get('workflow_advisories', 'workflow-dlq-advisory-worker')
 
     this.logger.log('Workflow JetStream DLQ advisory consumer is ready')
     while (this.running) {
       try {
-        const subscription = this.advisorySubscription
-        if (!subscription) break
-        const batch = await subscription.fetch(10, { maxWait: 5_000 })
+        const consumer = this.advisoryConsumer
+        if (!consumer) break
+        const batch = await consumer.fetch({ max_messages: 10, expires: 5_000 })
         for await (const message of batch) await this.processMaxDeliverAdvisory(message)
       } catch (error: unknown) {
         if (this.running) {
