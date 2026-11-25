@@ -28,7 +28,7 @@ describe('Affiliates Queries - Unit Tests', () => {
     it('should throw NotFoundError if program not found', async () => {
       mockProgramRepo.findById.mockResolvedValue(null)
 
-      const handler = new GetProgramHandler(mockProgramRepo)
+      const handler = new GetProgramHandler(mockProgramRepo as unknown as AffiliateProgramRepository)
       await expect(handler.execute({ tenantId: 'tenant-1', id: 'missing' })).rejects.toThrow(NotFoundError)
     })
   })
