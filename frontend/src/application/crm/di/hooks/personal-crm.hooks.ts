@@ -130,7 +130,7 @@ export function useToggleReminder() {
   })
 }
 
-export function usePetsList(params?: Record<string, unknown>) {
+export function usePetsList(params?: Parameters<ListPetsUseCase['execute']>[0]) {
   return useQuery({
     queryKey: ["personal-crm", "pets", params],
     queryFn: async () => {
