@@ -30,22 +30,21 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value)
 }
 
-function toOptions<T extends DealOption | ContactOption>(
-  response: unknown,
-  kind: "deal" | "contact",
-): T[] {
+function toOptions(response: unknown, kind: "deal"): DealOption[]
+function toOptions(response: unknown, kind: "contact"): ContactOption[]
+function toOptions(response: unknown, kind: "deal" | "contact"): Array<DealOption | ContactOption> {
   const rows = Array.isArray(response)
     ? response
     : isRecord(response) && Array.isArray(response.data)
       ? response.data
       : []
-  return rows.flatMap((row): T[] => {
+  return rows.flatMap((row): Array<DealOption | ContactOption> => {
     if (!isRecord(row) || typeof row.id !== "string") return []
     if (kind === "deal" && typeof row.name === "string") {
-      return [{ id: row.id, name: row.name } as T]
+      return [{ id: row.id, name: row.name }]
     }
     if (kind === "contact" && typeof row.firstName === "string") {
-      return [{ id: row.id, firstName: row.firstName, lastName: typeof row.lastName === "string" ? row.lastName : null } as T]
+      return [{ id: row.id, firstName: row.firstName, lastName: typeof row.lastName === "string" ? row.lastName : null }]
     }
     return []
   })
@@ -78,8 +77,8 @@ export function AiCopilotPage() {
         api.get<unknown>("/api/pipelines/deals").catch(() => []),
         api.get<unknown>("/api/contacts").catch(() => ({ data: [] })),
       ])
-      const dealsArr = toOptions<DealOption>(dList, "deal")
-      const contactsArr = toOptions<ContactOption>(cList, "contact")
+      const dealsArr = toOptions(dList, "deal")
+      const contactsArr = toOptions(cList, "contact")
       setDeals(dealsArr)
       setContacts(contactsArr)
 
