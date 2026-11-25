@@ -4,40 +4,87 @@
   "parserOptions": {
     "ecmaVersion": "latest",
     "sourceType": "module",
-    "ecmaFeatures": { "jsx": true }
+    "ecmaFeatures": {
+      "jsx": true
+    }
   },
-  "plugins": ["@typescript-eslint"],
-  "env": { "es2022": true, "node": true },
-  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
+  "plugins": [
+    "@typescript-eslint"
+  ],
+  "env": {
+    "es2022": true,
+    "node": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
   "rules": {
     "no-unused-vars": "off",
-    "@typescript-eslint/no-unused-vars": ["error", {
-      "argsIgnorePattern": "^_",
-      "varsIgnorePattern": "^_",
-      "caughtErrorsIgnorePattern": "^_",
-      "ignoreRestSiblings": true
-    }],
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_",
+        "ignoreRestSiblings": true
+      }
+    ],
     "@typescript-eslint/no-explicit-any": "error",
     "no-console": "error",
     "no-empty": "error",
     "no-extra-semi": "error",
     "prefer-const": "error",
     "no-undef": "error",
-    "@typescript-eslint/no-var-requires": "error"
+    "@typescript-eslint/no-var-requires": "error",
+    "@typescript-eslint/ban-ts-comment": [
+      "error",
+      {
+        "ts-ignore": "error",
+        "ts-nocheck": "error",
+        "ts-check": false,
+        "ts-expect-error": "allow-with-description",
+        "minimumDescriptionLength": 10
+      }
+    ]
   },
-  "ignorePatterns": ["dist", "node_modules", ".next", ".turbo", "coverage", "out"],
+  "ignorePatterns": [
+    "dist",
+    "node_modules",
+    ".next",
+    ".turbo",
+    "coverage",
+    "out"
+  ],
   "overrides": [
     {
-      "files": ["**/*.{ts,tsx}"],
-      "rules": { "no-undef": "off" }
+      "files": [
+        "**/*.{ts,tsx}"
+      ],
+      "rules": {
+        "no-undef": "off"
+      }
     },
     {
-      "files": ["**/*.spec.ts", "**/*.spec.tsx", "**/*.test.ts", "**/*.test.tsx"],
-      "env": { "node": true, "jest": true }
+      "files": [
+        "**/*.spec.ts",
+        "**/*.spec.tsx",
+        "**/*.test.ts",
+        "**/*.test.tsx"
+      ],
+      "env": {
+        "node": true,
+        "jest": true
+      }
     },
     {
-      "files": ["frontend/src/**/*.{js,jsx,ts,tsx}"],
-      "env": { "browser": true, "node": false }
+      "files": [
+        "frontend/src/**/*.{js,jsx,ts,tsx}"
+      ],
+      "env": {
+        "browser": true,
+        "node": false
+      }
     },
     {
       "files": [
@@ -45,7 +92,9 @@
         "packages/database/src/migrate.ts",
         "packages/database/src/truncate.ts"
       ],
-      "rules": { "no-console": "off" }
+      "rules": {
+        "no-console": "off"
+      }
     }
   ]
 }
