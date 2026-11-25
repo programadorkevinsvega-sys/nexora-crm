@@ -188,8 +188,8 @@ export class WorkflowEngineService {
       const advanced = execution.advanceTo(step.nextStepId)
       await this.executionRepo.save(advanced)
       return advanced
-    } catch (err: any) {
-      const errorMessage = err?.message ?? String(err)
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : String(err)
       this.logger.error(`Error executing step ${step.id} for execution ${execution.id}: ${errorMessage}`)
       await this.executionRepo.saveStepExecution(stepExec.markFailed(errorMessage))
       const failed = execution.fail(errorMessage)
@@ -199,17 +199,10 @@ export class WorkflowEngineService {
   }
 
   private async performAction(
-    execution: WorkflowExecution,
+    _execution: WorkflowExecution,
     step: WorkflowStep,
   ): Promise<Record<string, unknown>> {
-    this.logger.log(
-      `Performing action [${step.action ?? step.type}] for entity ${execution.entityType}:${execution.entityId}`,
-    )
-    return {
-      action: step.action ?? step.type,
-      executedAt: new Date().toISOString(),
-      entityId: execution.entityId,
-      config: step.config ?? {},
-    }
+    const action = step.action ?? step.type
+    throw new Error(`Workflow action "${action}" has no registered executor; refusing to mark a placeholder as successful`)
   }
 }
