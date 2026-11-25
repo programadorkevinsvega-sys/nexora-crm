@@ -33,9 +33,9 @@ function requiredSecret(value: string | null): string {
   return value
 }
 
-function ipRestrictionType(value: string): IpRestriction['type'] {
+function ipRestrictionType(value: string | null): IpRestriction['type'] {
   if (value === 'ALLOW' || value === 'DENY') return value
-  throw new Error(`Unsupported IP restriction type: ${value}`)
+  throw new Error(`Unsupported IP restriction type: ${value ?? 'missing'}`)
 }
 
 export class AuthMapper {
