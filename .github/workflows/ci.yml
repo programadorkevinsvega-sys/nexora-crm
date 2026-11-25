@@ -78,6 +78,8 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Lint every workspace package
         run: pnpm lint
+      - name: Enforce repository-wide no-any policy
+        run: pnpm check:no-any
 
   validate-typecheck:
     name: TypeScript type checks
