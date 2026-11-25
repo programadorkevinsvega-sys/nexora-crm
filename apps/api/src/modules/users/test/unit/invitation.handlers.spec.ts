@@ -2,6 +2,8 @@ import { createHash } from 'crypto'
 import * as bcrypt from 'bcrypt'
 import { ConflictException } from '@nestjs/common'
 import { User } from '../../domain/entities/user.entity'
+import { UserRepository } from '../../domain/repositories/user.repository'
+import { UserInvitationRepository } from '../../domain/repositories/user-invitation.repository'
 import { UserInvitation } from '../../domain/entities/user-invitation.entity'
 import { CreateInvitationCommand, CreateInvitationHandler } from '../../application/commands/create-invitation.handler'
 import {
@@ -28,9 +30,9 @@ function invitation(tokenHash: string | null = 'a'.repeat(64)) {
 
 describe('tenant member invitation handlers', () => {
   it('stores only a hash of a random one-time token and enforces an expiry', async () => {
-    const users = { findByEmail: jest.fn().mockResolvedValue(null) }
-    const invitations = { create: jest.fn().mockResolvedValue(undefined) }
-    const handler = new CreateInvitationHandler(invitations as any, users as any)
+    const users = { findByEmail: jest.fn<ReturnType<UserRepository['findByEmail']>, Parameters<UserRepository['findByEmail']>>().mockResolvedValue(null) }
+    const invitations = { create: jest.fn<ReturnType<UserInvitationRepository['create']>, Parameters<UserInvitationRepository['create']>>().mockResolvedValue(undefined) }
+    const handler = new CreateInvitationHandler(invitations as unknown as UserInvitationRepository, users as unknown as UserRepository)
 
     const result = await handler.execute(new CreateInvitationCommand(
       TENANT_ID, ' Member@Example.com ', ROLE_ID, INVITER_ID,
@@ -47,13 +49,13 @@ describe('tenant member invitation handlers', () => {
 
   it('rejects inviting an email already registered inside the same tenant', async () => {
     const users = {
-      findByEmail: jest.fn().mockResolvedValue(User.create({
+      findByEmail: jest.fn<ReturnType<UserRepository['findByEmail']>, Parameters<UserRepository['findByEmail']>>().mockResolvedValue(User.create({
         tenantId: TENANT_ID,
         email: 'member@example.com',
         profileType: 'NATURAL_PERSON',
       })),
     }
-    const invitations = { create: jest.fn() }
+    const invitations = { create: jest.fn<ReturnType<UserInvitationRepository['create']>, Parameters<UserInvitationRepository['create']>>() }
     const handler = new CreateInvitationHandler(invitations as any, users as any)
 
     await expect(handler.execute(new CreateInvitationCommand(
@@ -65,8 +67,8 @@ describe('tenant member invitation handlers', () => {
   it('resolves only the SHA-256 token hash and never returns the token in the preview', async () => {
     const token = 'b'.repeat(43)
     const stored = invitation(createHash('sha256').update(token).digest('hex'))
-    const invitations = { findByTokenHash: jest.fn().mockResolvedValue(stored) }
-    const handler = new GetInvitationByTokenHandler(invitations as any)
+    const invitations = { findByTokenHash: jest.fn<ReturnType<UserInvitationRepository['findByTokenHash']>, Parameters<UserInvitationRepository['findByTokenHash']>>().mockResolvedValue(stored) }
+    const handler = new GetInvitationByTokenHandler(invitations as unknown as UserInvitationRepository)
 
     const result = await handler.execute(new GetInvitationByTokenQuery(token))
     expect(invitations.findByTokenHash).toHaveBeenCalledWith(stored.tokenHash)
@@ -76,7 +78,7 @@ describe('tenant member invitation handlers', () => {
   })
 
   it('rejects malformed invitation tokens before accessing persistence', async () => {
-    const invitations = { findByTokenHash: jest.fn() }
+    const invitations = { findByTokenHash: jest.fn<ReturnType<UserInvitationRepository['findByTokenHash']>, Parameters<UserInvitationRepository['findByTokenHash']>>() }
     const handler = new GetInvitationByTokenHandler(invitations as any)
     await expect(handler.execute(new GetInvitationByTokenQuery('not-a-token'))).rejects.toThrow()
     expect(invitations.findByTokenHash).not.toHaveBeenCalled()
@@ -87,12 +89,12 @@ describe('tenant member invitation handlers', () => {
     const tokenHash = createHash('sha256').update(token).digest('hex')
     const stored = invitation(tokenHash)
     const invitations = {
-      findByTokenHash: jest.fn().mockResolvedValue(stored),
-      prepareAcceptance: jest.fn().mockResolvedValue({
+      findByTokenHash: jest.fn<ReturnType<UserInvitationRepository['findByTokenHash']>, Parameters<UserInvitationRepository['findByTokenHash']>>().mockResolvedValue(stored),
+      prepareAcceptance: jest.fn<ReturnType<UserInvitationRepository['prepareAcceptance']>, Parameters<UserInvitationRepository['prepareAcceptance']>>().mockResolvedValue({
         tenantId: TENANT_ID, invitationId: INVITATION_ID, userId: 'member-id', roleId: ROLE_ID,
       }),
     }
-    const handler = new PrepareInvitationAcceptanceHandler(invitations as any)
+    const handler = new PrepareInvitationAcceptanceHandler(invitations as unknown as UserInvitationRepository)
 
     await handler.execute(new PrepareInvitationAcceptanceCommand(
       token, 'Ana', 'Pérez', 'StrongPassword123!',
@@ -110,7 +112,7 @@ describe('tenant member invitation handlers', () => {
     const stored = invitation(createHash('sha256').update(token).digest('hex'))
     const invitations = {
       findByTokenHash: jest.fn().mockResolvedValue(stored),
-      prepareAcceptance: jest.fn(),
+      prepareAcceptance: jest.fn<ReturnType<UserInvitationRepository['prepareAcceptance']>, Parameters<UserInvitationRepository['prepareAcceptance']>>(),
     }
     const handler = new PrepareInvitationAcceptanceHandler(invitations as any)
 
