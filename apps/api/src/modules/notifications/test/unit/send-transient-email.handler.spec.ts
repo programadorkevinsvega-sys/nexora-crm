@@ -26,6 +26,7 @@ describe('SendTransientEmailHandler', () => {
     }
     outbox = { publish: jest.fn<ReturnType<OutboxService['publish']>, Parameters<OutboxService['publish']>>().mockResolvedValue(undefined) }
     provider = {
+      name: 'TEST',
       send: jest.fn<ReturnType<EmailProvider['send']>, Parameters<EmailProvider['send']>>().mockResolvedValue({
         success: true,
         provider: 'RESEND',
