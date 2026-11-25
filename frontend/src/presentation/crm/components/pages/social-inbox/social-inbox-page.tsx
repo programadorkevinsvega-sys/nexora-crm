@@ -54,7 +54,7 @@ export function SocialInboxPage() {
     await fetchData()
   }
 
-  const handleSimulate = async (dto: any) => {
+  const handleSimulate = async (dto: SimulateCommentDto) => {
     const res = await ApiSocialInboxRepository.simulateComment(dto)
     await fetchData()
     return res
