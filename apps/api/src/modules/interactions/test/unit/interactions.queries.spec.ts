@@ -32,7 +32,7 @@ describe('Interactions Queries - Unit Tests', () => {
     it('should throw NotFoundError if note missing', async () => {
       mockNoteRepo.findById.mockResolvedValue(null)
 
-      const handler = new GetNoteHandler(mockNoteRepo)
+      const handler = new GetNoteHandler(mockNoteRepo as unknown as NoteRepository)
       await expect(handler.execute({ tenantId: 'tenant-1', id: 'missing' })).rejects.toThrow(NotFoundError)
     })
   })
