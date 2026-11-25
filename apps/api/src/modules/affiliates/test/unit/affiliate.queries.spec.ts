@@ -1,17 +1,17 @@
-import { GetProgramHandler, GetAffiliateHandler, GetCommissionsHandler } from '../../application/queries/affiliate.handlers'
+import { GetProgramHandler, GetAffiliateHandler } from '../../application/queries/affiliate.handlers'
 import { AffiliateProgram } from '../../domain/entities/affiliate-program.entity'
 import { Affiliate } from '../../domain/entities/affiliate.entity'
 import { NotFoundError } from '@crm/shared'
+import { AffiliateProgramRepository } from '../../domain/repositories/affiliate-program.repository'
+import { AffiliateRepository } from '../../domain/repositories/affiliate.repository'
 
 describe('Affiliates Queries - Unit Tests', () => {
-  let mockProgramRepo: any
-  let mockAffiliateRepo: any
-  let mockCommissionRepo: any
+  let mockProgramRepo: jest.Mocked<Pick<AffiliateProgramRepository, 'findById'>>
+  let mockAffiliateRepo: jest.Mocked<Pick<AffiliateRepository, 'findById'>>
 
   beforeEach(() => {
     mockProgramRepo = { findById: jest.fn() }
     mockAffiliateRepo = { findById: jest.fn() }
-    mockCommissionRepo = { listCommissions: jest.fn() }
   })
 
   describe('GetProgramHandler', () => {
@@ -19,7 +19,7 @@ describe('Affiliates Queries - Unit Tests', () => {
       const prog = AffiliateProgram.create({ tenantId: 'tenant-1', name: 'Partner', commissionType: 'FIXED', commissionValue: 50 })
       mockProgramRepo.findById.mockResolvedValue(prog)
 
-      const handler = new GetProgramHandler(mockProgramRepo)
+      const handler = new GetProgramHandler(mockProgramRepo as unknown as AffiliateProgramRepository)
       const result = await handler.execute({ tenantId: 'tenant-1', id: prog.id })
 
       expect(result).toBe(prog)
@@ -38,7 +38,7 @@ describe('Affiliates Queries - Unit Tests', () => {
       const aff = Affiliate.create({ tenantId: 'tenant-1', programId: 'p-1', customerId: 'c-1', referralCode: 'REF-1', referralLink: 'http' })
       mockAffiliateRepo.findById.mockResolvedValue(aff)
 
-      const handler = new GetAffiliateHandler(mockAffiliateRepo)
+      const handler = new GetAffiliateHandler(mockAffiliateRepo as unknown as AffiliateRepository)
       const result = await handler.execute({ tenantId: 'tenant-1', id: aff.id })
 
       expect(result).toBe(aff)
