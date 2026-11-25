@@ -1,17 +1,17 @@
 import { Product } from '../domain/entities/product.entity'
 import { QuoteApproval } from '../domain/entities/quote-approval.entity'
 import { ESignature } from '../domain/entities/e-signature.entity'
+import { ProductTemplate } from '../domain/entities/product-template.entity'
 import {
   ProductPricingTypeSchema,
   ApprovalStatusSchema,
   SignatureStatusSchema,
 } from '@crm/contracts'
-import type { products, quoteApprovals, eSignatures, productTemplates } from '@crm/database'
+import type { products, quoteApprovals, eSignatures } from '@crm/database'
 
 type ProductRow = typeof products.$inferSelect
 type QuoteApprovalRow = typeof quoteApprovals.$inferSelect
 type ESignatureRow = typeof eSignatures.$inferSelect
-type ProductTemplateRow = typeof productTemplates.$inferSelect
 
 function requiredDocumentType(value: string): 'QUOTE' | 'CONTRACT' {
   if (value === 'QUOTE' || value === 'CONTRACT') return value
@@ -130,17 +130,17 @@ export class CpqMapper {
     }
   }
 
-  static productTemplateToResponse(t: ProductTemplateRow) {
+  static productTemplateToResponse(t: ProductTemplate) {
     return {
       id: t.id,
       tenantId: t.tenantId,
       name: t.name,
       category: t.category,
       defaultSkuPrefix: t.defaultSkuPrefix,
-      defaultUnitPrice: Number(t.defaultUnitPrice),
+      defaultUnitPrice: t.defaultUnitPrice,
       defaultCurrency: t.defaultCurrency,
       pricingType: ProductPricingTypeSchema.parse(t.pricingType),
-      defaultTaxRate: Number(t.defaultTaxRate),
+      defaultTaxRate: t.defaultTaxRate,
       defaultDescription: t.defaultDescription,
       createdAt: t.createdAt.toISOString(),
       updatedAt: t.updatedAt.toISOString(),
