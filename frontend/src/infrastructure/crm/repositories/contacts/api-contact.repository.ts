@@ -38,7 +38,7 @@ export interface Contact {
   leadStatus: string
   loyaltyPoints: number
   avatarUrl: string | null
-  metadata: Record<string, any>
+  metadata: Record<string, unknown>
   createdAt: string
   updatedAt: string
 }
