@@ -39,14 +39,14 @@ describe('Workflow Command Handlers', () => {
       saveStepExecution: jest.fn().mockResolvedValue(undefined),
       findStepExecutionByIdempotencyKey: jest.fn(),
       listStepExecutions: jest.fn(),
-    } as any
+    } as unknown as jest.Mocked<WorkflowExecutionRepository>
 
     engine = {
       processExecution: jest.fn().mockImplementation((exec) => Promise.resolve(exec)),
       resumeScheduledExecution: jest.fn(),
-    } as any
+    } as unknown as jest.Mocked<WorkflowEngineService>
 
-    outbox = { publish: jest.fn().mockResolvedValue(undefined) } as any
+    outbox = { publish: jest.fn().mockResolvedValue(undefined) } as unknown as jest.Mocked<OutboxService>
   })
 
   it('CreateWorkflowHandler should persist a new workflow in DRAFT status', async () => {
