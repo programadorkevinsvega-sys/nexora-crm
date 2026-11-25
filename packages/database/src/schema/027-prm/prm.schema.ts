@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, text, timestamp, boolean, numeric, jsonb, index } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, varchar, text, timestamp, numeric, jsonb, index } from 'drizzle-orm/pg-core'
 
 export const partnerTiers = pgTable(
   'partner_tiers',

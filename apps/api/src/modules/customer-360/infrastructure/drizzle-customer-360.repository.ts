@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { eq, and, desc } from 'drizzle-orm'
+import { eq, and } from 'drizzle-orm'
 import {
   getDb,
   contacts,

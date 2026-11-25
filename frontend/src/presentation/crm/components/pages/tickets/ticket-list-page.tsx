@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useState } from "react"
-import { Plus, MessageSquare, Mail, Globe, Phone, Star } from "lucide-react"
+import { Plus } from "lucide-react"
 import { Button } from "@/src/presentation/crm/components/ui/Button"
 import { DataTable, type ColumnDef } from "@/src/presentation/crm/components/common/DataTable"
 import { PageHeader } from "@/src/presentation/crm/components/common/PageHeader"
@@ -17,7 +17,6 @@ import { useAuth } from "@/src/presentation/hooks/use-auth"
 import { usePaginatedList } from "@/src/presentation/hooks/use-paginated-list"
 import { useTicketsList, useDeleteTicket } from "@src/application/crm/di/hooks"
 import type { Ticket } from "@/src/domain/crm/support-tickets/ticket.entity"
-import { Badge } from "@/src/presentation/crm/components/ui/Badge"
 
 export function TicketListPage() {
   const router = useRouter()
@@ -42,28 +41,17 @@ export function TicketListPage() {
 
   const { mutate: deleteTicket } = useDeleteTicket()
 
-  const channelIcons: Record<string, any> = {
-    WHATSAPP: <MessageSquare className="h-3 w-3 text-emerald-400" />,
-    EMAIL: <Mail className="h-3 w-3 text-blue-400" />,
-    PORTAL: <Globe className="h-3 w-3 text-cyan-400" />,
-    PHONE: <Phone className="h-3 w-3 text-purple-400" />,
-  }
+
 
   const columns: ColumnDef<Ticket>[] = [
     {
       key: "subject",
-      header: "Ticket & Canal",
+      header: "Ticket",
       render: (row) => (
         <div>
           <p className="font-semibold text-foreground text-sm">{row.subject}</p>
           <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mt-0.5">
-            {channelIcons[(row as any).channel ?? "PORTAL"]}
-            <span>{(row as any).channel || "PORTAL"}</span>
-            {(row as any).csatScore && (
-              <span className="flex items-center gap-0.5 text-amber-400 font-semibold ml-2">
-                <Star className="h-3 w-3 fill-amber-400" /> {(row as any).csatScore}/5 CSAT
-              </span>
-            )}
+            <span>{row.isEscalated ? "Escalado" : "Sin escalamiento"}</span>
           </div>
         </div>
       ),

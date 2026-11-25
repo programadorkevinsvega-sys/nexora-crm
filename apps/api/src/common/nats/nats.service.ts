@@ -1,5 +1,9 @@
 import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common'
-import { connect, headers, JetStreamClient, JetStreamManager, NatsConnection, StringCodec } from 'nats'
+import { connect, headers, JetStreamClient, JetStreamManager, NatsConnection, StringCodec, RetentionPolicy, StorageType, AckPolicy, ReplayPolicy } from 'nats'
+
+type WorkflowStreamConfig = Parameters<JetStreamManager['streams']['add']>[0] & {
+  allow_msg_schedules: boolean
+}
 
 @Injectable()
 export class NatsService implements OnModuleInit, OnModuleDestroy {
@@ -42,11 +46,11 @@ export class NatsService implements OnModuleInit, OnModuleDestroy {
   private async ensureWorkflowStreams(): Promise<void> {
     if (!this.jsm) throw new Error('JetStream manager is not initialized')
 
-    const runtimeConfig = {
+    const runtimeConfig: WorkflowStreamConfig = {
       name: 'workflow_runtime',
       subjects: ['workflow.schedule', 'workflow.resume'],
-      retention: 'limits',
-      storage: 'file',
+      retention: RetentionPolicy.Limits,
+      storage: StorageType.File,
       num_replicas: Number(process.env.NATS_WORKFLOW_REPLICAS ?? 1),
       max_age: 400 * 24 * 60 * 60 * 1_000_000_000,
       max_bytes: 10 * 1024 * 1024 * 1024,
@@ -55,16 +59,16 @@ export class NatsService implements OnModuleInit, OnModuleDestroy {
     }
 
     try {
-      await this.jsm.streams.add(runtimeConfig as any)
+      await this.jsm.streams.add(runtimeConfig)
     } catch {
-      await this.jsm.streams.update('workflow_runtime', runtimeConfig as any)
+      await this.jsm.streams.update('workflow_runtime', runtimeConfig)
     }
 
-    const dlqConfig = {
+    const dlqConfig: Parameters<JetStreamManager['streams']['add']>[0] = {
       name: 'workflow_dlq',
       subjects: ['workflow.dlq'],
-      retention: 'limits',
-      storage: 'file',
+      retention: RetentionPolicy.Limits,
+      storage: StorageType.File,
       num_replicas: Number(process.env.NATS_WORKFLOW_REPLICAS ?? 1),
       max_age: 365 * 24 * 60 * 60 * 1_000_000_000,
       max_bytes: 2 * 1024 * 1024 * 1024,
@@ -72,25 +76,25 @@ export class NatsService implements OnModuleInit, OnModuleDestroy {
     }
 
     try {
-      await this.jsm.streams.add(dlqConfig as any)
+      await this.jsm.streams.add(dlqConfig)
     } catch {
-      await this.jsm.streams.update('workflow_dlq', dlqConfig as any)
+      await this.jsm.streams.update('workflow_dlq', dlqConfig)
     }
 
-    const advisoryConfig = {
+    const advisoryConfig: Parameters<JetStreamManager['streams']['add']>[0] = {
       name: 'workflow_advisories',
       subjects: ['$JS.EVENT.ADVISORY.CONSUMER.MAX_DELIVERIES.workflow_runtime.workflow-runtime-worker'],
-      retention: 'limits',
-      storage: 'file',
+      retention: RetentionPolicy.Limits,
+      storage: StorageType.File,
       num_replicas: Number(process.env.NATS_WORKFLOW_REPLICAS ?? 1),
       max_age: 30 * 24 * 60 * 60 * 1_000_000_000,
       max_bytes: 512 * 1024 * 1024,
     }
 
     try {
-      await this.jsm.streams.add(advisoryConfig as any)
+      await this.jsm.streams.add(advisoryConfig)
     } catch {
-      await this.jsm.streams.update('workflow_advisories', advisoryConfig as any)
+      await this.jsm.streams.update('workflow_advisories', advisoryConfig)
     }
   }
 
@@ -104,10 +108,10 @@ export class NatsService implements OnModuleInit, OnModuleDestroy {
       // The durable pull consumer is created on first worker startup.
     }
 
-    await this.jsm.consumers.add('workflow_runtime', {
+    const consumerConfig: Parameters<JetStreamManager['consumers']['add']>[1] = {
       durable_name: 'workflow-runtime-worker',
       filter_subject: 'workflow.resume',
-      ack_policy: 'explicit',
+      ack_policy: AckPolicy.Explicit,
       ack_wait: 60 * 1_000_000_000,
       max_deliver: 5,
       max_ack_pending: 32,
@@ -117,8 +121,9 @@ export class NatsService implements OnModuleInit, OnModuleDestroy {
         120 * 1_000_000_000,
         300 * 1_000_000_000,
       ],
-      replay_policy: 'instant',
-    } as any)
+      replay_policy: ReplayPolicy.Instant,
+    }
+    await this.jsm.consumers.add('workflow_runtime', consumerConfig)
   }
 
 
@@ -132,15 +137,16 @@ export class NatsService implements OnModuleInit, OnModuleDestroy {
       // The durable advisory consumer is created on first worker startup.
     }
 
-    await this.jsm.consumers.add('workflow_advisories', {
+    const advisoryConsumerConfig: Parameters<JetStreamManager['consumers']['add']>[1] = {
       durable_name: 'workflow-dlq-advisory-worker',
       filter_subject: '$JS.EVENT.ADVISORY.CONSUMER.MAX_DELIVERIES.workflow_runtime.workflow-runtime-worker',
-      ack_policy: 'explicit',
+      ack_policy: AckPolicy.Explicit,
       ack_wait: 60 * 1_000_000_000,
       max_deliver: -1,
       max_ack_pending: 16,
-      replay_policy: 'instant',
-    } as any)
+      replay_policy: ReplayPolicy.Instant,
+    }
+    await this.jsm.consumers.add('workflow_advisories', advisoryConsumerConfig)
   }
 
   getJetStreamManager(): JetStreamManager | null {

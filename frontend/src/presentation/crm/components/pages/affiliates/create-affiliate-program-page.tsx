@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, CheckCircle2, Handshake } from "lucide-react"
+import { ArrowLeft, CheckCircle2 } from "lucide-react"
 import { Card } from "@/src/presentation/crm/components/ui/Card"
 import { Button } from "@/src/presentation/crm/components/ui/Button"
 import { PageHeader } from "@/src/presentation/crm/components/common/PageHeader"

@@ -1,21 +1,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import {
-  ShieldCheck,
-  Search,
-  Filter,
-  RefreshCw,
-  Clock,
-  User,
-  Activity,
-  Layers,
-  Database,
-  Eye,
-} from "lucide-react"
+import { ShieldCheck, Search, RefreshCw, Layers, Eye } from "lucide-react"
 import { Button } from "@/src/presentation/crm/components/ui/Button"
 import { Card } from "@/src/presentation/crm/components/ui/Card"
-import { Badge } from "@/src/presentation/crm/components/ui/Badge"
 import { Skeleton } from "@/src/presentation/crm/components/ui/Skeleton"
 import { ApiAuditRepository, AuditLogItem, AuditStats } from "@/src/infrastructure/crm/repositories/audit/api-audit.repository"
 import { AuditDiffModal } from "./audit-diff-modal"

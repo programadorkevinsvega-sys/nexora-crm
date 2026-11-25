@@ -4,28 +4,40 @@ import React, { useState } from "react"
 import { Play, Sparkles, CheckCircle2, Bot, AlertCircle } from "lucide-react"
 import { Modal } from "@/src/presentation/crm/components/ui/Modal"
 import { Button } from "@/src/presentation/crm/components/ui/Button"
-import type { SocialPlatform, SocialPostType } from "@crm/contracts"
+import type { SocialPlatform, SocialPostType, SimulateCommentDto, SocialComment, SocialAutoResponderRule } from "@crm/contracts"
 
 interface SocialSimulateModalProps {
   open: boolean
   onClose: () => void
-  onSimulate: (dto: {
-    platform: SocialPlatform
-    postType: SocialPostType
-    postTitle: string
-    authorName: string
-    message: string
-  }) => Promise<any>
+  onSimulate: (dto: SimulateCommentDto) => Promise<SocialSimulationResult>
+}
+
+type SocialSimulationResult = { comment: SocialComment; matchedRule?: SocialAutoResponderRule | null; autoReplied: boolean }
+
+const PLATFORMS: SocialPlatform[] = ['INSTAGRAM', 'FACEBOOK', 'TIKTOK']
+const POST_TYPES: SocialPostType[] = ['REEL', 'AD_CREATIVE', 'PAGE_POST', 'TIKTOK_VIDEO']
+
+function parsePlatform(value: string): SocialPlatform {
+  const platform = PLATFORMS.find((candidate) => candidate === value)
+  if (!platform) throw new TypeError(`Unsupported social platform: ${value}`)
+  return platform
+}
+
+function parsePostType(value: string): SocialPostType {
+  const postType = POST_TYPES.find((candidate) => candidate === value)
+  if (!postType) throw new TypeError(`Unsupported social post type: ${value}`)
+  return postType
 }
 
 export function SocialSimulateModal({ open, onClose, onSimulate }: SocialSimulateModalProps) {
   const [platform, setPlatform] = useState<SocialPlatform>("INSTAGRAM")
   const [postType, setPostType] = useState<SocialPostType>("REEL")
-  const [postTitle, setPostTitle] = useState("Reel: Automatización de Ventas con Nexora CRM 🚀")
-  const [authorName, setAuthorName] = useState("Camila Vega")
-  const [message, setMessage] = useState("¿Cuál es el precio de los planes?")
+  const [postTitle, setPostTitle] = useState("")
+  const [authorName, setAuthorName] = useState("")
+  const [message, setMessage] = useState("")
   const [simulating, setSimulating] = useState(false)
-  const [result, setResult] = useState<any>(null)
+  const [result, setResult] = useState<SocialSimulationResult | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   if (!open) return null
 
@@ -33,9 +45,12 @@ export function SocialSimulateModal({ open, onClose, onSimulate }: SocialSimulat
     e.preventDefault()
     setSimulating(true)
     setResult(null)
+    setError(null)
     try {
       const res = await onSimulate({ platform, postType, postTitle, authorName, message })
       setResult(res)
+    } catch (simulationError: unknown) {
+      setError(simulationError instanceof Error ? simulationError.message : String(simulationError))
     } finally {
       setSimulating(false)
     }
@@ -49,7 +64,7 @@ export function SocialSimulateModal({ open, onClose, onSimulate }: SocialSimulat
             <label className="block font-medium text-foreground mb-1">Red Social</label>
             <select
               value={platform}
-              onChange={(e) => setPlatform(e.target.value as any)}
+              onChange={(e) => setPlatform(parsePlatform(e.target.value))}
               className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs font-medium"
             >
               <option value="INSTAGRAM">Instagram (Reels / Posts / Ads)</option>
@@ -61,7 +76,7 @@ export function SocialSimulateModal({ open, onClose, onSimulate }: SocialSimulat
             <label className="block font-medium text-foreground mb-1">Tipo de Publicación</label>
             <select
               value={postType}
-              onChange={(e) => setPostType(e.target.value as any)}
+              onChange={(e) => setPostType(parsePostType(e.target.value))}
               className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs"
             >
               <option value="REEL">Reel / Video Corto</option>
@@ -106,6 +121,8 @@ export function SocialSimulateModal({ open, onClose, onSimulate }: SocialSimulat
             />
           </div>
         </div>
+
+        {error && <p className="text-xs text-destructive">{error}</p>}
 
         {result && (
           <div className="p-3.5 rounded-xl bg-primary/10 border border-primary/20 space-y-2 animate-in fade-in">

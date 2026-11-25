@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { CompanyRepository } from '../../domain/repositories/company.repository'
 import { GetCompanyQuery, ListCompaniesQuery } from './company.queries'
-import { NotFoundError, ConflictError } from '@crm/shared'
+import { NotFoundError } from '@crm/shared'
 
 @Injectable()
 export class GetCompanyHandler {

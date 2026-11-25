@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useRef, useEffect } from "react"
-import { Play, Plus, ZoomIn, ZoomOut, Sparkles, Move, RefreshCw } from "lucide-react"
+import { Play, Plus, ZoomIn, ZoomOut } from "lucide-react"
 import { Button } from "@/src/presentation/crm/components/ui/Button"
 import { Badge } from "@/src/presentation/crm/components/ui/Badge"
 import { WorkflowNodeCard } from "./workflow-node-card"
@@ -9,7 +9,7 @@ import { WorkflowTriggerNode } from "./workflow-trigger-node"
 import { WorkflowWire } from "./workflow-wire"
 import { WorkflowPalette } from "./workflow-palette"
 import { WorkflowNodeInspector } from "./workflow-node-inspector"
-import type { CanvasNode, ConnectionWire, DraggingWireState } from "./workflow-types"
+import type { CanvasNode, DraggingWireState } from "./workflow-types"
 import type { WorkflowStep, WorkflowDefinition } from "@/src/domain/crm/automation/workflow.entity"
 
 interface WorkflowCanvasProps {
@@ -230,7 +230,7 @@ export function WorkflowCanvas({ workflow, steps, onChangeSteps }: WorkflowCanva
             </svg>
 
             {/* Trigger Root Card */}
-            <WorkflowTriggerNode x={triggerPos.x} y={triggerPos.y} triggerEvent={workflow.triggerEvent || "crm.contact.created"} onMouseDown={(e) => handleStartDragNode("trigger", e, triggerPos.x, triggerPos.y)} onStartConnect={(e) => handleStartConnect("trigger", "output", triggerPos.x + 288, triggerPos.y + 42)} />
+            <WorkflowTriggerNode x={triggerPos.x} y={triggerPos.y} triggerEvent={workflow.triggerEvent || "crm.contact.created"} onMouseDown={(e) => handleStartDragNode("trigger", e, triggerPos.x, triggerPos.y)} onStartConnect={(_e) => handleStartConnect("trigger", "output", triggerPos.x + 288, triggerPos.y + 42)} />
 
             {/* Draggable Step Node Cards */}
             {nodes.map((node, idx) => (
@@ -243,7 +243,7 @@ export function WorkflowCanvas({ workflow, steps, onChangeSteps }: WorkflowCanva
                 onClick={() => setSelectedIdx(idx)}
                 onDelete={(e) => { e.stopPropagation(); onChangeSteps(steps.filter((_, i) => i !== idx)); if (selectedIdx === idx) setSelectedIdx(null) }}
                 onMouseDownCard={(e) => handleStartDragNode(node.id, e, node.x, node.y)}
-                onStartConnect={(port, e) => handleStartConnect(node.id, port, node.x + 256, node.y + (port === "true" ? 28 : port === "false" ? 56 : 42))}
+                onStartConnect={(port, _e) => handleStartConnect(node.id, port, node.x + 256, node.y + (port === "true" ? 28 : port === "false" ? 56 : 42))}
                 onDropConnect={() => handleConnectToNode(node.id)}
               />
             ))}

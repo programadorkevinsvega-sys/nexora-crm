@@ -1,64 +1,92 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Logger } from '@nestjs/common'
 import type { MetaLeadForm } from '@crm/contracts'
+
+export interface MetaPage {
+  id: string
+  name: string
+  access_token?: string
+  category?: string
+}
+
+export interface MetaAdAccount {
+  id: string
+  name: string
+}
+
+type UnknownRecord = Record<string, unknown>
+
+function isRecord(value: unknown): value is UnknownRecord {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function dataRows(value: unknown): unknown[] {
+  return isRecord(value) && Array.isArray(value.data) ? value.data : []
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
+}
 
 export class MetaGraphApiHelper {
   private static readonly logger = new Logger(MetaGraphApiHelper.name)
 
   static async fetchPagesAndAccounts(accessToken: string): Promise<{
-    pages: Array<{ id: string; name: string; access_token?: string; category?: string }>
-    adAccounts: Array<{ id: string; name: string }>
+    pages: MetaPage[]
+    adAccounts: MetaAdAccount[]
   }> {
     try {
-      const pagesRes = await fetch(
+      const pagesResponse = await fetch(
         `https://graph.facebook.com/v20.0/me/accounts?access_token=${encodeURIComponent(accessToken)}&fields=id,name,access_token,category`,
       )
-      const pagesData = await pagesRes.json()
-      const pages = Array.isArray(pagesData.data)
-        ? pagesData.data.map((p: any) => ({
-            id: p.id,
-            name: p.name,
-            access_token: p.access_token,
-            category: p.category,
-          }))
-        : []
+      if (!pagesResponse.ok) throw new Error(`Meta pages request failed with HTTP ${pagesResponse.status}`)
+      const pagesData: unknown = await pagesResponse.json()
+      const pages = dataRows(pagesData).flatMap((page): MetaPage[] => {
+        if (!isRecord(page) || typeof page.id !== 'string' || typeof page.name !== 'string') return []
+        return [{
+          id: page.id,
+          name: page.name,
+          ...(typeof page.access_token === 'string' ? { access_token: page.access_token } : {}),
+          ...(typeof page.category === 'string' ? { category: page.category } : {}),
+        }]
+      })
 
-      const adsRes = await fetch(
+      const accountsResponse = await fetch(
         `https://graph.facebook.com/v20.0/me/adaccounts?access_token=${encodeURIComponent(accessToken)}&fields=id,name,account_id`,
       )
-      const adsData = await adsRes.json()
-      const adAccounts = Array.isArray(adsData.data)
-        ? adsData.data.map((a: any) => ({
-            id: a.id || a.account_id,
-            name: a.name || `Cuenta Ads ${a.id}`,
-          }))
-        : []
+      if (!accountsResponse.ok) throw new Error(`Meta ad accounts request failed with HTTP ${accountsResponse.status}`)
+      const accountsData: unknown = await accountsResponse.json()
+      const adAccounts = dataRows(accountsData).flatMap((account): MetaAdAccount[] => {
+        if (!isRecord(account)) return []
+        const id = typeof account.id === 'string' ? account.id : typeof account.account_id === 'string' ? account.account_id : null
+        if (!id) return []
+        return [{ id, name: typeof account.name === 'string' ? account.name : `Cuenta Ads ${id}` }]
+      })
 
       return { pages, adAccounts }
-    } catch (err: any) {
-      this.logger.error(`Error querying Meta Graph API: ${err.message}`)
+    } catch (error: unknown) {
+      this.logger.error(`Error querying Meta Graph API: ${errorMessage(error)}`)
       return { pages: [], adAccounts: [] }
     }
   }
 
   static async fetchLeadGenForms(pageId: string, pageAccessToken: string): Promise<MetaLeadForm[]> {
     try {
-      const formsRes = await fetch(
+      const response = await fetch(
         `https://graph.facebook.com/v20.0/${pageId}/leadgen_forms?access_token=${encodeURIComponent(pageAccessToken)}&fields=id,name,status,leads_count`,
       )
-      const formsData = await formsRes.json()
-      if (Array.isArray(formsData.data)) {
-        return formsData.data.map((f: any) => ({
-          formId: f.id,
-          formName: f.name,
-          status: f.status || 'ACTIVE',
-          leadsCount: f.leads_count || 0,
-          defaultLeadStatus: 'NEW',
-        }))
-      }
-    } catch (err: any) {
-      this.logger.warn(`Could not fetch leadgen forms: ${err.message}`)
+      if (!response.ok) throw new Error(`Meta lead forms request failed with HTTP ${response.status}`)
+      const responseData: unknown = await response.json()
+      return dataRows(responseData).flatMap((form): MetaLeadForm[] => {
+        if (!isRecord(form) || typeof form.id !== 'string' || typeof form.name !== 'string') return []
+        const status = typeof form.status === 'string' ? form.status : 'ACTIVE'
+        const leadsCount = typeof form.leads_count === 'number' && Number.isFinite(form.leads_count)
+          ? form.leads_count
+          : 0
+        return [{ formId: form.id, formName: form.name, status, leadsCount, defaultLeadStatus: 'NEW' }]
+      })
+    } catch (error: unknown) {
+      this.logger.warn(`Could not fetch leadgen forms: ${errorMessage(error)}`)
+      return []
     }
-    return []
   }
 }

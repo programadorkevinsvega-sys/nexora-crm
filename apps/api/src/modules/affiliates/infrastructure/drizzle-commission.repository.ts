@@ -14,7 +14,7 @@ export class DrizzleCommissionRepository extends CommissionRepository {
 
   async findCommissionById(tenantId: string, id: string): Promise<AffiliateCommission | null> {
     const row = await this.db.query.affiliateCommissions.findFirst({
-      where: and(eq(commissionsTable.tenantId, tenantId)!, eq(commissionsTable.id, id)) as any,
+      where: and(eq(commissionsTable.tenantId, tenantId)!, eq(commissionsTable.id, id)),
     })
     return row ? AffiliateMapper.commissionToDomain(row) : null
   }
@@ -27,7 +27,7 @@ export class DrizzleCommissionRepository extends CommissionRepository {
     if (filter.status) conditions.push(eq(commissionsTable.status, filter.status))
 
     const rows = await this.db.query.affiliateCommissions.findMany({
-      where: and(...conditions.filter(Boolean)!) as any,
+      where: and(...conditions),
       limit: filter.limit + 1,
       orderBy: [asc(commissionsTable.createdAt), asc(commissionsTable.id)],
     })
@@ -51,7 +51,7 @@ export class DrizzleCommissionRepository extends CommissionRepository {
 
   async findPayoutById(tenantId: string, id: string): Promise<AffiliatePayout | null> {
     const row = await this.db.query.affiliatePayouts.findFirst({
-      where: and(eq(payoutsTable.tenantId, tenantId)!, eq(payoutsTable.id, id)) as any,
+      where: and(eq(payoutsTable.tenantId, tenantId)!, eq(payoutsTable.id, id)),
     })
     return row ? AffiliateMapper.payoutToDomain(row) : null
   }
@@ -64,7 +64,7 @@ export class DrizzleCommissionRepository extends CommissionRepository {
     if (filter.status) conditions.push(eq(payoutsTable.status, filter.status))
 
     const rows = await this.db.query.affiliatePayouts.findMany({
-      where: and(...conditions.filter(Boolean)!) as any,
+      where: and(...conditions),
       limit: filter.limit + 1,
       orderBy: [asc(payoutsTable.createdAt), asc(payoutsTable.id)],
     })

@@ -54,13 +54,13 @@ export function AiConfigModal({ open, onClose, onSuccess }: Props) {
     setTestResult(null)
     try {
       const res = await ApiIntegrationsRepository.testIntegration(
-        'OPENAI_LLM' as any,
+        'OPENAI_LLM',
         'test',
         testPrompt,
       )
       setTestResult(res)
-    } catch (err: any) {
-      setTestResult({ success: false, message: err.message || 'Error al conectar con el modelo AI' })
+    } catch (err: unknown) {
+      setTestResult({ success: false, message: err instanceof Error ? err.message : 'Error al conectar con el modelo AI' })
     } finally {
       setTesting(false)
     }
@@ -71,7 +71,7 @@ export function AiConfigModal({ open, onClose, onSuccess }: Props) {
     setLoading(true)
     try {
       await ApiIntegrationsRepository.saveConfig({
-        provider: 'OPENAI_LLM' as any,
+        provider: 'OPENAI_LLM',
         isEnabled: true,
         credentials: {
           providerPreset: preset,
@@ -83,8 +83,8 @@ export function AiConfigModal({ open, onClose, onSuccess }: Props) {
       })
       onSuccess()
       onClose()
-    } catch (err: any) {
-      setTestResult({ success: false, message: err.message || 'Error al guardar la configuración' })
+    } catch (err: unknown) {
+      setTestResult({ success: false, message: err instanceof Error ? err.message : 'Error al guardar la configuración' })
     } finally {
       setLoading(false)
     }

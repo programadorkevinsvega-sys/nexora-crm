@@ -21,7 +21,8 @@
     "db:migrate": "turbo run db:migrate --filter=@crm/database",
     "db:truncate": "turbo run db:truncate --filter=@crm/database",
     "db:studio": "turbo run db:studio --filter=@crm/database",
-    "audit": "pnpm audit"
+    "audit": "pnpm audit",
+    "check:no-any": "node scripts/check-no-any.mjs"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^7.0.0",

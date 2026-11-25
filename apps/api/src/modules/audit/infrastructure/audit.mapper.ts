@@ -1,27 +1,81 @@
 import { AuditLog, AuditStats, EntityAuditSummary, ModuleStats } from '../domain/entities/audit.entity'
+import type { auditLogs } from '@crm/database'
+
+type AuditLogRow = typeof auditLogs.$inferSelect
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
 
 export class AuditMapper {
-  static toDomain(r: any): AuditLog {
-    return new AuditLog(r.id, r.tenantId, r.entityType, r.entityId, r.action,
-      r.fieldName, r.oldValue, r.newValue, r.changedByUserId, r.moduleName,
-      r.correlationId, r.ipAddress, r.userAgent, r.metadataJson, r.createdAt)
+  static toDomain(row: AuditLogRow): AuditLog {
+    return new AuditLog(
+      row.id,
+      row.tenantId,
+      row.entityType,
+      row.entityId,
+      row.action,
+      row.fieldName,
+      row.oldValue,
+      row.newValue,
+      row.changedByUserId,
+      row.moduleName,
+      row.correlationId,
+      row.ipAddress,
+      row.userAgent,
+      isRecord(row.metadataJson) ? row.metadataJson : null,
+      row.createdAt,
+    )
   }
-  static toResponse(l: AuditLog) {
-    return { id: l.id, tenantId: l.tenantId, entityType: l.entityType, entityId: l.entityId,
-      action: l.action, fieldName: l.fieldName, oldValue: l.oldValue, newValue: l.newValue,
-      changedByUserId: l.changedByUserId, moduleName: l.moduleName, correlationId: l.correlationId,
-      ipAddress: l.ipAddress, userAgent: l.userAgent,
-      metadata: l.metadataJson, createdAt: l.createdAt.toISOString() }
+
+  static toResponse(log: AuditLog) {
+    return {
+      id: log.id,
+      tenantId: log.tenantId,
+      entityType: log.entityType,
+      entityId: log.entityId,
+      action: log.action,
+      fieldName: log.fieldName,
+      oldValue: log.oldValue,
+      newValue: log.newValue,
+      changedByUserId: log.changedByUserId,
+      moduleName: log.moduleName,
+      correlationId: log.correlationId,
+      ipAddress: log.ipAddress,
+      userAgent: log.userAgent,
+      metadata: log.metadataJson,
+      createdAt: log.createdAt.toISOString(),
+    }
   }
-  static statsToResponse(s: AuditStats) {
-    return { totalLogs: s.totalLogs, byAction: s.byAction, byModule: s.byModule,
-      byEntity: s.byEntity, periodStart: s.periodStart, periodEnd: s.periodEnd }
+
+  static statsToResponse(stats: AuditStats) {
+    return {
+      totalLogs: stats.totalLogs,
+      byAction: stats.byAction,
+      byModule: stats.byModule,
+      byEntity: stats.byEntity,
+      periodStart: stats.periodStart,
+      periodEnd: stats.periodEnd,
+    }
   }
-  static summaryToResponse(s: EntityAuditSummary) {
-    return { entityType: s.entityType, entityId: s.entityId, totalChanges: s.totalChanges,
-      lastChangeAt: s.lastChangeAt, lastChangeBy: s.lastChangeBy, changesByField: s.changesByField }
+
+  static summaryToResponse(summary: EntityAuditSummary) {
+    return {
+      entityType: summary.entityType,
+      entityId: summary.entityId,
+      totalChanges: summary.totalChanges,
+      lastChangeAt: summary.lastChangeAt,
+      lastChangeBy: summary.lastChangeBy,
+      changesByField: summary.changesByField,
+    }
   }
-  static moduleStatsToResponse(m: ModuleStats) {
-    return { moduleName: m.moduleName, totalLogs: m.totalLogs, lastActivity: m.lastActivity, actions: m.actions }
+
+  static moduleStatsToResponse(stats: ModuleStats) {
+    return {
+      moduleName: stats.moduleName,
+      totalLogs: stats.totalLogs,
+      lastActivity: stats.lastActivity,
+      actions: stats.actions,
+    }
   }
 }

@@ -4,7 +4,7 @@ import { PipelineStageRepository } from '../../domain/repositories/pipeline-stag
 import { DealRepository } from '../../domain/repositories/deal.repository'
 import { GetPipelineQuery, ListPipelinesQuery, GetPipelineBoardQuery, ListDealsQuery, GetDealQuery } from './pipeline.queries'
 import { PipelineMapper } from '../../infrastructure/pipeline.mapper'
-import { NotFoundError, ConflictError } from '@crm/shared'
+import { NotFoundError } from '@crm/shared'
 
 @Injectable()
 export class GetPipelineHandler {

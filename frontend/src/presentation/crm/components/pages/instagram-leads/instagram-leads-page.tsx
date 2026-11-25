@@ -12,7 +12,7 @@ import Link from "next/link"
 export function InstagramLeadsPage() {
   const [isConnected, setIsConnected] = useState(false)
   const [pageName, setPageName] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [_loading, setLoading] = useState(true)
 
   useEffect(() => {
     ApiMetaLeadsRepository.getStatus()

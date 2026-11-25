@@ -1,12 +1,21 @@
 import { Controller, Get, Post, Body, Query, Res, Logger } from '@nestjs/common'
-import { Response } from 'express'
+import type { Response } from 'express'
 import { ApiCoreGrpcClient } from '../../../common/grpc/api-core-grpc.client'
 import { CacheService } from '../../../common/cache/cache.service'
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : {}
+}
+
+function firstRecord(value: unknown): Record<string, unknown> {
+  return Array.isArray(value) ? asRecord(value[0]) : {}
+}
 
 @Controller('api/webhooks/whatsapp')
 export class WhatsappWebhookController {
   private readonly logger = new Logger(WhatsappWebhookController.name)
-
   constructor(
     private readonly cache: CacheService,
     private readonly api: ApiCoreGrpcClient,
@@ -23,61 +32,44 @@ export class WhatsappWebhookController {
     if (mode === 'subscribe' && token === verifyToken) {
       this.logger.log('WhatsApp Meta Webhook verified successfully 🚀')
       res.status(200).send(challenge)
-    } else {
-      this.logger.warn(`WhatsApp webhook verification failed. Token received: ${token}`)
-      res.status(403).send('Forbidden')
+      return
     }
+    this.logger.warn('WhatsApp webhook verification failed')
+    res.status(403).send('Forbidden')
   }
 
   @Post()
-  async receive(@Body() body: Record<string, any>, @Res() res: Response) {
+  async receive(@Body() body: unknown, @Res() res: Response): Promise<void> {
     try {
-      const entry = body?.entry?.[0]
-      const change = entry?.changes?.[0]
-      const value = change?.value
-      const message = value?.messages?.[0]
+      const entry = firstRecord(asRecord(body).entry)
+      const change = firstRecord(entry.changes)
+      const value = asRecord(change.value)
+      const message = firstRecord(value.messages)
+      const from = typeof message.from === 'string' ? message.from : undefined
+      const messageText = asRecord(message.text)
+      const rawText = typeof messageText.body === 'string' ? messageText.body : undefined
+      const type = typeof message.type === 'string' ? message.type : 'archivo'
 
-      if (message?.from && (message?.text?.body || message?.type)) {
-        const from: string = message.from
-        const text: string = message.text?.body || `[${message.type?.toUpperCase() || 'ARCHIVO'}]`
+      if (from && (rawText || type)) {
+        const text = rawText || `[${type.toUpperCase()}]`
         const tenantId = '00000000-0000-0000-0000-000000000001'
-
         this.logger.log(`WhatsApp INBOUND message received from +${from}: "${text}"`)
-
-        // Match contact by phone suffix via gRPC
-        let contactId: string | undefined = undefined
-        const cleanPhone = from.replace(/\D/g, '')
-        const phoneTail = cleanPhone.slice(-8)
-
+        let contactId: string | undefined
+        const phoneTail = from.replace(/\D/g, '').slice(-8)
         try {
-          const contactResult = await this.api.listContacts({
-            tenantId,
-            search: phoneTail,
-            limit: 1,
-          })
-          if (contactResult.data && contactResult.data.length > 0) {
-            contactId = contactResult.data[0].id
-          }
+          const contactResult = await this.api.listContacts({ tenantId, search: phoneTail, limit: 1 })
+          if (contactResult.data.length > 0) contactId = contactResult.data[0].id
         } catch {
-          // Non-blocking contact lookup
+          // Contact lookup is intentionally non-blocking for inbound message ingestion.
         }
-
-        // Store inbound message via Omnichannel Inbox gRPC Service
         await this.api.sendInboxMessage({
-          tenantId,
-          channel: 'WHATSAPP',
-          recipientIdentifier: from,
-          bodyText: text,
-          contactId,
+          tenantId, channel: 'WHATSAPP', recipientIdentifier: from, bodyText: text, contactId,
         })
-
-        // Invalidate inbox cache so real-time polling reflects new message
         await this.cache.invalidate('inbox:')
       }
-    } catch (err: any) {
-      this.logger.error(`WhatsApp webhook error: ${err.message}`, err.stack)
+    } catch (error: unknown) {
+      this.logger.error(`WhatsApp webhook error: ${error instanceof Error ? error.message : String(error)}`)
     }
-
     res.status(200).json({ status: 'ok' })
   }
 }

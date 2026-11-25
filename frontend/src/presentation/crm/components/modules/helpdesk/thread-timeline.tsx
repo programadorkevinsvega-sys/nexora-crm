@@ -8,7 +8,6 @@ import { Skeleton } from "@/src/presentation/crm/components/ui/Skeleton"
 import { EmptyState } from "@/src/presentation/crm/components/common/EmptyState"
 import { useAuth } from "@/src/presentation/hooks/use-auth"
 import { ApiHelpdeskRepository } from "@/src/infrastructure/crm/repositories/helpdesk/api-helpdesk.repository"
-import { Input } from "@/src/presentation/crm/components/ui/Input"
 
 export interface ThreadTimelineProps {
   conversationId: string

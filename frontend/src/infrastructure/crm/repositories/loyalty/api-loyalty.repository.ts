@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { api } from "../../api/api-client"
 import type { CustomerSegmentRepository } from "@/src/domain/crm/loyalty/customer-segment.repository"
 import type { CustomerSegment, SegmentCreateInput } from "@/src/domain/crm/loyalty/customer-segment.entity"
@@ -34,6 +33,63 @@ export interface LoyaltyProfile {
   }>
 }
 
+type UnknownRecord = Record<string, unknown>
+
+function isRecord(value: unknown): value is UnknownRecord {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function numberOrNull(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null
+}
+
+function stringOrNull(value: unknown): string | null {
+  return typeof value === 'string' && value.length > 0 ? value : null
+}
+
+function dateOrThrow(value: unknown, fieldName: string): Date {
+  const date = typeof value === 'string' || value instanceof Date ? new Date(value) : null
+  if (!date || Number.isNaN(date.getTime())) throw new TypeError(`Invalid segment ${fieldName}`)
+  return date
+}
+
+function toCustomerSegment(value: unknown): CustomerSegment {
+  if (!isRecord(value)) throw new TypeError('Segment response must be an object')
+  const id = stringOrNull(value.id)
+  const tenantId = stringOrNull(value.tenantId)
+  const name = stringOrNull(value.name)
+  if (!id || !tenantId || !name) throw new TypeError('Segment response is missing its identity fields')
+  return CustomerSegment.create({
+    tenantId,
+    name,
+    description: stringOrNull(value.description),
+    isDynamic: value.isDynamic === true,
+    rulesJson: value.rulesJson,
+  }, id, dateOrThrow(value.createdAt, 'createdAt'), dateOrThrow(value.updatedAt, 'updatedAt'))
+}
+
+function toSegmentList(response: unknown): CustomerSegment[] {
+  if (Array.isArray(response)) return response.map(toCustomerSegment)
+  if (!isRecord(response)) throw new TypeError('Segment list response must be an array or object')
+  const items = Array.isArray(response.data) ? response.data : response.items
+  if (!Array.isArray(items)) throw new TypeError('Segment list response is missing data')
+  return items.map(toCustomerSegment)
+}
+
+function toHistory(value: unknown): LoyaltyProfile['history'] {
+  if (!Array.isArray(value)) return undefined
+  return value.flatMap((entry): NonNullable<LoyaltyProfile['history']> => {
+    if (!isRecord(entry)) return []
+    const id = stringOrNull(entry.id)
+    const points = numberOrNull(entry.points)
+    const type = entry.type
+    const reason = stringOrNull(entry.reason)
+    const createdAt = stringOrNull(entry.createdAt)
+    if (!id || points === null || (type !== 'EARN' && type !== 'REDEEM') || !reason || !createdAt) return []
+    return [{ id, points, type, reason, createdAt }]
+  })
+}
+
 export class ApiLoyaltyRepository implements CustomerSegmentRepository {
   async list(): Promise<PaginatedResult<CustomerSegment>> {
     return ApiLoyaltyRepository.list()
@@ -48,64 +104,58 @@ export class ApiLoyaltyRepository implements CustomerSegmentRepository {
   }
 
   static async list(): Promise<PaginatedResult<CustomerSegment>> {
-    const res = await api.get<any>('/api/loyalty/segments')
-    const items = Array.isArray(res) ? res : (res?.data || res?.items || [])
-    return {
-      items,
-      total: items.length,
-      data: items,
-      nextCursor: null,
-    } as any
+    const response = await api.get<unknown>('/api/loyalty/segments')
+    return { data: toSegmentList(response), nextCursor: null }
   }
 
   static async listSegments(): Promise<CustomerSegment[]> {
-    const res = await api.get<any>('/api/loyalty/segments')
-    return Array.isArray(res) ? res : (res?.data || res?.items || [])
+    return (await this.list()).data
   }
 
   static async create(data: SegmentCreateInput): Promise<CustomerSegment> {
-    return api.post<CustomerSegment>('/api/loyalty/segments', data)
+    const response = await api.post<unknown>('/api/loyalty/segments', data)
+    return toCustomerSegment(response)
   }
 
   static async assignToSegment(segmentId: string, contactId: string): Promise<void> {
-    return api.post<void>(`/api/loyalty/segments/${segmentId}/assign`, { contactId })
+    await api.post<unknown>(`/api/loyalty/segments/${segmentId}/assign`, { contactId })
   }
 
   static async getProfile(contactId: string): Promise<LoyaltyProfile | null> {
-    const res = await api.get<any>(`/api/loyalty/profile/${contactId}`)
-    if (!res) return null
+    const response: unknown = await api.get<unknown>(`/api/loyalty/profile/${contactId}`)
+    if (!isRecord(response)) return null
+    const balance = numberOrNull(response.pointsBalance) ?? numberOrNull(response.balance)
+    const tier = stringOrNull(response.tier) ?? stringOrNull(response.tierLevel) ?? undefined
     return {
       contactId,
-      balance: res.pointsBalance || res.balance || 0,
-      tierLevel: res.tier || res.tierLevel || 'BRONZE',
-      tier: res.tier || 'BRONZE',
-      loyaltyPointsBalance: res.pointsBalance || res.balance || 0,
-      totalLifetimeValue: res.totalLifetimeValue || 0,
-      totalPurchasesCount: res.totalPurchasesCount || 0,
-      averageOrderValue: res.averageOrderValue || 0,
-      churnRiskScore: res.churnRiskScore ?? 15,
-      rfmScore: res.rfmScore ?? '4.2',
-      npsScore: res.npsScore ?? 80,
-      customerSatisfactionScore: res.customerSatisfactionScore ?? 4.5,
-      history: res.history || [],
+      ...(balance !== null ? { balance, points: balance, loyaltyPointsBalance: balance } : {}),
+      ...(tier ? { tier, tierLevel: tier } : {}),
+      totalLifetimeValue: numberOrNull(response.totalLifetimeValue) ?? undefined,
+      totalPurchasesCount: numberOrNull(response.totalPurchasesCount) ?? undefined,
+      averageOrderValue: numberOrNull(response.averageOrderValue) ?? undefined,
+      churnRiskScore: numberOrNull(response.churnRiskScore),
+      rfmScore: numberOrNull(response.rfmScore) ?? stringOrNull(response.rfmScore),
+      npsScore: numberOrNull(response.npsScore),
+      customerSatisfactionScore: numberOrNull(response.customerSatisfactionScore),
+      history: toHistory(response.history),
     }
   }
 
   static async getMetrics(contactId: string): Promise<CustomerMetrics> {
     const profile = await this.getProfile(contactId)
     return {
-      churnRiskScore: profile?.churnRiskScore ?? 15,
-      rfmScore: profile?.rfmScore ?? '4.2',
-      npsScore: profile?.npsScore ?? 80,
-      customerSatisfactionScore: profile?.customerSatisfactionScore ?? 4.5,
+      churnRiskScore: profile?.churnRiskScore ?? null,
+      rfmScore: profile?.rfmScore ?? null,
+      npsScore: profile?.npsScore ?? null,
+      customerSatisfactionScore: profile?.customerSatisfactionScore ?? null,
     }
   }
 
-  static async earnPoints(contactId: string, points: number): Promise<any> {
-    return api.post<any>('/api/loyalty/earn', { contactId, points })
+  static async earnPoints(contactId: string, points: number): Promise<unknown> {
+    return api.post<unknown>('/api/loyalty/earn', { contactId, points })
   }
 
-  static async redeemPoints(contactId: string, points: number): Promise<any> {
-    return api.post<any>('/api/loyalty/redeem', { contactId, points })
+  static async redeemPoints(contactId: string, points: number): Promise<unknown> {
+    return api.post<unknown>('/api/loyalty/redeem', { contactId, points })
   }
 }

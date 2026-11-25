@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query, UsePipes } from '@nestjs/common'
+import { Controller, Get, Post, Put, Delete, Body, Param, Query } from '@nestjs/common'
 import { CreateCompanyHandler, UpdateCompanyHandler, DeleteCompanyHandler } from '../../application/commands/company.handlers'
 import { GetCompanyHandler, ListCompaniesHandler } from '../../application/queries/company.handlers'
 import { CreateCompanyCommand, UpdateCompanyCommand, DeleteCompanyCommand } from '../../application/commands/company.commands'

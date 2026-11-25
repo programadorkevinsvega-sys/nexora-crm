@@ -1,10 +1,25 @@
 import { Product } from '../domain/entities/product.entity'
 import { QuoteApproval } from '../domain/entities/quote-approval.entity'
 import { ESignature } from '../domain/entities/e-signature.entity'
-import { ProductPricingType, ApprovalStatus, SignatureStatus } from '@crm/contracts'
+import { ProductTemplate } from '../domain/entities/product-template.entity'
+import {
+  ProductPricingTypeSchema,
+  ApprovalStatusSchema,
+  SignatureStatusSchema,
+} from '@crm/contracts'
+import type { products, quoteApprovals, eSignatures } from '@crm/database'
+
+type ProductRow = typeof products.$inferSelect
+type QuoteApprovalRow = typeof quoteApprovals.$inferSelect
+type ESignatureRow = typeof eSignatures.$inferSelect
+
+function requiredDocumentType(value: string): 'QUOTE' | 'CONTRACT' {
+  if (value === 'QUOTE' || value === 'CONTRACT') return value
+  throw new TypeError(`Unsupported CPQ document type: ${value}`)
+}
 
 export class CpqMapper {
-  static productToDomain(row: any): Product {
+  static productToDomain(row: ProductRow): Product {
     return new Product(
       row.id,
       row.tenantId,
@@ -13,15 +28,15 @@ export class CpqMapper {
       row.description ?? null,
       Number(row.unitPrice),
       row.currency ?? 'USD',
-      row.pricingType as ProductPricingType,
+      ProductPricingTypeSchema.parse(row.pricingType),
       Number(row.taxRate ?? 0),
       row.isActive,
-      new Date(row.createdAt),
-      new Date(row.updatedAt),
+      row.createdAt,
+      row.updatedAt,
     )
   }
 
-  static quoteApprovalToDomain(row: any): QuoteApproval {
+  static quoteApprovalToDomain(row: QuoteApprovalRow): QuoteApproval {
     return new QuoteApproval(
       row.id,
       row.tenantId,
@@ -29,34 +44,34 @@ export class CpqMapper {
       Number(row.requestedDiscountPercent),
       row.requestedByUserId,
       row.approverUserId ?? null,
-      row.status as ApprovalStatus,
+      ApprovalStatusSchema.parse(row.status),
       row.rejectionReason ?? null,
-      row.decidedAt ? new Date(row.decidedAt) : null,
-      new Date(row.createdAt),
-      new Date(row.updatedAt),
+      row.decidedAt,
+      row.createdAt,
+      row.updatedAt,
     )
   }
 
-  static signatureToDomain(row: any): ESignature {
+  static signatureToDomain(row: ESignatureRow): ESignature {
     return new ESignature(
       row.id,
       row.tenantId,
       row.documentId,
-      row.documentType as 'QUOTE' | 'CONTRACT',
+      requiredDocumentType(row.documentType),
       row.signerName,
       row.signerEmail,
       row.signerPhone ?? null,
       row.token,
       row.otpCode ?? null,
-      row.status as SignatureStatus,
+      SignatureStatusSchema.parse(row.status),
       row.signerIp ?? null,
       row.signerUserAgent ?? null,
       row.documentHashSha256 ?? null,
       row.signatureDataUrl ?? null,
-      row.signedAt ? new Date(row.signedAt) : null,
-      new Date(row.expiresAt),
-      new Date(row.createdAt),
-      new Date(row.updatedAt),
+      row.signedAt,
+      row.expiresAt,
+      row.createdAt,
+      row.updatedAt,
     )
   }
 
@@ -115,7 +130,7 @@ export class CpqMapper {
     }
   }
 
-  static productTemplateToResponse(t: any) {
+  static productTemplateToResponse(t: ProductTemplate) {
     return {
       id: t.id,
       tenantId: t.tenantId,
@@ -124,7 +139,7 @@ export class CpqMapper {
       defaultSkuPrefix: t.defaultSkuPrefix,
       defaultUnitPrice: t.defaultUnitPrice,
       defaultCurrency: t.defaultCurrency,
-      pricingType: t.pricingType,
+      pricingType: ProductPricingTypeSchema.parse(t.pricingType),
       defaultTaxRate: t.defaultTaxRate,
       defaultDescription: t.defaultDescription,
       createdAt: t.createdAt.toISOString(),

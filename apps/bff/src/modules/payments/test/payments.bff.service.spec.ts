@@ -1,5 +1,7 @@
 import { PaymentsBffService } from '../payments.bff.service'
 import { StripeDispatcher } from '../../integrations/dispatchers/stripe.dispatcher'
+import { paymentTransactions } from '@crm/database'
+import type { PaymentTransaction } from '@crm/contracts'
 
 describe('PaymentsBffService', () => {
   let service: PaymentsBffService
@@ -16,19 +18,26 @@ describe('PaymentsBffService', () => {
   })
 
   it('should format transaction objects properly', () => {
-    const tx = (service as any).mapTx({
-      id: 'tx-1',
-      tenantId: 'tenant-1',
+    const mapTx = Reflect.get(service, 'mapTx') as (
+      row: typeof paymentTransactions.$inferSelect,
+    ) => PaymentTransaction
+    const tx = mapTx({
+      id: '00000000-0000-4000-8000-000000000001',
+      tenantId: '00000000-0000-4000-8000-000000000002',
       resourceType: 'QUOTE',
-      resourceId: 'quote-1',
+      resourceId: '00000000-0000-4000-8000-000000000003',
       gateway: 'STRIPE',
+      externalPaymentId: null,
+      paymentUrl: 'https://buy.stripe.com/test_123',
       amount: '250.00',
       currency: 'USD',
       status: 'PENDING',
-      paymentUrl: 'https://buy.stripe.com/test_123',
+      customerEmail: null,
+      customerName: null,
+      paidAt: null,
       metadata: {},
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
     })
 
     expect(tx.amount).toBe(250)

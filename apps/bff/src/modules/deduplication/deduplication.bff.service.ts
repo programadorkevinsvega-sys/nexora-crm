@@ -1,6 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { getDb, deduplicationRules, deduplicationAuditLogs, contacts, companies } from '@crm/database'
 import { eq, and, desc } from 'drizzle-orm'
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : {}
+}
 import type {
   DeduplicationRule,
   CreateDeduplicationRuleDto,
@@ -43,7 +49,7 @@ export class DeduplicationBffService {
   async scanDuplicates(tenantId: string, entityType: DeduplicationEntityType): Promise<DuplicateGroup[]> {
     if (entityType === 'CONTACT') {
       const allContacts = await this.db.select().from(contacts).where(eq(contacts.tenantId, tenantId))
-      const emailMap = new Map<string, any[]>()
+      const emailMap = new Map<string, (typeof allContacts)[number][]>
       for (const c of allContacts) {
         if (!c.email) continue
         const norm = c.email.toLowerCase().trim()
@@ -65,7 +71,7 @@ export class DeduplicationBffService {
     }
 
     const allCompanies = await this.db.select().from(companies).where(eq(companies.tenantId, tenantId))
-    const domainMap = new Map<string, any[]>()
+    const domainMap = new Map<string, (typeof allCompanies)[number][]>
     for (const c of allCompanies) {
       if (!c.website) continue
       const norm = c.website.toLowerCase().trim()
@@ -117,21 +123,22 @@ export class DeduplicationBffService {
     ])
   }
 
-  private mapRule(r: any): DeduplicationRule {
+  private mapRule(r: typeof deduplicationRules.$inferSelect): DeduplicationRule {
     return {
       ...r,
-      entityType: r.entityType as any,
-      matchType: r.matchType as any,
+      entityType: r.entityType as DeduplicationAuditLog['entityType'],
+      matchType: r.matchType as DeduplicationRule['matchType'],
       matchFields: Array.isArray(r.matchFields) ? r.matchFields : ['email'],
       createdAt: r.createdAt ? new Date(r.createdAt).toISOString() : new Date().toISOString(),
       updatedAt: r.updatedAt ? new Date(r.updatedAt).toISOString() : new Date().toISOString(),
     }
   }
 
-  private mapAuditLog(r: any): DeduplicationAuditLog {
+  private mapAuditLog(r: typeof deduplicationAuditLogs.$inferSelect): DeduplicationAuditLog {
     return {
       ...r,
-      entityType: r.entityType as any,
+      entityType: r.entityType as DeduplicationAuditLog['entityType'],
+      mergedDataSnapshot: asRecord(r.mergedDataSnapshot),
       mergedAt: r.mergedAt ? new Date(r.mergedAt).toISOString() : new Date().toISOString(),
     }
   }

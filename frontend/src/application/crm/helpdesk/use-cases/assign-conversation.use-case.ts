@@ -1,7 +1,7 @@
 import type { Result } from "@/src/domain/crm/common/results/result"
 import { success, failure } from "@/src/domain/crm/common/results/result"
 import type { ConversationRepository } from "@/src/domain/crm/helpdesk/conversation.repository"
-import type { Conversation, ConversationUpdateInput } from "@/src/domain/crm/helpdesk/conversation.entity"
+import type { Conversation } from "@/src/domain/crm/helpdesk/conversation.entity"
 
 export class AssignConversationUseCase {
   constructor(private repository: ConversationRepository) {}

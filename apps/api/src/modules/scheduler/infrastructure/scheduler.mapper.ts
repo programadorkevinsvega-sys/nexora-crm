@@ -1,4 +1,10 @@
+import { scheduledTasks, taskExecutions, reminders, slaConfigs, slaViolations } from '@crm/database'
 import { ScheduledTask, TaskExecution, Reminder, SlaConfig, SlaViolation } from '../domain/entities/scheduler.entity'
+
+function jsonObjectOrNull(value: unknown): Record<string, unknown> | null {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return null
+  return value as Record<string, unknown>
+}
 
 export class SchedulerMapper {
   static taskToResponse(t: ScheduledTask) {
@@ -36,29 +42,45 @@ export class SchedulerMapper {
       resolvedAt: v.resolvedAt?.toISOString() ?? null, escalatedAt: v.escalatedAt?.toISOString() ?? null,
       status: v.status, notes: v.notes }
   }
-  static taskToDomain(r: any): ScheduledTask {
-    return new ScheduledTask(r.id, r.tenantId, r.name, r.description, r.cronExpression,
-      r.taskType, r.targetService, r.targetEndpoint, r.targetPayload, r.enabled,
-      r.maxRetries, r.timeoutSeconds, r.createdByUserId, r.lastRunAt, r.nextRunAt,
-      r.createdAt, r.updatedAt)
+
+  static taskToDomain(row: typeof scheduledTasks.$inferSelect): ScheduledTask {
+    return new ScheduledTask(
+      row.id, row.tenantId, row.name, row.description, row.cronExpression,
+      row.taskType, row.targetService, row.targetEndpoint, jsonObjectOrNull(row.targetPayload),
+      row.enabled, row.maxRetries, row.timeoutSeconds, row.createdByUserId,
+      row.lastRunAt, row.nextRunAt, row.createdAt, row.updatedAt,
+    )
   }
-  static executionToDomain(r: any): TaskExecution {
-    return new TaskExecution(r.id, r.taskId, r.tenantId, r.status, r.startedAt,
-      r.finishedAt, r.resultPayload, r.errorMessage, r.attemptNumber)
+
+  static executionToDomain(row: typeof taskExecutions.$inferSelect): TaskExecution {
+    return new TaskExecution(
+      row.id, row.taskId, row.tenantId, row.status, row.startedAt, row.finishedAt,
+      jsonObjectOrNull(row.resultPayload), row.errorMessage, row.attemptNumber,
+    )
   }
-  static reminderToDomain(r: any): Reminder {
-    return new Reminder(r.id, r.tenantId, r.userId, r.title, r.description,
-      r.entityType, r.entityId, r.remindAt, r.reminded, r.notified,
-      r.repeatInterval, r.repeatCount, r.repeatRemaining, r.createdAt, r.updatedAt)
+
+  static reminderToDomain(row: typeof reminders.$inferSelect): Reminder {
+    return new Reminder(
+      row.id, row.tenantId, row.userId, row.title, row.description, row.entityType,
+      row.entityId, row.remindAt, row.reminded, row.notified, row.repeatInterval,
+      row.repeatCount, row.repeatRemaining, row.createdAt, row.updatedAt,
+    )
   }
-  static slaConfigToDomain(r: any): SlaConfig {
-    return new SlaConfig(r.id, r.tenantId, r.name, r.entityType, r.conditionField,
-      r.conditionOperator, r.conditionValue, r.responseTimeMinutes, r.resolutionTimeMinutes,
-      r.escalationUserId, r.escalationEmail, r.enabled, r.createdAt, r.updatedAt)
+
+  static slaConfigToDomain(row: typeof slaConfigs.$inferSelect): SlaConfig {
+    return new SlaConfig(
+      row.id, row.tenantId, row.name, row.entityType, row.conditionField,
+      row.conditionOperator, row.conditionValue, row.responseTimeMinutes,
+      row.resolutionTimeMinutes, row.escalationUserId, row.escalationEmail,
+      row.enabled, row.createdAt, row.updatedAt,
+    )
   }
-  static violationToDomain(r: any): SlaViolation {
-    return new SlaViolation(r.id, r.slaConfigId, r.tenantId, r.entityType, r.entityId,
-      r.violationType, r.detectedAt, r.respondedAt, r.resolvedAt, r.escalatedAt,
-      r.status, r.notes)
+
+  static violationToDomain(row: typeof slaViolations.$inferSelect): SlaViolation {
+    return new SlaViolation(
+      row.id, row.slaConfigId, row.tenantId, row.entityType, row.entityId,
+      row.violationType, row.detectedAt, row.respondedAt, row.resolvedAt,
+      row.escalatedAt, row.status, row.notes,
+    )
   }
 }

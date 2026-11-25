@@ -13,7 +13,7 @@ export class DrizzleConversationRepository extends ConversationRepository {
 
   async findById(tenantId: string, id: string): Promise<HelpdeskConversation | null> {
     const row = await this.db.query.helpdeskConversations.findFirst({
-      where: and(eq(conversationsTable.tenantId, tenantId)!, eq(conversationsTable.id, id)) as any,
+      where: and(eq(conversationsTable.tenantId, tenantId)!, eq(conversationsTable.id, id)),
     })
     return row ? ConversationMapper.toDomain(row) : null
   }
@@ -36,7 +36,7 @@ export class DrizzleConversationRepository extends ConversationRepository {
     }
 
     const rows = await this.db.query.helpdeskConversations.findMany({
-      where: and(...conditions.filter(Boolean)!) as any,
+      where: and(...conditions),
       limit: filter.limit + 1,
       orderBy: [asc(conversationsTable.createdAt), asc(conversationsTable.id)],
     })
@@ -52,9 +52,9 @@ export class DrizzleConversationRepository extends ConversationRepository {
 
   async save(conversation: HelpdeskConversation): Promise<void> {
     const row = ConversationMapper.toPersistence(conversation)
-    await this.db.insert(conversationsTable).values(row as any).onConflictDoUpdate({
+    await this.db.insert(conversationsTable).values(row).onConflictDoUpdate({
       target: conversationsTable.id,
-      set: row as any,
+      set: row,
     })
   }
 

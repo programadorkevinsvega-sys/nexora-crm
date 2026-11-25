@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Controller } from '@nestjs/common'
 import { GrpcMethod } from '@nestjs/microservices'
 import {
@@ -18,12 +17,41 @@ import {
   GetProfileQuery, ListOAuthLinksQuery, ListDevicesQuery,
 } from '../../application/queries/user.queries'
 import { UserMapper } from '../../infrastructure/user.mapper'
+import { NaturalPersonProfile } from '../../domain/entities/natural-person-profile.entity'
+import { LegalEntityProfile } from '../../domain/entities/legal-entity-profile.entity'
 import { validateOrThrow } from '../../../../common/validation/validate'
 import {
   UpdateNaturalPersonProfileSchema, UpdateLegalEntityProfileSchema,
   LinkOAuthSchema, UnlinkOAuthSchema,
   RegisterDeviceSchema, UpdateDeviceSchema, RemoveDeviceSchema,
 } from '@crm/contracts'
+
+interface UserProfileDeviceGrpcRequest {
+  tenantId?: unknown
+  userId?: unknown
+  firstName?: unknown
+  lastName?: unknown
+  identificationNumber?: unknown
+  phone?: unknown
+  countryCode?: unknown
+  preferredLanguage?: unknown
+  timezone?: unknown
+  avatarUrl?: unknown
+  legalName?: unknown
+  commercialName?: unknown
+  taxId?: unknown
+  legalAddress?: unknown
+  isActive?: unknown
+  providerName?: unknown
+  providerUserId?: unknown
+  deviceIdentifier?: unknown
+  platform?: unknown
+  deviceModel?: unknown
+  osVersion?: unknown
+  pushNotificationToken?: unknown
+  isTrustedDevice?: unknown
+  deviceId?: unknown
+}
 
 @Controller()
 export class UsersProfileDevicesGrpcController {
@@ -45,15 +73,18 @@ export class UsersProfileDevicesGrpcController {
     const result = await this.getProfileHandler.execute(
       new GetProfileQuery(data.tenantId, data.userId),
     )
-    const profile: any = result.profile
-    if (result.profileType === 'NATURAL_PERSON') {
+    const profile = result.profile
+    if (profile instanceof NaturalPersonProfile) {
       return { json: JSON.stringify(UserMapper.naturalPersonToResponse(profile)) }
     }
-    return { json: JSON.stringify(UserMapper.legalEntityToResponse(profile)) }
+    if (profile instanceof LegalEntityProfile) {
+      return { json: JSON.stringify(UserMapper.legalEntityToResponse(profile)) }
+    }
+    throw new Error('Unsupported user profile type')
   }
 
   @GrpcMethod('UserService', 'UpdateNaturalPersonProfile')
-  async updateNaturalPersonProfile(data: any) {
+  async updateNaturalPersonProfile(data: UserProfileDeviceGrpcRequest) {
     const input = validateOrThrow(UpdateNaturalPersonProfileSchema, {
       tenantId: data.tenantId,
       userId: data.userId,
@@ -78,7 +109,7 @@ export class UsersProfileDevicesGrpcController {
   }
 
   @GrpcMethod('UserService', 'UpdateLegalEntityProfile')
-  async updateLegalEntityProfile(data: any) {
+  async updateLegalEntityProfile(data: UserProfileDeviceGrpcRequest) {
     const input = validateOrThrow(UpdateLegalEntityProfileSchema, {
       tenantId: data.tenantId,
       userId: data.userId,
@@ -100,7 +131,7 @@ export class UsersProfileDevicesGrpcController {
   }
 
   @GrpcMethod('UserService', 'LinkOAuth')
-  async linkOAuth(data: any) {
+  async linkOAuth(data: UserProfileDeviceGrpcRequest) {
     const input = validateOrThrow(LinkOAuthSchema, {
       tenantId: data.tenantId,
       userId: data.userId,
@@ -114,7 +145,7 @@ export class UsersProfileDevicesGrpcController {
   }
 
   @GrpcMethod('UserService', 'UnlinkOAuth')
-  async unlinkOAuth(data: any) {
+  async unlinkOAuth(data: UserProfileDeviceGrpcRequest) {
     const input = validateOrThrow(UnlinkOAuthSchema, {
       tenantId: data.tenantId,
       userId: data.userId,
@@ -137,7 +168,7 @@ export class UsersProfileDevicesGrpcController {
   }
 
   @GrpcMethod('UserService', 'RegisterDevice')
-  async registerDevice(data: any) {
+  async registerDevice(data: UserProfileDeviceGrpcRequest) {
     const input = validateOrThrow(RegisterDeviceSchema, {
       tenantId: data.tenantId,
       userId: data.userId,
@@ -160,7 +191,7 @@ export class UsersProfileDevicesGrpcController {
   }
 
   @GrpcMethod('UserService', 'UpdateDevice')
-  async updateDevice(data: any) {
+  async updateDevice(data: UserProfileDeviceGrpcRequest) {
     const input = validateOrThrow(UpdateDeviceSchema, {
       tenantId: data.tenantId,
       userId: data.userId,
@@ -181,7 +212,7 @@ export class UsersProfileDevicesGrpcController {
   }
 
   @GrpcMethod('UserService', 'RemoveDevice')
-  async removeDevice(data: any) {
+  async removeDevice(data: UserProfileDeviceGrpcRequest) {
     const input = validateOrThrow(RemoveDeviceSchema, {
       tenantId: data.tenantId,
       userId: data.userId,

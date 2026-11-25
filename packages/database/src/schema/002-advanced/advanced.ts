@@ -1,6 +1,5 @@
-import { pgTable, uuid, varchar, timestamp, primaryKey, numeric, text, date, boolean } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, varchar, timestamp, numeric, text, date, boolean } from 'drizzle-orm/pg-core'
 import { contacts } from '../001-core/contacts'
-import { companies } from '../001-core/companies'
 import { deals } from '../001-core/deals'
 
 export const contactRelationships = pgTable('contact_relationships', {

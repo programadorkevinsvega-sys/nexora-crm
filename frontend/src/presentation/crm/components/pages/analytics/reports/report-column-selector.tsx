@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { CheckSquare, Square, ChevronUp, ChevronDown, Calculator } from "lucide-react"
+import { CheckSquare, Square, ChevronUp, ChevronDown } from "lucide-react"
 import { Badge } from "@/src/presentation/crm/components/ui/Badge"
 import type { ReportColumn, AggregateFunction } from "./report-builder.types"
 

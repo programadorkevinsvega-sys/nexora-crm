@@ -1,7 +1,7 @@
 import { Tenant } from '../../domain/entities/tenant.entity'
 import { Branch } from '../../domain/entities/branch.entity'
 import { TenantBranding } from '../../domain/entities/branding.entity'
-import { TenantDomain, UsageMetric } from '../../domain/entities/features.entity'
+import { UsageMetric } from '../../domain/entities/features.entity'
 
 describe('Tenant Domain Entities', () => {
   describe('Tenant Entity', () => {

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { LoyaltyRepository, SegmentRepository, MetricsRepository } from '../../domain/repositories/loyalty.repository'
 import { GetProfileQuery, GetSegmentsQuery, GetMetricsQuery } from './loyalty.queries'
-import { NotFoundError, ConflictError } from '@crm/shared'
+import { NotFoundError } from '@crm/shared'
 
 @Injectable()
 export class GetProfileHandler {

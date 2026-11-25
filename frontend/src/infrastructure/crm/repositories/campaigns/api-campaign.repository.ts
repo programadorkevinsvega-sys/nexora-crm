@@ -26,6 +26,6 @@ export const ApiCampaignRepository = {
     return api.get<PaginatedResult<CampaignMember>>(`/api/campaigns/${campaignId}/members${qs(params)}`)
   },
   async addMember(data: CampaignMemberCreateInput): Promise<CampaignMember> {
-    return api.post<CampaignMember>(`/api/campaigns/${data.campaignId}/members`, data)
+    return api.post<CampaignMember>(`/api/campaigns/${data.campaignId}/members`, { contactId: data.contactId })
   },
 }

@@ -1,6 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as bcrypt from 'bcrypt'
 import { LoginHandler, UserLookupService } from '../../application/commands/auth.handlers'
+import { AuthRepository } from '../../domain/repositories/auth.repository'
+import { OutboxService } from '../../../../common/outbox/outbox.service'
+import { JwtService } from '@nestjs/jwt'
 import { GetPasswordPolicyHandler } from '../../application/queries/auth.handlers'
 import { LoginCommand } from '../../application/commands/auth.commands'
 import { GetPasswordPolicyQuery } from '../../application/queries/auth.queries'
@@ -14,26 +16,28 @@ const TENANT_ID = '00000000-0000-0000-0000-000000000001'
 const USER_ID = '00000000-0000-0000-0000-000000000002'
 
 class MockUserLookupService extends UserLookupService {
-  findByTenantAndEmail = jest.fn<Promise<any>, [string, string]>()
-  findById = jest.fn<Promise<any>, [string, string]>()
+  findByTenantAndEmail = jest.fn<ReturnType<UserLookupService['findByTenantAndEmail']>, Parameters<UserLookupService['findByTenantAndEmail']>>()
+  findById = jest.fn<ReturnType<UserLookupService['findById']>, Parameters<UserLookupService['findById']>>()
 }
 
 describe('LoginHandler', () => {
   let handler: LoginHandler
-  let mockRepo: any
-  let mockOutbox: any
-  let mockJwt: any
+  type LoginRepositoryMock = jest.Mocked<Pick<AuthRepository, 'findMfaMethodsByUser' | 'saveSession'>>
+  let mockRepo: LoginRepositoryMock
+  let mockOutbox: jest.Mocked<Pick<OutboxService, 'publish'>>
+  let mockJwt: JwtService
   let mockUserLookup: MockUserLookupService
 
   beforeEach(() => {
     mockRepo = {
-      findMfaMethodsByUser: jest.fn().mockResolvedValue([]),
-      saveSession: jest.fn().mockResolvedValue(undefined),
+      findMfaMethodsByUser: jest.fn<ReturnType<AuthRepository['findMfaMethodsByUser']>, Parameters<AuthRepository['findMfaMethodsByUser']>>().mockResolvedValue([]),
+      saveSession: jest.fn<ReturnType<AuthRepository['saveSession']>, Parameters<AuthRepository['saveSession']>>().mockResolvedValue(undefined),
     }
-    mockOutbox = { publish: jest.fn().mockResolvedValue(undefined) }
-    mockJwt = { signAsync: jest.fn().mockResolvedValue('mock-token') }
+    mockOutbox = { publish: jest.fn<ReturnType<OutboxService['publish']>, Parameters<OutboxService['publish']>>().mockResolvedValue(undefined) }
+    mockJwt = new JwtService({ secret: 'unit-test-signing-key' })
+    jest.spyOn(mockJwt, 'signAsync').mockResolvedValue('mock-token')
     mockUserLookup = new MockUserLookupService()
-    handler = new LoginHandler(mockRepo, mockOutbox, mockJwt, mockUserLookup)
+    handler = new LoginHandler(mockRepo as unknown as AuthRepository, mockOutbox as unknown as OutboxService, mockJwt, mockUserLookup)
   })
 
   it('should return tokens on successful login', async () => {
@@ -100,11 +104,13 @@ describe('LoginHandler', () => {
 
 describe('GetPasswordPolicyHandler', () => {
   let handler: GetPasswordPolicyHandler
-  let mockRepo: any
+  let mockRepo: jest.Mocked<Pick<AuthRepository, 'getPasswordPolicy'>>
 
   beforeEach(() => {
-    mockRepo = { getPasswordPolicy: jest.fn() }
-    handler = new GetPasswordPolicyHandler(mockRepo)
+    mockRepo = {
+      getPasswordPolicy: jest.fn<ReturnType<AuthRepository['getPasswordPolicy']>, Parameters<AuthRepository['getPasswordPolicy']>>(),
+    }
+    handler = new GetPasswordPolicyHandler(mockRepo as unknown as AuthRepository)
   })
 
   it('should return policy from repo when exists', async () => {

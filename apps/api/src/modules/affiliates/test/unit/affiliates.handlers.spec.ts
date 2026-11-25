@@ -1,19 +1,29 @@
 import { CreateProgramHandler, RegisterAffiliateHandler } from '../../application/commands/affiliate.handlers'
+import { AffiliateProgramRepository } from '../../domain/repositories/affiliate-program.repository'
+import { AffiliateRepository } from '../../domain/repositories/affiliate.repository'
+import { OutboxService } from '../../../../common/outbox/outbox.service'
 
 describe('Affiliates Module - Unit Tests', () => {
-  let mockProgramRepo: any
-  let mockAffiliateRepo: any
-  let mockOutbox: any
+  let mockProgramRepo: jest.Mocked<Pick<AffiliateProgramRepository, 'save' | 'findById'>>
+  let mockAffiliateRepo: jest.Mocked<Pick<AffiliateRepository, 'save'>>
+  let mockOutbox: jest.Mocked<Pick<OutboxService, 'publish'>>
 
   beforeEach(() => {
-    mockProgramRepo = { save: jest.fn().mockResolvedValue(undefined), findById: jest.fn() }
-    mockAffiliateRepo = { save: jest.fn().mockResolvedValue(undefined) }
-    mockOutbox = { publish: jest.fn().mockResolvedValue(undefined) }
+    mockProgramRepo = {
+      save: jest.fn<ReturnType<AffiliateProgramRepository['save']>, Parameters<AffiliateProgramRepository['save']>>().mockResolvedValue(undefined),
+      findById: jest.fn<ReturnType<AffiliateProgramRepository['findById']>, Parameters<AffiliateProgramRepository['findById']>>(),
+    }
+    mockAffiliateRepo = {
+      save: jest.fn<ReturnType<AffiliateRepository['save']>, Parameters<AffiliateRepository['save']>>().mockResolvedValue(undefined),
+    }
+    mockOutbox = {
+      publish: jest.fn<ReturnType<OutboxService['publish']>, Parameters<OutboxService['publish']>>().mockResolvedValue(undefined),
+    }
   })
 
   describe('CreateProgramHandler', () => {
     it('should create an affiliate partner program', async () => {
-      const handler = new CreateProgramHandler(mockProgramRepo, mockOutbox)
+      const handler = new CreateProgramHandler(mockProgramRepo as unknown as AffiliateProgramRepository, mockOutbox as unknown as OutboxService)
       const result = await handler.execute({
         tenantId: 'tenant-1',
         name: 'Influencer 20% RevShare',
@@ -30,7 +40,7 @@ describe('Affiliates Module - Unit Tests', () => {
 
   describe('RegisterAffiliateHandler', () => {
     it('should register an affiliate with unique referral code', async () => {
-      const handler = new RegisterAffiliateHandler(mockAffiliateRepo, mockOutbox)
+      const handler = new RegisterAffiliateHandler(mockAffiliateRepo as unknown as AffiliateRepository, mockOutbox as unknown as OutboxService)
       const result = await handler.execute({
         tenantId: 'tenant-1',
         programId: 'prog-1',

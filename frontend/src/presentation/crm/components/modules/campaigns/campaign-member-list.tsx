@@ -14,6 +14,8 @@ import { Skeleton } from "@/src/presentation/crm/components/ui/Skeleton"
 import { FormSelect } from "@/src/presentation/crm/components/ui/FormField"
 import { useAuth } from "@/src/presentation/hooks/use-auth"
 import { useContactsList } from "@src/application/crm/di/hooks"
+import type { CampaignMember } from "@/src/domain/crm/campaigns/campaign-member.entity"
+import type { Contact } from "@/src/domain/crm/contacts/contact.entity"
 
 const memberSchema = z.object({
   contactId: z.string().min(1, "Please select a contact").uuid("Invalid Contact"),
@@ -33,7 +35,7 @@ export function CampaignMemberList({ campaignId }: CampaignMemberListProps) {
     resolver: zodResolver(memberSchema),
   })
 
-  const { data: contactsData } = useContactsList({ tenantId: tenantId! })
+  const { data: contactsData } = useContactsList({ tenantId: tenantId ?? undefined })
   const contacts = contactsData?.data ?? []
 
   const { data, isLoading } = useQuery({
@@ -46,15 +48,10 @@ export function CampaignMemberList({ campaignId }: CampaignMemberListProps) {
   })
 
   const addMutation = useMutation({
-    mutationFn: (formData: MemberFormData) => {
-      const repoPromise = import("@/src/infrastructure/crm/repositories/campaigns/api-campaign.repository")
-      return repoPromise.then(({ ApiCampaignRepository }) =>
-        ApiCampaignRepository.addMember({
-          tenantId: tenantId!,
-          campaignId,
-          contactId: formData.contactId,
-        })
-      )
+    mutationFn: async (formData: MemberFormData) => {
+      if (!tenantId) throw new Error('Tenant context is required to add a campaign member')
+      const { ApiCampaignRepository } = await import("@/src/infrastructure/crm/repositories/campaigns/api-campaign.repository")
+      return ApiCampaignRepository.addMember({ tenantId, campaignId, contactId: formData.contactId })
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["campaign-members", campaignId] })
@@ -64,14 +61,14 @@ export function CampaignMemberList({ campaignId }: CampaignMemberListProps) {
   })
 
   const getContactLabel = (contactId: string) => {
-    const contact = contacts.find((c: any) => c.id === contactId)
+    const contact = contacts.find((contact) => contact.id === contactId)
     if (contact) {
       return `${contact.firstName} ${contact.lastName ?? ""}`.trim()
     }
     return contactId
   }
 
-  const columns: ColumnDef<any>[] = [
+  const columns: ColumnDef<CampaignMember>[] = [
     {
       key: "contactId",
       header: "Contact",
@@ -104,9 +101,9 @@ export function CampaignMemberList({ campaignId }: CampaignMemberListProps) {
             required
           >
             <option value="">Select a contact...</option>
-            {contacts.map((c: any) => (
-              <option key={c.id} value={c.id}>
-                {c.firstName} {c.lastName ?? ""} {c.email ? `(${c.email})` : ""}
+            {contacts.map((contact: Contact) => (
+              <option key={contact.id} value={contact.id}>
+                {contact.firstName} {contact.lastName ?? ""} {contact.email ? `(${contact.email})` : ""}
               </option>
             ))}
           </FormSelect>

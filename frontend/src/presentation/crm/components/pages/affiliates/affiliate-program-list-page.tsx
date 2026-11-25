@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useState } from "react"
+import { useState } from "react"
 import { Plus } from "lucide-react"
 import { Button } from "@/src/presentation/crm/components/ui/Button"
 import { DataTable, type ColumnDef } from "@/src/presentation/crm/components/common/DataTable"

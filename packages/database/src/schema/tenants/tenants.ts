@@ -1,4 +1,4 @@
-import { pgSchema, uuid, varchar, text, boolean, integer, bigint, timestamp, jsonb, uniqueIndex, primaryKey } from 'drizzle-orm/pg-core'
+import { pgSchema, uuid, varchar, text, boolean, bigint, timestamp, jsonb, uniqueIndex, primaryKey } from 'drizzle-orm/pg-core'
 
 export const tenantsSchema = pgSchema('tenants')
 

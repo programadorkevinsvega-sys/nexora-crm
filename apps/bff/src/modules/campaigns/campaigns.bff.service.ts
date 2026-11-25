@@ -13,6 +13,16 @@ export interface CampaignFilters {
   type?: string
 }
 
+export interface CampaignStats {
+  total: number
+  sent: number
+  opened: number
+  clicked: number
+  responded: number
+  bounced: number
+  unsubscribed: number
+}
+
 export interface PaginatedResult<T> {
   data: T[]
   nextCursor: string | null
@@ -92,9 +102,9 @@ export class CampaignsBffService {
     return { id: memberId }
   }
 
-  async getCampaignStats(campaignId: string, tenantId: string): Promise<any> {
+  async getCampaignStats(campaignId: string, tenantId: string): Promise<CampaignStats> {
     const cacheKey = `${CACHE_KEY_PREFIX}stats:${campaignId}:${tenantId}`
-    return this.cache.getOrSet<any>(
+    return this.cache.getOrSet<CampaignStats>(
       cacheKey,
       async () => {
         // Fetch all members for this campaign to calculate stats.
@@ -105,7 +115,7 @@ export class CampaignsBffService {
         const total = members.length
         let sent = 0, opened = 0, clicked = 0, responded = 0, bounced = 0, unsubscribed = 0
         
-        members.forEach((m: any) => {
+        members.forEach((m) => {
           if (m.status === 'SENT') sent++
           if (m.status === 'OPENED') opened++
           if (m.status === 'CLICKED') clicked++

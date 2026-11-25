@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, text, timestamp, boolean, integer, date, serial, primaryKey, numeric } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, varchar, text, timestamp, boolean, integer, serial, primaryKey, numeric } from 'drizzle-orm/pg-core'
 
 export const helpdeskMailboxes = pgTable('crm_helpdesk_mailboxes', {
   id: uuid('id').defaultRandom().primaryKey(),

@@ -1,20 +1,34 @@
 import { ExecutionContext } from '@nestjs/common'
-import { CurrentUser } from './current-user.decorator'
+import { ROUTE_ARGS_METADATA } from '@nestjs/common/constants'
+import { AuthenticatedUser, CurrentUser } from './current-user.decorator'
 
-const mockExecutionContext = (request: any): ExecutionContext => ({
-  switchToHttp: () => ({
-    getRequest: () => request,
-  }),
-} as any)
+interface CustomParameterMetadata {
+  factory: (data: keyof AuthenticatedUser | undefined, context: ExecutionContext) => unknown
+}
+
+function createExecutionContext(request: { user?: Record<string, unknown> }): ExecutionContext {
+  return {
+    switchToHttp: () => ({
+      getRequest: () => request,
+    }),
+  } as unknown as ExecutionContext
+}
 
 describe('CurrentUser Decorator', () => {
-  const getFactory = () => {
-    // CurrentUser returns a parameter decorator; extract the decorator function metadata
-    const metadataKey = 'custom:param_decorator'
-    return (CurrentUser as any)
-  }
+  it('extracts the authenticated user from request.user and ignores spoofed headers', () => {
+    class TestController {
+      handle(@CurrentUser() _user: AuthenticatedUser): void {}
+    }
 
-  it('extracts the authenticated user from request.user', () => {
+    const metadata = Reflect.getMetadata(
+      ROUTE_ARGS_METADATA,
+      TestController,
+      'handle',
+    ) as Record<string, CustomParameterMetadata> | undefined
+    const parameterMetadata = metadata && Object.values(metadata)[0]
+
+    expect(parameterMetadata).toBeDefined()
+
     const request = {
       user: {
         sub: 'user-123',
@@ -27,13 +41,12 @@ describe('CurrentUser Decorator', () => {
         'x-user-role': 'super-admin',
       },
     }
+    const user = parameterMetadata?.factory(undefined, createExecutionContext(request)) as AuthenticatedUser
 
-    // In NestJS, custom param decorators are called with (data, ctx)
-    const factory = Reflect.getMetadata('__custom_param_decorator__', CurrentUser)
-    // Direct invocation test
-    const ctx = mockExecutionContext(request)
-    expect(request.user.sub).toBe('user-123')
-    expect(request.user.tenantId).toBe('tenant-456')
-    expect(request.user.role).toBe('admin')
+    expect(user.userId).toBe('user-123')
+    expect(user.sub).toBe('user-123')
+    expect(user.tenantId).toBe('tenant-456')
+    expect(user.role).toBe('admin')
+    expect(user.email).toBe('user@example.com')
   })
 })

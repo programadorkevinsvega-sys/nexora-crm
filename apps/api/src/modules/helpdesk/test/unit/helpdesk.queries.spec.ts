@@ -1,4 +1,4 @@
-import { GetConversationHandler, ListConversationsHandler, ListThreadsHandler } from '../../application/queries/helpdesk.handlers'
+import { GetConversationHandler, ListThreadsHandler } from '../../application/queries/helpdesk.handlers'
 import { HelpdeskConversation } from '../../domain/entities/conversation.entity'
 import { HelpdeskThread } from '../../domain/entities/thread.entity'
 import { NotFoundError } from '@crm/shared'
@@ -6,14 +6,10 @@ import { NotFoundError } from '@crm/shared'
 describe('Helpdesk Queries - Unit Tests', () => {
   let mockConvRepo: any
   let mockThreadRepo: any
-  let mockAgentRepo: any
-  let mockMailboxRepo: any
 
   beforeEach(() => {
     mockConvRepo = { findById: jest.fn(), list: jest.fn() }
     mockThreadRepo = { findByConversationId: jest.fn() }
-    mockAgentRepo = { findByUserId: jest.fn() }
-    mockMailboxRepo = { list: jest.fn() }
   })
 
   describe('GetConversationHandler', () => {

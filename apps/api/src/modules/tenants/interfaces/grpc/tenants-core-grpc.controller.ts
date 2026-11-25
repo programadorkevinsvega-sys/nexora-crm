@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Controller } from '@nestjs/common'
 import { GrpcMethod } from '@nestjs/microservices'
 import {
@@ -18,6 +17,52 @@ import {
 } from '../../application/queries/tenants.queries'
 import { TenantsMapper } from '../../infrastructure/tenants.mapper'
 
+interface TenantGrpcRequest {
+  ownerUserId?: unknown
+  industryType?: unknown
+  name?: unknown
+  legalName?: unknown
+  taxId?: unknown
+  taxRegime?: unknown
+  legalAddress?: unknown
+  city?: unknown
+  postalCode?: unknown
+  timezone?: unknown
+  currencyCode?: unknown
+  id?: unknown
+  status?: unknown
+  search?: unknown
+  cursor?: unknown
+  limit?: unknown
+  tenantId?: unknown
+  code?: unknown
+  address?: unknown
+  country?: unknown
+  isHeadquarters?: unknown
+  isActive?: unknown
+}
+
+function requiredString(value: unknown, field: string): string {
+  if (typeof value !== 'string' || value.trim().length === 0) throw new TypeError(`Missing or invalid ${field}`)
+  return value
+}
+
+function optionalString(value: unknown): string | undefined {
+  return typeof value === 'string' ? value : undefined
+}
+
+function optionalNullableString(value: unknown): string | null | undefined {
+  return value === null ? null : optionalString(value)
+}
+
+function optionalBoolean(value: unknown): boolean | undefined {
+  return typeof value === 'boolean' ? value : undefined
+}
+
+function pageLimit(value: unknown): number {
+  return typeof value === 'number' && Number.isInteger(value) && value >= 1 && value <= 100 ? value : 20
+}
+
 @Controller()
 export class TenantsCoreGrpcController {
   constructor(
@@ -34,11 +79,16 @@ export class TenantsCoreGrpcController {
   ) {}
 
   @GrpcMethod('TenantService', 'CreateTenant')
-  async createTenant(data: any) {
+  async createTenant(data: TenantGrpcRequest) {
     const result = await this.createTenantHandler.execute(
-      new CreateTenantCommand(data.ownerUserId, data.industryType, data.name,
-        data.legalName, data.taxId, data.taxRegime, data.legalAddress,
-        data.city, data.postalCode, data.timezone, data.currencyCode),
+      new CreateTenantCommand(
+        requiredString(data.ownerUserId, 'ownerUserId'),
+        requiredString(data.industryType, 'industryType'),
+        requiredString(data.name, 'name'),
+        optionalString(data.legalName), optionalString(data.taxId), optionalString(data.taxRegime),
+        optionalString(data.legalAddress), optionalString(data.city), optionalString(data.postalCode),
+        optionalString(data.timezone), optionalString(data.currencyCode),
+      ),
     )
     return { json: JSON.stringify(TenantsMapper.tenantToResponse(result)) }
   }
@@ -50,9 +100,9 @@ export class TenantsCoreGrpcController {
   }
 
   @GrpcMethod('TenantService', 'ListTenants')
-  async listTenants(data: any) {
+  async listTenants(data: TenantGrpcRequest) {
     const result = await this.listTenantsHandler.execute(
-      new ListTenantsQuery(data.search, data.status, data.cursor, data.limit ?? 20),
+      new ListTenantsQuery(optionalString(data.search), optionalString(data.status), optionalString(data.cursor), pageLimit(data.limit)),
     )
     return {
       jsonItems: result.data.map((t) => JSON.stringify(TenantsMapper.tenantToResponse(t))),
@@ -61,11 +111,15 @@ export class TenantsCoreGrpcController {
   }
 
   @GrpcMethod('TenantService', 'UpdateTenant')
-  async updateTenant(data: any) {
+  async updateTenant(data: TenantGrpcRequest) {
     const result = await this.updateTenantHandler.execute(
-      new UpdateTenantCommand(data.id, data.name, data.legalName, data.taxId, data.taxRegime,
-        data.legalAddress, data.city, data.postalCode, data.industryType,
-        data.status, data.timezone, data.currencyCode),
+      new UpdateTenantCommand(
+        requiredString(data.id, 'id'), optionalString(data.name), optionalNullableString(data.legalName),
+        optionalNullableString(data.taxId), optionalNullableString(data.taxRegime),
+        optionalNullableString(data.legalAddress), optionalNullableString(data.city),
+        optionalNullableString(data.postalCode), optionalString(data.industryType),
+        optionalString(data.status), optionalString(data.timezone), optionalString(data.currencyCode),
+      ),
     )
     return { json: JSON.stringify(TenantsMapper.tenantToResponse(result)) }
   }
@@ -77,9 +131,13 @@ export class TenantsCoreGrpcController {
   }
 
   @GrpcMethod('TenantService', 'CreateBranch')
-  async createBranch(data: any) {
+  async createBranch(data: TenantGrpcRequest) {
     const result = await this.createBranchHandler.execute(
-      new CreateBranchCommand(data.tenantId, data.name, data.code, data.address, data.city, data.country, data.isHeadquarters),
+      new CreateBranchCommand(
+        requiredString(data.tenantId, 'tenantId'), requiredString(data.name, 'name'),
+        optionalString(data.code), optionalString(data.address), optionalString(data.city),
+        optionalString(data.country), optionalBoolean(data.isHeadquarters),
+      ),
     )
     return { json: JSON.stringify(TenantsMapper.branchToResponse(result)) }
   }
@@ -97,9 +155,13 @@ export class TenantsCoreGrpcController {
   }
 
   @GrpcMethod('TenantService', 'UpdateBranch')
-  async updateBranch(data: any) {
+  async updateBranch(data: TenantGrpcRequest) {
     const result = await this.updateBranchHandler.execute(
-      new UpdateBranchCommand(data.tenantId, data.id, data.name, data.code, data.address, data.city, data.country, data.isActive, data.isHeadquarters),
+      new UpdateBranchCommand(
+        requiredString(data.tenantId, 'tenantId'), requiredString(data.id, 'id'), optionalString(data.name),
+        optionalNullableString(data.code), optionalNullableString(data.address), optionalNullableString(data.city),
+        optionalNullableString(data.country), optionalBoolean(data.isActive), optionalBoolean(data.isHeadquarters),
+      ),
     )
     return { json: JSON.stringify(TenantsMapper.branchToResponse(result)) }
   }

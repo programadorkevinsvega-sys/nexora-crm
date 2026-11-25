@@ -5,12 +5,9 @@ import {
   Sparkles,
   TrendingUp,
   Mail,
-  MessageSquare,
   AlertTriangle,
   CheckCircle2,
   Copy,
-  Send,
-  RefreshCw,
   Zap,
 } from "lucide-react"
 import { Button } from "@/src/presentation/crm/components/ui/Button"
@@ -20,9 +17,42 @@ import { ApiAiRepository } from "@/src/infrastructure/crm/repositories/ai/api-ai
 import { api } from "@/src/infrastructure/crm/api/api-client"
 import type { DealWinProbability, GeneratedMessageDraft, ContactExecutiveSummary } from "@crm/contracts"
 
+interface DealOption { id: string; name: string }
+interface ContactOption { id: string; firstName: string; lastName: string | null }
+type MessageObjective =
+  | "FOLLOW_UP"
+  | "PROPOSAL_INTRODUCTION"
+  | "CONTRACT_SIGNING"
+  | "PAYMENT_REMINDER"
+  | "RE_ENGAGEMENT"
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+}
+
+function toOptions(response: unknown, kind: "deal"): DealOption[]
+function toOptions(response: unknown, kind: "contact"): ContactOption[]
+function toOptions(response: unknown, kind: "deal" | "contact"): Array<DealOption | ContactOption> {
+  const rows = Array.isArray(response)
+    ? response
+    : isRecord(response) && Array.isArray(response.data)
+      ? response.data
+      : []
+  return rows.flatMap((row): Array<DealOption | ContactOption> => {
+    if (!isRecord(row) || typeof row.id !== "string") return []
+    if (kind === "deal" && typeof row.name === "string") {
+      return [{ id: row.id, name: row.name }]
+    }
+    if (kind === "contact" && typeof row.firstName === "string") {
+      return [{ id: row.id, firstName: row.firstName, lastName: typeof row.lastName === "string" ? row.lastName : null }]
+    }
+    return []
+  })
+}
+
 export function AiCopilotPage() {
-  const [deals, setDeals] = useState<any[]>([])
-  const [contacts, setContacts] = useState<any[]>([])
+  const [deals, setDeals] = useState<DealOption[]>([])
+  const [contacts, setContacts] = useState<ContactOption[]>([])
   const [selectedDealId, setSelectedDealId] = useState<string>("")
   const [selectedContactId, setSelectedContactId] = useState<string>("")
 
@@ -32,8 +62,7 @@ export function AiCopilotPage() {
   // Message Generator
   const [channel, setChannel] = useState<"EMAIL" | "WHATSAPP" | "NOTE">("EMAIL")
   const [tone, setTone] = useState<"FORMAL" | "FRIENDLY" | "PERSUASIVE" | "URGENT">("PERSUASIVE")
-  const [objective, setObjective] = useState<any>("FOLLOW_UP")
-  const [customInstructions, setCustomInstructions] = useState("")
+  const [objective, setObjective] = useState<MessageObjective>("FOLLOW_UP")
   const [draft, setDraft] = useState<GeneratedMessageDraft | null>(null)
   const [generatingDraft, setGeneratingDraft] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -45,11 +74,11 @@ export function AiCopilotPage() {
   useEffect(() => {
     async function loadData() {
       const [dList, cList] = await Promise.all([
-        api.get<any>("/api/pipelines/deals").catch(() => []),
-        api.get<any>("/api/contacts").catch(() => ({ data: [] })),
+        api.get<unknown>("/api/pipelines/deals").catch(() => []),
+        api.get<unknown>("/api/contacts").catch(() => ({ data: [] })),
       ])
-      const dealsArr = Array.isArray(dList) ? dList : dList.data || []
-      const contactsArr = Array.isArray(cList) ? cList : cList.data || []
+      const dealsArr = toOptions(dList, "deal")
+      const contactsArr = toOptions(cList, "contact")
       setDeals(dealsArr)
       setContacts(contactsArr)
 
@@ -86,11 +115,10 @@ export function AiCopilotPage() {
         channel,
         tone,
         objective,
-        customInstructions: customInstructions || undefined,
       })
       setDraft(res)
-    } catch (err: any) {
-      alert(`Error al generar mensaje: ${err?.message}`)
+    } catch (err: unknown) {
+      alert(`Error al generar mensaje: ${err instanceof Error ? err.message : String(err)}`)
     } finally {
       setGeneratingDraft(false)
     }
@@ -232,7 +260,7 @@ export function AiCopilotPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
           <div>
             <label className="block font-medium mb-1">Canal de Envío</label>
-            <select value={channel} onChange={(e: any) => setChannel(e.target.value)} className="w-full p-2 border rounded bg-background text-xs">
+            <select value={channel} onChange={(e) => setChannel(e.target.value as typeof channel)} className="w-full p-2 border rounded bg-background text-xs">
               <option value="EMAIL">Email Corporativo</option>
               <option value="WHATSAPP">WhatsApp Directo</option>
               <option value="NOTE">Nota Interna</option>
@@ -240,7 +268,7 @@ export function AiCopilotPage() {
           </div>
           <div>
             <label className="block font-medium mb-1">Tono del Mensaje</label>
-            <select value={tone} onChange={(e: any) => setTone(e.target.value)} className="w-full p-2 border rounded bg-background text-xs">
+            <select value={tone} onChange={(e) => setTone(e.target.value as typeof tone)} className="w-full p-2 border rounded bg-background text-xs">
               <option value="PERSUASIVE">Persuasivo & Enfocado a Cierre</option>
               <option value="FORMAL">Formal & Ejecutivo</option>
               <option value="FRIENDLY">Amigable & Cercano</option>
@@ -249,7 +277,7 @@ export function AiCopilotPage() {
           </div>
           <div className="md:col-span-2">
             <label className="block font-medium mb-1">Objetivo del Mensaje</label>
-            <select value={objective} onChange={(e: any) => setObjective(e.target.value)} className="w-full p-2 border rounded bg-background text-xs">
+            <select value={objective} onChange={(e) => setObjective(e.target.value as MessageObjective)} className="w-full p-2 border rounded bg-background text-xs">
               <option value="FOLLOW_UP">Seguimiento de Propuesta Comercial</option>
               <option value="PROPOSAL_INTRODUCTION">Presentación de Oferta Personalizada</option>
               <option value="CONTRACT_SIGNING">Solicitud de Firma Electrónica</option>

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { ContractRepository } from '../../domain/repositories/contract.repository'
 import { GetContractQuery, ListContractsQuery } from './contract.queries'
-import { NotFoundError, ConflictError } from '@crm/shared'
+import { NotFoundError } from '@crm/shared'
 
 @Injectable()
 export class GetContractHandler {

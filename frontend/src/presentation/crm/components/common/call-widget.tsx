@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { Phone, PhoneOff, Mic, MicOff, Disc, User } from "lucide-react"
+import { PhoneOff, Mic, MicOff, Disc, User } from "lucide-react"
 import { useCall } from "@/src/application/crm/context/call-context"
 import { Button } from "@/src/presentation/crm/components/ui/Button"
 import { Badge } from "@/src/presentation/crm/components/ui/Badge"

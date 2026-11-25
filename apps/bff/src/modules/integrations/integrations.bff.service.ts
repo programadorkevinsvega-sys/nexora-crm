@@ -10,6 +10,16 @@ import {
   TestIntegrationInput,
 } from '@crm/contracts'
 
+interface StoredIntegrationConfig {
+  provider: IntegrationProvider
+  credentials: Record<string, unknown>
+  isEnabled: boolean
+  updatedAt: string
+  lastTestedAt?: string | null
+  lastTestSuccess?: boolean | null
+}
+type IntegrationTestResult = Awaited<ReturnType<IntegrationsDispatcher['dispatchTest']>>
+
 @Injectable()
 export class IntegrationsBffService {
   private readonly logger = new Logger(IntegrationsBffService.name)
@@ -27,7 +37,7 @@ export class IntegrationsBffService {
     const statuses: IntegrationStatus[] = []
 
     for (const provider of INTEGRATION_PROVIDERS) {
-      const stored = await this.cache.get<any>(this.key(tenantId, provider))
+      const stored = await this.cache.get<StoredIntegrationConfig>(this.key(tenantId, provider))
       const isConfigured = !!stored
       const isEnabled = stored?.isEnabled ?? false
 
@@ -56,7 +66,7 @@ export class IntegrationsBffService {
 
   async saveConfig(tenantId: string, input: SaveIntegrationInput): Promise<{ ok: boolean }> {
     // Encrypt sensitive credential fields using AES-256-GCM + tenant isolation
-    const encryptedCredentials: Record<string, any> = {}
+    const encryptedCredentials: Record<string, unknown> = {}
     for (const [k, v] of Object.entries(input.credentials)) {
       if (typeof v === 'string' && v.trim().length > 0) {
         encryptedCredentials[k] = SecretsVault.encrypt(v, tenantId)
@@ -77,8 +87,8 @@ export class IntegrationsBffService {
     return { ok: true }
   }
 
-  async testIntegration(tenantId: string, input: TestIntegrationInput): Promise<any> {
-    const stored = await this.cache.get<any>(this.key(tenantId, input.provider))
+  async testIntegration(tenantId: string, input: TestIntegrationInput): Promise<IntegrationTestResult> {
+    const stored = await this.cache.get<StoredIntegrationConfig>(this.key(tenantId, input.provider))
     const creds = stored?.credentials
 
     if (!creds) {
@@ -86,7 +96,7 @@ export class IntegrationsBffService {
     }
 
     // Decrypt credentials with authentication tag verification
-    const decryptedCreds: Record<string, any> = {}
+    const decryptedCreds: Record<string, unknown> = {}
     for (const [k, v] of Object.entries(creds)) {
       if (typeof v === 'string' && SecretsVault.isEncrypted(v)) {
         decryptedCreds[k] = SecretsVault.decrypt(v, tenantId)
@@ -115,12 +125,12 @@ export class IntegrationsBffService {
     return { ok: true }
   }
 
-  async getDecryptedConfig(tenantId: string, provider: IntegrationProvider): Promise<Record<string, any> | null> {
-    const stored = await this.cache.get<any>(this.key(tenantId, provider))
+  async getDecryptedConfig(tenantId: string, provider: IntegrationProvider): Promise<Record<string, unknown> | null> {
+    const stored = await this.cache.get<StoredIntegrationConfig>(this.key(tenantId, provider))
     const creds = stored?.credentials
     if (!creds || stored?.isEnabled === false) return null
 
-    const decryptedCreds: Record<string, any> = {}
+    const decryptedCreds: Record<string, unknown> = {}
     for (const [k, v] of Object.entries(creds)) {
       if (typeof v === 'string' && SecretsVault.isEncrypted(v)) {
         decryptedCreds[k] = SecretsVault.decrypt(v, tenantId)

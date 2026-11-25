@@ -1,20 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import {
-  TrendingUp,
-  DollarSign,
-  Filter,
-  BarChart3,
-  Users,
-  Percent,
-  Calendar,
-  Zap,
-  ArrowDownRight,
-  ArrowUpRight,
-  Sparkles,
-  RefreshCw,
-} from "lucide-react"
+import { TrendingUp, DollarSign, Filter, Users, Zap, ArrowDownRight, ArrowUpRight, Sparkles, RefreshCw } from "lucide-react"
 import { Button } from "@/src/presentation/crm/components/ui/Button"
 import { Card } from "@/src/presentation/crm/components/ui/Card"
 import { Badge } from "@/src/presentation/crm/components/ui/Badge"

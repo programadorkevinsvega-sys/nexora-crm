@@ -14,13 +14,11 @@ import { ConfirmDialog } from "@/src/presentation/crm/components/common/ConfirmD
 import { CommissionTable } from "@/src/presentation/crm/components/modules/affiliates/commission-table"
 import { PayoutTable } from "@/src/presentation/crm/components/modules/affiliates/payout-table"
 import { ErrorState } from "@/src/presentation/components/error-state"
-import { useAuth } from "@/src/presentation/hooks/use-auth"
 import { useProgram, useDeleteProgram } from "@src/application/crm/di/hooks"
 
 export function ProgramDetailPage() {
   const params = useParams()
   const router = useRouter()
-  const { tenantId } = useAuth()
   const [showDelete, setShowDelete] = useState(false)
   const [activeTab, setActiveTab] = useState("details")
   const id = params.id as string

@@ -9,6 +9,11 @@ import {
 import { ApiCoreGrpcClient } from '../grpc/api-core-grpc.client'
 import { CacheService } from '../cache/cache.service'
 
+interface ApiKeyRequest {
+  headers: Record<string, string | string[] | undefined>
+  apiKeyContext?: { tenantId: string; scopes: string[]; keyId: string }
+}
+
 @Injectable()
 export class ApiKeyGuard implements CanActivate {
   constructor(
@@ -17,7 +22,7 @@ export class ApiKeyGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest()
+    const request = context.switchToHttp().getRequest<ApiKeyRequest>()
     const rawKey = this.extractKey(request)
     if (!rawKey) {
       throw new UnauthorizedException(
@@ -50,12 +55,14 @@ export class ApiKeyGuard implements CanActivate {
     return true
   }
 
-  private extractKey(request: any): string {
-    const authHeader = request.headers['authorization'] || ''
+  private extractKey(request: ApiKeyRequest): string {
+    const authorization = request.headers['authorization']
+    const authHeader = typeof authorization === 'string' ? authorization : ''
     if (authHeader.startsWith('Bearer nex_')) {
       return authHeader.slice(7).trim()
     }
-    const apiKeyHeader = request.headers['x-api-key'] || ''
+    const apiKeyValue = request.headers['x-api-key']
+    const apiKeyHeader = typeof apiKeyValue === 'string' ? apiKeyValue : ''
     if (apiKeyHeader.startsWith('nex_')) {
       return apiKeyHeader.trim()
     }

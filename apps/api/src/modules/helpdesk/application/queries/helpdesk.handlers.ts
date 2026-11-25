@@ -3,7 +3,7 @@ import { ConversationRepository } from '../../domain/repositories/conversation.r
 import { ThreadRepository } from '../../domain/repositories/thread.repository'
 import { AgentRepository } from '../../domain/repositories/agent.repository'
 import { MailboxRepository } from '../../domain/repositories/mailbox.repository'
-import { NotFoundError, ConflictError } from '@crm/shared'
+import { NotFoundError } from '@crm/shared'
 import {
   GetConversationQuery,
   ListConversationsQuery,

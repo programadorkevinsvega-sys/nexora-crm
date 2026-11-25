@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import type { BiReport } from '@crm/contracts'
-import { Maximize2, ExternalLink, RefreshCw, Database, Copy, Check } from 'lucide-react'
+import { ExternalLink, RefreshCw, Database, Copy, Check } from 'lucide-react'
 import { ApiBiRepository } from '@src/infrastructure/crm/repositories/bi/api-bi.repository'
 
 interface Props {

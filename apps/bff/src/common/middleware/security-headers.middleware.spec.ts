@@ -1,4 +1,5 @@
 import { SecurityHeadersMiddleware } from './security-headers.middleware'
+import type { Request, Response } from 'express'
 
 describe('SecurityHeadersMiddleware', () => {
   let middleware: SecurityHeadersMiddleware
@@ -9,11 +10,11 @@ describe('SecurityHeadersMiddleware', () => {
 
   it('sets standard security headers on regular API requests', () => {
     const headers: Record<string, string> = {}
-    const req = { path: '/api/contacts' } as any
+    const req = { path: '/api/contacts' } as unknown as Request
     const res = {
-      setHeader: jest.fn((k, v) => { headers[k] = v }),
-      removeHeader: jest.fn((k) => { delete headers[k] }),
-    } as any
+      setHeader: jest.fn((k: string, v: string) => { headers[k] = v }),
+      removeHeader: jest.fn((k: string) => { delete headers[k] }),
+    } as unknown as Response
     const next = jest.fn()
 
     middleware.use(req, res, next)
@@ -29,11 +30,11 @@ describe('SecurityHeadersMiddleware', () => {
   })
 
   it('allows embedding for public embed and forms routes', () => {
-    const req = { path: '/api/public/forms/contacto-web' } as any
+    const req = { path: '/api/public/forms/contacto-web' } as unknown as Request
     const res = {
       setHeader: jest.fn(),
       removeHeader: jest.fn(),
-    } as any
+    } as unknown as Response
     const next = jest.fn()
 
     middleware.use(req, res, next)

@@ -1,88 +1,76 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Delete,
-  Param,
-  Body,
-  Req,
-  BadRequestException,
+  Controller, Get, Post, Delete, Param, Body, Req, BadRequestException,
 } from '@nestjs/common'
 import { IntegrationsBffService } from './integrations.bff.service'
 import {
-  INTEGRATION_PROVIDERS,
-  IntegrationProvider,
-  SaveIntegrationSchema,
-  TestIntegrationSchema,
+  INTEGRATION_PROVIDERS, IntegrationProvider, SaveIntegrationSchema, TestIntegrationSchema,
 } from '@crm/contracts'
 import type { Request } from 'express'
+
+type AuthenticatedRequest = Request & { user?: { tenantId?: string } }
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : {}
+}
 
 @Controller('api/integrations')
 export class IntegrationsBffController {
   constructor(private readonly service: IntegrationsBffService) {}
 
-  private getTenantId(req: Request): string {
-    const tenantHeader = (req.headers['x-tenant-id'] || '') as string
-    const userSession = (req as any).user?.tenantId
-    return userSession || tenantHeader || '08e74d36-cb43-4de0-b7f2-11234db953b1'
+  private getTenantId(req: AuthenticatedRequest): string {
+    const header = req.headers['x-tenant-id']
+    const tenantHeader = typeof header === 'string' ? header : ''
+    return req.user?.tenantId || tenantHeader || '08e74d36-cb43-4de0-b7f2-11234db953b1'
   }
 
   @Get()
-  async listStatuses(@Req() req: Request) {
-    const tenantId = this.getTenantId(req)
-    return this.service.listStatuses(tenantId)
+  async listStatuses(@Req() req: AuthenticatedRequest) {
+    return this.service.listStatuses(this.getTenantId(req))
   }
 
   @Post(':provider')
   async saveConfig(
     @Param('provider') provider: string,
-    @Body() body: any,
-    @Req() req: Request
+    @Body() body: unknown,
+    @Req() req: AuthenticatedRequest,
   ) {
     if (!INTEGRATION_PROVIDERS.includes(provider as IntegrationProvider)) {
       throw new BadRequestException(`Proveedor inválido: ${provider}`)
     }
-
-    const tenantId = this.getTenantId(req)
+    const payload = asRecord(body)
     const parsed = SaveIntegrationSchema.parse({
       provider,
-      credentials: body.credentials || body,
-      isEnabled: body.isEnabled ?? true,
+      credentials: payload.credentials ?? payload,
+      isEnabled: payload.isEnabled ?? true,
     })
-
-    return this.service.saveConfig(tenantId, parsed)
+    return this.service.saveConfig(this.getTenantId(req), parsed)
   }
 
   @Post(':provider/test')
   async testIntegration(
     @Param('provider') provider: string,
-    @Body() body: any,
-    @Req() req: Request
+    @Body() body: unknown,
+    @Req() req: AuthenticatedRequest,
   ) {
     if (!INTEGRATION_PROVIDERS.includes(provider as IntegrationProvider)) {
       throw new BadRequestException(`Proveedor inválido: ${provider}`)
     }
-
-    const tenantId = this.getTenantId(req)
+    const payload = asRecord(body)
     const parsed = TestIntegrationSchema.parse({
       provider,
-      recipient: body.recipient,
-      testMessage: body.testMessage,
+      recipient: payload.recipient,
+      testMessage: payload.testMessage,
     })
-
-    return this.service.testIntegration(tenantId, parsed)
+    return this.service.testIntegration(this.getTenantId(req), parsed)
   }
 
   @Delete(':provider')
-  async deleteConfig(
-    @Param('provider') provider: string,
-    @Req() req: Request
-  ) {
+  async deleteConfig(@Param('provider') provider: string, @Req() req: AuthenticatedRequest) {
     if (!INTEGRATION_PROVIDERS.includes(provider as IntegrationProvider)) {
       throw new BadRequestException(`Proveedor inválido: ${provider}`)
     }
-
-    const tenantId = this.getTenantId(req)
-    return this.service.deleteConfig(tenantId, provider as IntegrationProvider)
+    return this.service.deleteConfig(this.getTenantId(req), provider as IntegrationProvider)
   }
 }

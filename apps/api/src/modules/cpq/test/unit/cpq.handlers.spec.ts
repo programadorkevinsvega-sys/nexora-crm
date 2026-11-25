@@ -4,7 +4,6 @@ import {
   DeleteProductHandler,
   RequestQuoteApprovalHandler,
   DecideQuoteApprovalHandler,
-  InitiateSignatureHandler,
   SubmitSignatureHandler,
 } from '../../application/commands/cpq.handlers'
 import {
@@ -13,7 +12,6 @@ import {
   DeleteProductCommand,
   RequestQuoteApprovalCommand,
   DecideQuoteApprovalCommand,
-  InitiateSignatureCommand,
   SubmitSignatureCommand,
 } from '../../application/commands/cpq.commands'
 import { ProductRepository, QuoteApprovalRepository, ESignatureRepository } from '../../domain/repositories/cpq.repository'

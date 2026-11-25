@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { CampaignRepository } from '../../domain/repositories/campaign.repository'
 import { GetCampaignQuery, ListCampaignsQuery, GetCampaignMembersQuery } from './campaign.queries'
-import { NotFoundError, ConflictError } from '@crm/shared'
+import { NotFoundError } from '@crm/shared'
 
 @Injectable()
 export class GetCampaignHandler {

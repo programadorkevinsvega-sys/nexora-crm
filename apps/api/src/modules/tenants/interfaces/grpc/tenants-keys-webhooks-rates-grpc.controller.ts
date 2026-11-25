@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Controller } from '@nestjs/common'
 import { GrpcMethod } from '@nestjs/microservices'
 import {
@@ -18,6 +17,69 @@ import {
   GetParameterQuery, SetParameterCommand,
 } from '../../application/config.handlers'
 import { TenantsMapper } from '../../infrastructure/tenants.mapper'
+
+interface TenantConfigGrpcRequest {
+  tenantId?: unknown
+  name?: unknown
+  scopes?: unknown
+  expiresAt?: unknown
+  id?: unknown
+  endpointUrl?: unknown
+  eventTypes?: unknown
+  isActive?: unknown
+  maxRetries?: unknown
+  fromCurrencyId?: unknown
+  toCurrencyId?: unknown
+  rate?: unknown
+  effectiveDate?: unknown
+  languageId?: unknown
+  translationKey?: unknown
+  translationValue?: unknown
+  paramKey?: unknown
+  paramValue?: unknown
+  description?: unknown
+  dataType?: unknown
+  isPublic?: unknown
+}
+
+function requiredConfigString(value: unknown, field: string): string {
+  if (typeof value !== 'string' || value.trim().length === 0) throw new TypeError(`Missing or invalid ${field}`)
+  return value
+}
+
+function optionalConfigString(value: unknown): string | undefined {
+  return typeof value === 'string' ? value : undefined
+}
+
+function optionalConfigBoolean(value: unknown): boolean | undefined {
+  return typeof value === 'boolean' ? value : undefined
+}
+
+function optionalConfigNumber(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined
+}
+
+function optionalConfigStringArray(value: unknown): string[] | undefined {
+  if (value === undefined || value === null) return undefined
+  if (!Array.isArray(value) || !value.every((item): item is string => typeof item === 'string')) {
+    throw new TypeError('Expected an array of strings')
+  }
+  return value
+}
+
+function optionalConfigDate(value: unknown): Date | undefined {
+  if (value === undefined || value === null || value === '') return undefined
+  if (typeof value !== 'string') throw new TypeError('Expected a date string')
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) throw new TypeError('Invalid date')
+  return date
+}
+
+function requiredConfigNumber(value: unknown, field: string): number {
+  const parsed = optionalConfigNumber(value)
+  if (parsed === undefined) throw new TypeError(`Missing or invalid ${field}`)
+  return parsed
+}
 
 @Controller()
 export class TenantsKeysWebhooksRatesGrpcController {
@@ -42,9 +104,9 @@ export class TenantsKeysWebhooksRatesGrpcController {
   ) {}
 
   @GrpcMethod('TenantService', 'CreateApiKey')
-  async createApiKey(data: any) {
+  async createApiKey(data: TenantConfigGrpcRequest) {
     const { apiKey, rawToken } = await this.createApiKeyHandler.execute(
-      new CreateApiKeyCommand(data.tenantId, data.name, data.scopes, data.expiresAt ? new Date(data.expiresAt) : undefined),
+      new CreateApiKeyCommand(requiredConfigString(data.tenantId, 'tenantId'), requiredConfigString(data.name, 'name'), optionalConfigStringArray(data.scopes), optionalConfigDate(data.expiresAt)),
     )
     return { json: JSON.stringify(TenantsMapper.apiKeyToResponse(apiKey)), rawToken }
   }
@@ -62,9 +124,9 @@ export class TenantsKeysWebhooksRatesGrpcController {
   }
 
   @GrpcMethod('TenantService', 'CreateWebhook')
-  async createWebhook(data: any) {
+  async createWebhook(data: TenantConfigGrpcRequest) {
     const result = await this.createWebhookHandler.execute(
-      new CreateWebhookCommand(data.tenantId, data.name, data.endpointUrl, data.eventTypes),
+      new CreateWebhookCommand(requiredConfigString(data.tenantId, 'tenantId'), requiredConfigString(data.name, 'name'), requiredConfigString(data.endpointUrl, 'endpointUrl'), optionalConfigStringArray(data.eventTypes)),
     )
     return { json: JSON.stringify(TenantsMapper.webhookToResponse(result)) }
   }
@@ -82,9 +144,9 @@ export class TenantsKeysWebhooksRatesGrpcController {
   }
 
   @GrpcMethod('TenantService', 'UpdateWebhook')
-  async updateWebhook(data: any) {
+  async updateWebhook(data: TenantConfigGrpcRequest) {
     const result = await this.updateWebhookHandler.execute(
-      new UpdateWebhookCommand(data.id, data.tenantId, data.name, data.endpointUrl, data.isActive, data.maxRetries, data.eventTypes),
+      new UpdateWebhookCommand(requiredConfigString(data.id, 'id'), requiredConfigString(data.tenantId, 'tenantId'), optionalConfigString(data.name), optionalConfigString(data.endpointUrl), optionalConfigBoolean(data.isActive), optionalConfigNumber(data.maxRetries), optionalConfigStringArray(data.eventTypes)),
     )
     return { json: JSON.stringify(TenantsMapper.webhookToResponse(result)) }
   }
@@ -96,9 +158,9 @@ export class TenantsKeysWebhooksRatesGrpcController {
   }
 
   @GrpcMethod('TenantService', 'CreateExchangeRate')
-  async createExchangeRate(data: any) {
+  async createExchangeRate(data: TenantConfigGrpcRequest) {
     const result = await this.createExchangeRateHandler.execute(
-      new CreateExchangeRateCommand(data.tenantId, data.fromCurrencyId, data.toCurrencyId, data.rate, data.effectiveDate),
+      new CreateExchangeRateCommand(requiredConfigString(data.tenantId, 'tenantId'), requiredConfigString(data.fromCurrencyId, 'fromCurrencyId'), requiredConfigString(data.toCurrencyId, 'toCurrencyId'), requiredConfigNumber(data.rate, 'rate'), optionalConfigString(data.effectiveDate)),
     )
     return { json: JSON.stringify(TenantsMapper.exchangeRateToResponse(result)) }
   }
@@ -110,9 +172,9 @@ export class TenantsKeysWebhooksRatesGrpcController {
   }
 
   @GrpcMethod('TenantService', 'CreateTranslation')
-  async createTranslation(data: any) {
+  async createTranslation(data: TenantConfigGrpcRequest) {
     const result = await this.createTranslationHandler.execute(
-      new CreateTranslationCommand(data.tenantId, data.languageId, data.translationKey, data.translationValue),
+      new CreateTranslationCommand(requiredConfigString(data.tenantId, 'tenantId'), requiredConfigString(data.languageId, 'languageId'), requiredConfigString(data.translationKey, 'translationKey'), requiredConfigString(data.translationValue, 'translationValue')),
     )
     return { json: JSON.stringify(TenantsMapper.translationToResponse(result)) }
   }
@@ -151,9 +213,9 @@ export class TenantsKeysWebhooksRatesGrpcController {
   }
 
   @GrpcMethod('TenantService', 'SetParameter')
-  async setParameter(data: any) {
+  async setParameter(data: TenantConfigGrpcRequest) {
     await this.setParameterHandler.execute(
-      new SetParameterCommand(data.paramKey, data.paramValue, data.description, data.dataType, data.isPublic),
+      new SetParameterCommand(requiredConfigString(data.paramKey, 'paramKey'), requiredConfigString(data.paramValue, 'paramValue'), optionalConfigString(data.description), optionalConfigString(data.dataType), optionalConfigBoolean(data.isPublic)),
     )
     return {}
   }

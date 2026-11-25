@@ -2,10 +2,7 @@
 
 import React, { useState } from "react"
 import { useRouter } from "next/navigation"
-import {
-  FileText, Plus, Code, ExternalLink, Pencil, Trash2,
-  Globe, Eye, Users, Layers, CheckCircle2
-} from "lucide-react"
+import { FileText, Plus, Code, Pencil, Trash2, Eye } from "lucide-react"
 import { Button } from "@/src/presentation/crm/components/ui/Button"
 import { PageHeader } from "@/src/presentation/crm/components/common/PageHeader"
 import { Skeleton } from "@/src/presentation/crm/components/ui/Skeleton"

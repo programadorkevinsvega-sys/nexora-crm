@@ -1,204 +1,193 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { ArrowLeft, Send, CheckCircle2, AlertCircle, RefreshCw, Mail, Users, TrendingUp, Sparkles } from "lucide-react"
+import { ArrowLeft, Plus, RefreshCw, AlertCircle, Users } from "lucide-react"
 import { Button } from "@/src/presentation/crm/components/ui/Button"
 import { Card } from "@/src/presentation/crm/components/ui/Card"
 import { api } from "@/src/infrastructure/crm/api/api-client"
+import { ApiCampaignRepository } from "@/src/infrastructure/crm/repositories/campaigns/api-campaign.repository"
+import type { Campaign } from "@/src/domain/crm/campaigns/campaign.entity"
+import type { CampaignMember } from "@/src/domain/crm/campaigns/campaign-member.entity"
+
+type CampaignMemberStatus = CampaignMember['status']
+
+const MEMBER_STATUSES: CampaignMemberStatus[] = [
+  "SENT",
+  "OPENED",
+  "CLICKED",
+  "RESPONDED",
+  "BOUNCED",
+  "UNSUBSCRIBED",
+]
+
+function parseMemberStatus(value: string): CampaignMemberStatus {
+  const status = MEMBER_STATUSES.find((candidate) => candidate === value)
+  if (!status) throw new TypeError(`Unsupported campaign member status: ${value}`)
+  return status
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
+}
 
 export function CampaignSendPage() {
-  const params = useParams()
+  const params = useParams<{ id: string }>()
   const router = useRouter()
-  const id = params.id as string
+  const id = params.id
+  const [campaign, setCampaign] = useState<Campaign | null>(null)
+  const [members, setMembers] = useState<CampaignMember[]>([])
+  const [contactId, setContactId] = useState("")
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const [subject, setSubject] = useState("Oportunidad Exclusiva — Nexora CRM")
-  const [fromName, setFromName] = useState("Equipo de Ventas Nexora")
-  const [fromEmail, setFromEmail] = useState("ventas@nexoracrm.com")
-  const [htmlTemplate, setHtmlTemplate] = useState(
-    `<div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 24px; background-color: #09090b; color: #f4f4f5; border-radius: 12px;">
-      <h2 style="color: #06b6d4;">¡Hola {{contact.firstName}}! 👋</h2>
-      <p style="color: #a1a1aa; line-height: 1.6;">Tenemos excelentes noticias para tu empresa. Descubre cómo optimizar tu embudo comercial con nuestra suite CRM.</p>
-      <div style="text-align: center; margin: 32px 0;">
-        <a href="https://nexoracrm.com" style="background-color: #06b6d4; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Acceder a la Plataforma</a>
-      </div>
-      <hr style="border-color: #27272a; margin: 24px 0;" />
-      <p style="font-size: 11px; color: #71717a; text-align: center;">Si no deseas recibir más correos, haz clic para darte de baja.</p>
-    </div>`
-  )
-
-  const [sending, setSending] = useState(false)
-  const [result, setResult] = useState<{ sent: number; failed: number } | null>(null)
-  const [stats, setStats] = useState<any>(null)
-  const [loadingStats, setLoadingStats] = useState(false)
-
-  const loadStats = async () => {
-    setLoadingStats(true)
+  const loadCampaign = useCallback(async () => {
+    setLoading(true)
+    setError(null)
     try {
-      const data = await api.get<any>(`/api/campaigns/${id}/stats`)
-      if (data) setStats(data)
-    } catch (_) {}
-    finally { setLoadingStats(false) }
-  }
-
-  useEffect(() => {
-    loadStats()
+      const [campaignData, memberPage] = await Promise.all([
+        ApiCampaignRepository.getById(id),
+        ApiCampaignRepository.listMembers(id, { limit: 200 }),
+      ])
+      setCampaign(campaignData)
+      setMembers(memberPage.data)
+    } catch (loadError: unknown) {
+      setError(errorMessage(loadError))
+    } finally {
+      setLoading(false)
+    }
   }, [id])
 
-  const handleSendBulk = async () => {
-    setSending(true)
-    setResult(null)
+  useEffect(() => {
+    void loadCampaign()
+  }, [loadCampaign])
+
+  const handleAddMember = async () => {
+    const normalizedContactId = contactId.trim()
+    if (!normalizedContactId) {
+      setError("Ingresa el ID real del contacto que deseas agregar.")
+      return
+    }
+    setSaving(true)
+    setError(null)
     try {
-      const res = await api.post<any>(`/api/campaigns/${id}/send-bulk`, {
-        recipients: ["demo@nexoracrm.com", "cliente1@ejemplo.com", "cliente2@ejemplo.com"],
-        subject,
-        htmlTemplate,
-        creds: {
-          host: "smtp.mailtrap.io",
-          port: 2525,
-          username: "smtp_user",
-          password: "smtp_password",
-          fromEmail,
-          fromName,
-        },
-      })
-      setResult(res || { sent: 3, failed: 0 })
-      loadStats()
-    } catch (err: any) {
-      setResult({ sent: 0, failed: 1 })
+      await api.post(`/api/campaigns/${id}/members`, { contactId: normalizedContactId })
+      setContactId("")
+      await loadCampaign()
+    } catch (saveError: unknown) {
+      setError(errorMessage(saveError))
     } finally {
-      setSending(false)
+      setSaving(false)
+    }
+  }
+
+  const handleStatusChange = async (memberId: string, status: CampaignMemberStatus) => {
+    setSaving(true)
+    setError(null)
+    try {
+      await api.put(`/api/campaigns/members/${memberId}/status`, { status })
+      await loadCampaign()
+    } catch (updateError: unknown) {
+      setError(errorMessage(updateError))
+    } finally {
+      setSaving(false)
     }
   }
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
-      {/* Header */}
       <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="sm" onClick={() => router.push(`/campaigns/${id}`)}>
             <ArrowLeft size={16} className="mr-1" /> Volver a Campaña
           </Button>
           <div>
-            <h2 className="text-lg font-bold text-zinc-100">✉️ Motor de Email Masivo & Open Tracking</h2>
-            <p className="text-xs text-zinc-400">Envío masivo con detección de rebotes y píxel de apertura</p>
+            <h2 className="text-lg font-bold text-zinc-100">Miembros de campaña</h2>
+            <p className="text-xs text-zinc-400">Gestión de destinatarios y estado registrado por el CRM</p>
           </div>
         </div>
-
-        <Button variant="outline" size="sm" onClick={() => router.push("/campaigns/email-editor")}>
-          🎨 Abrir Diseñador Visual
+        <Button variant="outline" size="sm" onClick={() => void loadCampaign()} disabled={loading}>
+          <RefreshCw size={14} className={loading ? "animate-spin mr-2" : "mr-2"} /> Actualizar
         </Button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="p-4 bg-zinc-900/60 border-zinc-800">
-          <div className="flex items-center justify-between text-xs text-zinc-400">
-            <span>Total Miembros</span>
-            <Users size={14} className="text-cyan-400" />
-          </div>
-          <div className="text-xl font-bold text-zinc-100 mt-1">{stats?.total ?? 12}</div>
-        </Card>
+      {error && (
+        <div className="p-3 rounded-lg border border-rose-500/30 bg-rose-500/10 text-rose-300 flex items-center gap-2">
+          <AlertCircle size={16} /> {error}
+        </div>
+      )}
 
-        <Card className="p-4 bg-zinc-900/60 border-zinc-800">
-          <div className="flex items-center justify-between text-xs text-zinc-400">
-            <span>Enviados Exitosos</span>
-            <Mail size={14} className="text-emerald-400" />
-          </div>
-          <div className="text-xl font-bold text-emerald-400 mt-1">{stats?.sent ?? result?.sent ?? 0}</div>
-        </Card>
-
-        <Card className="p-4 bg-zinc-900/60 border-zinc-800">
-          <div className="flex items-center justify-between text-xs text-zinc-400">
-            <span>Tasa de Apertura (Opens)</span>
-            <TrendingUp size={14} className="text-purple-400" />
-          </div>
-          <div className="text-xl font-bold text-purple-400 mt-1">{stats?.openRate ?? "35%"}</div>
-        </Card>
-
-        <Card className="p-4 bg-zinc-900/60 border-zinc-800">
-          <div className="flex items-center justify-between text-xs text-zinc-400">
-            <span>Rebotes Detectados</span>
-            <AlertCircle size={14} className="text-rose-400" />
-          </div>
-          <div className="text-xl font-bold text-rose-400 mt-1">{stats?.bounced ?? 0}</div>
-        </Card>
-      </div>
-
-      {/* Main Form */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="p-5 bg-zinc-950 border-zinc-800 space-y-4 text-xs">
-          <h3 className="font-bold text-sm text-zinc-200">Parámetros del Envío Masivo</h3>
-
-          <div className="space-y-1">
-            <label className="text-zinc-400 font-medium">Asunto del Correo (Subject)</label>
-            <input
-              type="text"
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              className="w-full p-2 bg-zinc-900 border border-zinc-700 rounded text-zinc-100 focus:border-cyan-500 outline-none"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-zinc-400 font-medium">Nombre Remitente</label>
-              <input
-                type="text"
-                value={fromName}
-                onChange={(e) => setFromName(e.target.value)}
-                className="w-full p-2 bg-zinc-900 border border-zinc-700 rounded text-zinc-100 focus:border-cyan-500 outline-none"
-              />
+      <Card className="p-5 bg-zinc-950 border-zinc-800">
+        {loading ? (
+          <p className="text-sm text-zinc-400">Cargando campaña...</p>
+        ) : campaign ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <p className="text-xs text-zinc-400">Campaña</p>
+              <p className="text-base font-semibold text-zinc-100">{campaign.name}</p>
             </div>
-            <div className="space-y-1">
-              <label className="text-zinc-400 font-medium">Correo Remitente</label>
-              <input
-                type="email"
-                value={fromEmail}
-                onChange={(e) => setFromEmail(e.target.value)}
-                className="w-full p-2 bg-zinc-900 border border-zinc-700 rounded text-zinc-100 focus:border-cyan-500 outline-none font-mono"
-              />
+            <div>
+              <p className="text-xs text-zinc-400">Estado</p>
+              <p className="text-sm text-zinc-100">{campaign.status}</p>
+            </div>
+            <div>
+              <p className="text-xs text-zinc-400">Tipo</p>
+              <p className="text-sm text-zinc-100">{campaign.type ?? "No especificado"}</p>
             </div>
           </div>
+        ) : (
+          <p className="text-sm text-zinc-400">No se encontró la campaña.</p>
+        )}
+      </Card>
 
-          <div className="space-y-1">
-            <label className="text-zinc-400 font-medium">Contenido HTML / Plantilla</label>
-            <textarea
-              rows={8}
-              value={htmlTemplate}
-              onChange={(e) => setHtmlTemplate(e.target.value)}
-              className="w-full p-2 bg-zinc-900 border border-zinc-700 rounded text-zinc-300 font-mono text-[11px] focus:border-cyan-500 outline-none"
-            />
-          </div>
-
-          {result && (
-            <div className={`p-3 rounded-lg border flex items-center gap-2 ${result.failed === 0 ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" : "bg-rose-500/10 border-rose-500/30 text-rose-400"}`}>
-              {result.failed === 0 ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
-              <span>Lote procesado: {result.sent} correos enviados con éxito, {result.failed} fallidos.</span>
-            </div>
-          )}
-
-          <Button
-            onClick={handleSendBulk}
-            disabled={sending}
-            className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs py-2.5 shadow-lg"
-          >
-            {sending ? <RefreshCw size={14} className="animate-spin mr-2" /> : <Send size={14} className="mr-2" />}
-            {sending ? "Disparando Lote de Correos..." : "Disparar Envío Masivo a Toda la Lista"}
+      <Card className="p-5 bg-zinc-950 border-zinc-800 space-y-4">
+        <h3 className="font-semibold text-zinc-100 flex items-center gap-2"><Users size={16} /> Agregar contacto a la campaña</h3>
+        <p className="text-xs text-zinc-400">El backend permite registrar un contacto por su ID. No se realiza envío de correo desde esta pantalla porque la API actual no expone un endpoint de envío masivo.</p>
+        <div className="flex gap-3">
+          <input
+            type="text"
+            value={contactId}
+            onChange={(event) => setContactId(event.target.value)}
+            placeholder="ID del contacto"
+            className="flex-1 p-2 bg-zinc-900 border border-zinc-700 rounded text-zinc-100"
+          />
+          <Button onClick={handleAddMember} disabled={saving || loading || !campaign}>
+            <Plus size={14} className="mr-2" /> Agregar
           </Button>
-        </Card>
+        </div>
+      </Card>
 
-        {/* Live Preview */}
-        <Card className="p-5 bg-zinc-950 border-zinc-800 flex flex-col">
-          <div className="flex items-center justify-between pb-3 mb-3 border-b border-zinc-800">
-            <span className="text-xs font-bold text-zinc-300">Vista Previa Renderizada</span>
-            <span className="text-[10px] text-cyan-400 font-mono">Píxel de Apertura Activo</span>
+      <Card className="p-5 bg-zinc-950 border-zinc-800">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-semibold text-zinc-100">Contactos registrados</h3>
+          <span className="text-xs text-zinc-400">{members.length} miembros</span>
+        </div>
+        {loading ? (
+          <p className="text-sm text-zinc-400">Cargando miembros...</p>
+        ) : members.length === 0 ? (
+          <p className="text-sm text-zinc-400">Esta campaña todavía no tiene miembros.</p>
+        ) : (
+          <div className="divide-y divide-zinc-800">
+            {members.map((member) => (
+              <div key={member.id} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-medium text-zinc-100">{member.contactId}</p>
+                  <p className="text-xs text-zinc-500">Agregado: {new Date(member.createdAt).toLocaleDateString()}</p>
+                </div>
+                <select
+                  value={member.status}
+                  disabled={saving}
+                  onChange={(event) => void handleStatusChange(member.id, parseMemberStatus(event.target.value))}
+                  className="p-2 bg-zinc-900 border border-zinc-700 rounded text-zinc-100 text-xs"
+                >
+                  {MEMBER_STATUSES.map((status) => <option key={status} value={status}>{status}</option>)}
+                </select>
+              </div>
+            ))}
           </div>
-          <div className="flex-1 bg-black p-4 rounded-lg border border-zinc-800 overflow-y-auto max-h-[450px]">
-            <div dangerouslySetInnerHTML={{ __html: htmlTemplate }} />
-          </div>
-        </Card>
-      </div>
+        )}
+      </Card>
     </div>
   )
 }

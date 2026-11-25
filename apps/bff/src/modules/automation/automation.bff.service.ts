@@ -5,6 +5,7 @@ import type {
   WorkflowDefinition,
   CreateWorkflow,
   WorkflowExecution,
+  WorkflowStep,
 } from '@crm/contracts'
 
 const CACHE_TTL_MS = 30_000
@@ -63,7 +64,7 @@ export class AutomationBffService {
   async getExecution(
     executionId: string,
     tenantId: string,
-  ): Promise<{ execution: WorkflowExecution; steps: any[] }> {
+  ): Promise<{ execution: WorkflowExecution; steps: WorkflowStep[] }> {
     return this.api.getWorkflowExecution(tenantId, executionId)
   }
 

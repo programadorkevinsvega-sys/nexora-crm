@@ -1,11 +1,9 @@
 import { DrizzleNoteRepository } from '../../infrastructure/drizzle-note.repository'
-import { DrizzleTaskRepository } from '../../infrastructure/drizzle-task.repository'
 import { Note } from '../../domain/entities/note.entity'
 import * as dbModule from '@crm/database'
 
 describe('Interactions Repositories - Persistence Integration Tests', () => {
   let noteRepo: DrizzleNoteRepository
-  let taskRepo: DrizzleTaskRepository
   let mockDb: any
 
   beforeEach(() => {
@@ -32,7 +30,6 @@ describe('Interactions Repositories - Persistence Integration Tests', () => {
 
     jest.spyOn(dbModule, 'getDb').mockReturnValue(mockDb)
     noteRepo = new DrizzleNoteRepository()
-    taskRepo = new DrizzleTaskRepository()
   })
 
   it('should find note and map polymorphic relations', async () => {

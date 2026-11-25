@@ -1,6 +1,4 @@
-import {
-  pgTable, uuid, varchar, text, boolean, integer, jsonb, timestamp, index, uniqueIndex
-} from 'drizzle-orm/pg-core'
+import { pgTable, uuid, varchar, text, boolean, jsonb, timestamp, index, uniqueIndex } from 'drizzle-orm/pg-core'
 import { contacts } from '../001-core/contacts'
 
 export const metaIntegrations = pgTable(

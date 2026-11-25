@@ -18,7 +18,7 @@ import {
   CampaignMemberStatusChangedEvent,
 } from '../../domain/events/campaign.events'
 import { OutboxService } from '../../../../common/outbox/outbox.service'
-import { NotFoundError, ConflictError } from '@crm/shared'
+import { NotFoundError } from '@crm/shared'
 
 @Injectable()
 export class CreateCampaignHandler {

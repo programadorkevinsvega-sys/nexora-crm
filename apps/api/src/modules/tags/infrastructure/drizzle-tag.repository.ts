@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { getDb, tags as tagsTable } from '@crm/database'
-import { eq, and, like, asc, gt, SQL, sql } from 'drizzle-orm'
+import { eq, and, like, asc, gt, SQL } from 'drizzle-orm'
 import { TagRepository, FindAllOptions, PaginatedTags } from '../domain/repositories/tag.repository'
 import { Tag } from '../domain/entities/tag.entity'
 

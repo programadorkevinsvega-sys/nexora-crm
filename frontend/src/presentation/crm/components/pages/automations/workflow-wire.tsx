@@ -1,7 +1,6 @@
 "use client"
 
 import React, { useState } from "react"
-import { X } from "lucide-react"
 
 interface WorkflowWireProps {
   id: string
@@ -15,7 +14,7 @@ interface WorkflowWireProps {
 }
 
 export function WorkflowWire({
-  id,
+  id: _id,
   startX,
   startY,
   endX,

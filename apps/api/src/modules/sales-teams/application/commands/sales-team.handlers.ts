@@ -14,7 +14,7 @@ import {
   QuotaAssignedEvent, QuotaAchievedUpdatedEvent,
 } from '../../domain/events/sales-team.events'
 import { OutboxService } from '../../../../common/outbox/outbox.service'
-import { NotFoundError, ConflictError } from '@crm/shared'
+import { NotFoundError } from '@crm/shared'
 
 @Injectable()
 export class CreateTeamHandler {

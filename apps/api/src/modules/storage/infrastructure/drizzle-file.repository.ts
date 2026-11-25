@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable } from '@nestjs/common'
-import { eq, and, gt, asc, isNull } from 'drizzle-orm'
+import { eq, and, gt, asc, isNull, type SQL } from 'drizzle-orm'
 import { getDb, files as filesTable } from '@crm/database'
 import { FileRepository } from '../domain/repositories/file.repository'
 import { File } from '../domain/entities/file.entity'
@@ -11,7 +10,7 @@ export class DrizzleFileRepository extends FileRepository {
   private get db() { return getDb() }
 
   async findById(id: string): Promise<File | null> {
-    const row = await this.db.query.files.findFirst({ where: eq(filesTable.id, id) as any })
+    const row = await this.db.query.files.findFirst({ where: eq(filesTable.id, id) })
     return row ? FileMapper.toDomain(row) : null
   }
 
@@ -23,7 +22,7 @@ export class DrizzleFileRepository extends FileRepository {
       entityType: file.entityType, entityId: file.entityId,
       metadataJson: file.metadataJson, checksumSha256: file.checksumSha256,
       isPublic: file.isPublic, createdAt: file.createdAt, updatedAt: file.updatedAt,
-    } as any).onConflictDoNothing()
+    }).onConflictDoNothing()
   }
 
   async update(file: File): Promise<void> {
@@ -33,14 +32,14 @@ export class DrizzleFileRepository extends FileRepository {
       entityId: file.entityId, metadataJson: file.metadataJson,
       isPublic: file.isPublic, updatedAt: new Date(),
       deletedAt: file.deletedAt,
-    } as any).where(eq(filesTable.id, file.id) as any)
+    }).where(eq(filesTable.id, file.id))
   }
 
   async list(params: {
     tenantId?: string; entityType?: string; entityId?: string
     mimeType?: string; uploadedByUserId?: string; cursor?: string; limit?: number
   }): Promise<{ data: File[]; nextCursor: string | null }> {
-    const conditions: any[] = [isNull(filesTable.deletedAt)]
+    const conditions: SQL[] = [isNull(filesTable.deletedAt)]
     if (params.tenantId) conditions.push(eq(filesTable.tenantId, params.tenantId))
     if (params.entityType) conditions.push(eq(filesTable.entityType, params.entityType))
     if (params.entityId) conditions.push(eq(filesTable.entityId, params.entityId))
@@ -49,7 +48,7 @@ export class DrizzleFileRepository extends FileRepository {
     if (params.cursor) conditions.push(gt(filesTable.createdAt, new Date(params.cursor)))
     const limit = params.limit ?? 20
     const rows = await this.db.query.files.findMany({
-      where: and(...conditions) as any, limit: limit + 1, orderBy: [asc(filesTable.createdAt)],
+      where: and(...conditions), limit: limit + 1, orderBy: [asc(filesTable.createdAt)],
     })
     const hasMore = rows.length > limit
     return {
@@ -59,7 +58,7 @@ export class DrizzleFileRepository extends FileRepository {
   }
 
   async findByStorageKey(storageKey: string): Promise<File | null> {
-    const row = await this.db.query.files.findFirst({ where: eq(filesTable.storageKey, storageKey) as any })
+    const row = await this.db.query.files.findFirst({ where: eq(filesTable.storageKey, storageKey) })
     return row ? FileMapper.toDomain(row) : null
   }
 }

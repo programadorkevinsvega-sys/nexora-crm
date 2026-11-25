@@ -1,10 +1,66 @@
 import { api } from "../../api/api-client"
-import type { Product, QuoteApproval, ESignature } from "@/src/domain/crm/cpq/cpq.entity"
+import { ProductPricingTypeSchema } from '@crm/contracts'
+import type {
+  Product,
+  ProductTemplate,
+  ProductPricingType,
+  QuoteApproval,
+  ESignature,
+} from "@/src/domain/crm/cpq/cpq.entity"
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+}
+
+function responseArray(value: unknown): unknown[] {
+  if (Array.isArray(value)) return value
+  return isRecord(value) && Array.isArray(value.data) ? value.data : []
+}
+
+function isProduct(value: unknown): value is Product {
+  return isRecord(value)
+    && typeof value.id === "string"
+    && typeof value.tenantId === "string"
+    && typeof value.sku === "string"
+    && typeof value.name === "string"
+    && typeof value.unitPrice === "number"
+    && typeof value.currency === "string"
+    && ProductPricingTypeSchema.safeParse(value.pricingType).success
+    && typeof value.taxRate === "number"
+    && typeof value.isActive === "boolean"
+    && typeof value.createdAt === "string"
+    && typeof value.updatedAt === "string"
+}
+
+function isProductTemplate(value: unknown): value is ProductTemplate {
+  return isRecord(value)
+    && typeof value.id === "string"
+    && typeof value.tenantId === "string"
+    && typeof value.name === "string"
+    && typeof value.category === "string"
+    && typeof value.defaultUnitPrice === "number"
+    && typeof value.defaultCurrency === "string"
+    && ProductPricingTypeSchema.safeParse(value.pricingType).success
+    && typeof value.defaultTaxRate === "number"
+    && typeof value.createdAt === "string"
+    && typeof value.updatedAt === "string"
+}
+
+function isQuoteApproval(value: unknown): value is QuoteApproval {
+  return isRecord(value)
+    && typeof value.id === "string"
+    && typeof value.tenantId === "string"
+    && typeof value.quoteId === "string"
+    && typeof value.requestedDiscountPercent === "number"
+    && typeof value.requestedByUserId === "string"
+    && (value.status === "PENDING" || value.status === "APPROVED" || value.status === "REJECTED")
+    && typeof value.createdAt === "string"
+    && typeof value.updatedAt === "string"
+}
 
 export const ApiCpqRepository = {
   async listProducts(): Promise<Product[]> {
-    const res = await api.get<any>("/api/cpq/products")
-    return Array.isArray(res) ? res : []
+    return responseArray(await api.get<unknown>("/api/cpq/products")).filter(isProduct)
   },
 
   async createProduct(data: {
@@ -13,7 +69,7 @@ export const ApiCpqRepository = {
     unitPrice: number
     description?: string
     currency?: string
-    pricingType?: string
+    pricingType?: ProductPricingType
     taxRate?: number
   }): Promise<Product> {
     return api.post<Product>("/api/cpq/products", data)
@@ -26,7 +82,7 @@ export const ApiCpqRepository = {
       unitPrice?: number
       description?: string | null
       currency?: string
-      pricingType?: string
+      pricingType?: ProductPricingType
       taxRate?: number
       isActive?: boolean
     },
@@ -38,9 +94,8 @@ export const ApiCpqRepository = {
     return api.delete<void>(`/api/cpq/products/${id}`)
   },
 
-  async listTemplates(): Promise<any[]> {
-    const res = await api.get<any>("/api/cpq/templates")
-    return Array.isArray(res) ? res : []
+  async listTemplates(): Promise<ProductTemplate[]> {
+    return responseArray(await api.get<unknown>("/api/cpq/templates")).filter(isProductTemplate)
   },
 
   async createTemplate(data: {
@@ -49,11 +104,11 @@ export const ApiCpqRepository = {
     defaultSkuPrefix?: string
     defaultUnitPrice: number
     defaultCurrency?: string
-    pricingType?: string
+    pricingType?: ProductPricingType
     defaultTaxRate?: number
     defaultDescription?: string
-  }): Promise<any> {
-    return api.post<any>("/api/cpq/templates", data)
+  }): Promise<ProductTemplate> {
+    return api.post<ProductTemplate>("/api/cpq/templates", data)
   },
 
   async deleteTemplate(id: string): Promise<void> {
@@ -75,8 +130,7 @@ export const ApiCpqRepository = {
   },
 
   async listPendingApprovals(): Promise<QuoteApproval[]> {
-    const res = await api.get<any>("/api/cpq/approvals/pending")
-    return Array.isArray(res) ? res : []
+    return responseArray(await api.get<unknown>("/api/cpq/approvals/pending")).filter(isQuoteApproval)
   },
 
   async initiateSignature(data: {

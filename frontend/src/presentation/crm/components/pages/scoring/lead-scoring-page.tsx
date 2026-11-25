@@ -10,6 +10,27 @@ import { Modal } from "@/src/presentation/crm/components/ui/Modal"
 import { Skeleton } from "@/src/presentation/crm/components/ui/Skeleton"
 import { ApiScoringRepository } from "@/src/infrastructure/crm/repositories/scoring/api-scoring.repository"
 import type { LeadScoringRule, LeadScore } from "@/src/domain/crm/scoring/scoring.entity"
+import { ApiContactRepository } from "@/src/infrastructure/crm/repositories/contacts/api-contact.repository"
+import { ApiCompanyRepository } from "@/src/infrastructure/crm/repositories/companies/api-company.repository"
+
+type LeadScoringOperator = LeadScoringRule['condition']['operator']
+type LeadScoringCategory = LeadScoringRule['category']
+
+function parseOperator(value: string): LeadScoringOperator {
+  const operators: LeadScoringOperator[] = ['EQUALS', 'NOT_EQUALS', 'GREATER_THAN', 'LESS_THAN', 'CONTAINS', 'IN', 'IS_EMPTY']
+  const operator = operators.find((candidate) => candidate === value)
+  if (!operator) throw new TypeError(`Unsupported scoring operator: ${value}`)
+  return operator
+}
+
+function parseCategory(value: string): LeadScoringCategory {
+  if (value === 'DEMOGRAPHIC' || value === 'BEHAVIORAL' || value === 'ENGAGEMENT') return value
+  throw new TypeError(`Unsupported scoring category: ${value}`)
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
+}
 
 const PRESETS = [
   {
@@ -54,7 +75,7 @@ export function LeadScoringPage() {
   const [newRuleName, setNewRuleName] = useState("")
   const [newRuleCategory, setNewRuleCategory] = useState<"DEMOGRAPHIC" | "BEHAVIORAL" | "ENGAGEMENT">("DEMOGRAPHIC")
   const [newRuleField, setNewRuleField] = useState("contact.jobTitle")
-  const [newRuleOperator, setNewRuleOperator] = useState<any>("CONTAINS")
+  const [newRuleOperator, setNewRuleOperator] = useState<LeadScoringOperator>("CONTAINS")
   const [newRuleValue, setNewRuleValue] = useState("Director")
   const [newRulePoints, setNewRulePoints] = useState(25)
   const [saving, setSaving] = useState(false)
@@ -68,8 +89,8 @@ export function LeadScoringPage() {
       ])
       setRules(rulesList)
       setTopLeads(leadsList)
-    } catch (err: any) {
-      console.error("Failed to load scoring data:", err)
+    } catch (err: unknown) {
+      console.error("Failed to load scoring data:", errorMessage(err))
     } finally {
       setLoading(false)
     }
@@ -83,8 +104,8 @@ export function LeadScoringPage() {
     try {
       await ApiScoringRepository.toggleRule(ruleId)
       await fetchData()
-    } catch (err: any) {
-      alert(`Error al alternar regla: ${err?.message}`)
+    } catch (err: unknown) {
+      alert(`Error al alternar regla: ${errorMessage(err)}`)
     }
   }
 
@@ -103,7 +124,7 @@ export function LeadScoringPage() {
       return
     }
 
-    let parsedVal: any = newRuleValue.trim()
+    let parsedVal: unknown = newRuleValue.trim()
     if (newRuleOperator === "GREATER_THAN" || newRuleOperator === "LESS_THAN") {
       const num = Number(parsedVal)
       if (!isNaN(num)) parsedVal = num
@@ -128,8 +149,8 @@ export function LeadScoringPage() {
       setShowModal(false)
       setNewRuleName("")
       await fetchData()
-    } catch (err: any) {
-      alert(`Error al crear la regla: ${err?.message}`)
+    } catch (err: unknown) {
+      alert(`Error al crear la regla: ${errorMessage(err)}`)
     } finally {
       setSaving(false)
     }
@@ -137,14 +158,22 @@ export function LeadScoringPage() {
 
   const handleRecalculate = async (contactId: string) => {
     try {
-      await ApiScoringRepository.recalculateScore(contactId, {
-        jobTitle: "Chief Executive Officer",
-        employees: 150,
-        requestedDemo: true,
-      })
+      const contact = await ApiContactRepository.getById(contactId)
+      const company = contact.companyId
+        ? await ApiCompanyRepository.getById(contact.companyId).catch(() => null)
+        : null
+      const context: Record<string, unknown> = {
+        contact: {
+          jobTitle: contact.jobTitle,
+          leadStatus: contact.leadStatus,
+          leadSource: contact.leadSource,
+        },
+        ...(company ? { company: { numberOfEmployees: company.numberOfEmployees, industry: company.industry } } : {}),
+      }
+      await ApiScoringRepository.recalculateScore(contactId, context)
       await fetchData()
-    } catch (err: any) {
-      alert(`Error al recalcular: ${err?.message}`)
+    } catch (err: unknown) {
+      alert(`Error al recalcular: ${errorMessage(err)}`)
     }
   }
 
@@ -352,7 +381,7 @@ export function LeadScoringPage() {
                 <select
                   className="w-full px-3 py-2 border rounded-md text-sm bg-background font-medium"
                   value={newRuleCategory}
-                  onChange={(e: any) => setNewRuleCategory(e.target.value)}
+                  onChange={(e) => setNewRuleCategory(parseCategory(e.target.value))}
                 >
                   <option value="DEMOGRAPHIC">DEMOGRAPHIC (Perfil / Cargo / Empresa)</option>
                   <option value="BEHAVIORAL">BEHAVIORAL (Acciones / Solicitudes)</option>
@@ -385,7 +414,7 @@ export function LeadScoringPage() {
                 <select
                   className="w-full px-2 py-2 border rounded-md text-xs bg-background font-medium"
                   value={newRuleOperator}
-                  onChange={(e: any) => setNewRuleOperator(e.target.value)}
+                  onChange={(e) => setNewRuleOperator(parseOperator(e.target.value))}
                 >
                   <option value="CONTAINS">CONTAINS (Contiene)</option>
                   <option value="EQUALS">EQUALS (Igual)</option>

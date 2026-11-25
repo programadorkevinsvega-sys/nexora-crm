@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Controller } from '@nestjs/common'
 import { GrpcMethod } from '@nestjs/microservices'
 import {
@@ -12,6 +11,44 @@ import {
   CreateCurrencyCommand, UpdateCurrencyCommand, DeleteCurrencyCommand, ListCurrenciesQuery, SetBaseCurrencyCommand,
 } from '../../application/config.handlers'
 import { TenantsMapper } from '../../infrastructure/tenants.mapper'
+
+interface TenantTaxLocaleGrpcRequest {
+  tenantId?: unknown
+  id?: unknown
+  taxName?: unknown
+  taxPercentage?: unknown
+  description?: unknown
+  taxType?: unknown
+  isActive?: unknown
+  isoCode?: unknown
+  name?: unknown
+  isDefault?: unknown
+  symbol?: unknown
+  isBaseCurrency?: unknown
+}
+
+function requiredTaxLocaleString(value: unknown, field: string): string {
+  if (typeof value !== 'string' || value.trim().length === 0) throw new TypeError(`Missing or invalid ${field}`)
+  return value
+}
+
+function optionalTaxLocaleString(value: unknown): string | undefined {
+  return typeof value === 'string' ? value : undefined
+}
+
+function requiredTaxLocaleNumber(value: unknown, field: string): number {
+  const number = optionalTaxLocaleNumber(value)
+  if (number === undefined) throw new TypeError(`Missing or invalid ${field}`)
+  return number
+}
+
+function optionalTaxLocaleNumber(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined
+}
+
+function optionalTaxLocaleBoolean(value: unknown): boolean | undefined {
+  return typeof value === 'boolean' ? value : undefined
+}
 
 @Controller()
 export class TenantsTaxLangCurrGrpcController {
@@ -33,9 +70,9 @@ export class TenantsTaxLangCurrGrpcController {
   ) {}
 
   @GrpcMethod('TenantService', 'CreateTaxConfig')
-  async createTaxConfig(data: any) {
+  async createTaxConfig(data: TenantTaxLocaleGrpcRequest) {
     const result = await this.createTaxConfigHandler.execute(
-      new CreateTaxConfigCommand(data.tenantId, data.taxName, data.taxPercentage, data.description, data.taxType),
+      new CreateTaxConfigCommand(requiredTaxLocaleString(data.tenantId, 'tenantId'), requiredTaxLocaleString(data.taxName, 'taxName'), requiredTaxLocaleNumber(data.taxPercentage, 'taxPercentage'), optionalTaxLocaleString(data.description), optionalTaxLocaleString(data.taxType)),
     )
     return { json: JSON.stringify(TenantsMapper.taxConfigToResponse(result)) }
   }
@@ -47,9 +84,9 @@ export class TenantsTaxLangCurrGrpcController {
   }
 
   @GrpcMethod('TenantService', 'UpdateTaxConfig')
-  async updateTaxConfig(data: any) {
+  async updateTaxConfig(data: TenantTaxLocaleGrpcRequest) {
     const result = await this.updateTaxConfigHandler.execute(
-      new UpdateTaxConfigCommand(data.id, data.tenantId, data.taxName, data.taxPercentage, data.description, data.taxType, data.isActive),
+      new UpdateTaxConfigCommand(requiredTaxLocaleString(data.id, 'id'), requiredTaxLocaleString(data.tenantId, 'tenantId'), optionalTaxLocaleString(data.taxName), optionalTaxLocaleNumber(data.taxPercentage), optionalTaxLocaleString(data.description), optionalTaxLocaleString(data.taxType), optionalTaxLocaleBoolean(data.isActive)),
     )
     return { json: JSON.stringify(TenantsMapper.taxConfigToResponse(result)) }
   }
@@ -61,9 +98,9 @@ export class TenantsTaxLangCurrGrpcController {
   }
 
   @GrpcMethod('TenantService', 'CreateLanguage')
-  async createLanguage(data: any) {
+  async createLanguage(data: TenantTaxLocaleGrpcRequest) {
     const result = await this.createLanguageHandler.execute(
-      new CreateLanguageCommand(data.tenantId, data.isoCode, data.name, data.isDefault),
+      new CreateLanguageCommand(requiredTaxLocaleString(data.tenantId, 'tenantId'), requiredTaxLocaleString(data.isoCode, 'isoCode'), requiredTaxLocaleString(data.name, 'name'), optionalTaxLocaleBoolean(data.isDefault)),
     )
     return { json: JSON.stringify(TenantsMapper.languageToResponse(result)) }
   }
@@ -75,9 +112,9 @@ export class TenantsTaxLangCurrGrpcController {
   }
 
   @GrpcMethod('TenantService', 'UpdateLanguage')
-  async updateLanguage(data: any) {
+  async updateLanguage(data: TenantTaxLocaleGrpcRequest) {
     const result = await this.updateLanguageHandler.execute(
-      new UpdateLanguageCommand(data.id, data.tenantId, data.isoCode, data.name, data.isDefault, data.isActive),
+      new UpdateLanguageCommand(requiredTaxLocaleString(data.id, 'id'), requiredTaxLocaleString(data.tenantId, 'tenantId'), optionalTaxLocaleString(data.isoCode), optionalTaxLocaleString(data.name), optionalTaxLocaleBoolean(data.isDefault), optionalTaxLocaleBoolean(data.isActive)),
     )
     return { json: JSON.stringify(TenantsMapper.languageToResponse(result)) }
   }
@@ -95,9 +132,9 @@ export class TenantsTaxLangCurrGrpcController {
   }
 
   @GrpcMethod('TenantService', 'CreateCurrency')
-  async createCurrency(data: any) {
+  async createCurrency(data: TenantTaxLocaleGrpcRequest) {
     const result = await this.createCurrencyHandler.execute(
-      new CreateCurrencyCommand(data.tenantId, data.isoCode, data.name, data.symbol, data.isBaseCurrency),
+      new CreateCurrencyCommand(requiredTaxLocaleString(data.tenantId, 'tenantId'), requiredTaxLocaleString(data.isoCode, 'isoCode'), requiredTaxLocaleString(data.name, 'name'), requiredTaxLocaleString(data.symbol, 'symbol'), optionalTaxLocaleBoolean(data.isBaseCurrency)),
     )
     return { json: JSON.stringify(TenantsMapper.currencyToResponse(result)) }
   }
@@ -109,9 +146,9 @@ export class TenantsTaxLangCurrGrpcController {
   }
 
   @GrpcMethod('TenantService', 'UpdateCurrency')
-  async updateCurrency(data: any) {
+  async updateCurrency(data: TenantTaxLocaleGrpcRequest) {
     const result = await this.updateCurrencyHandler.execute(
-      new UpdateCurrencyCommand(data.id, data.tenantId, data.isoCode, data.name, data.symbol, data.isBaseCurrency, data.isActive),
+      new UpdateCurrencyCommand(requiredTaxLocaleString(data.id, 'id'), requiredTaxLocaleString(data.tenantId, 'tenantId'), optionalTaxLocaleString(data.isoCode), optionalTaxLocaleString(data.name), optionalTaxLocaleString(data.symbol), optionalTaxLocaleBoolean(data.isBaseCurrency), optionalTaxLocaleBoolean(data.isActive)),
     )
     return { json: JSON.stringify(TenantsMapper.currencyToResponse(result)) }
   }

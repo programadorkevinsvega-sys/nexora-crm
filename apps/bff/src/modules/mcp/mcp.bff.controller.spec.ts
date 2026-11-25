@@ -1,5 +1,6 @@
 import { McpBffController } from './mcp.bff.controller'
 import { McpBffService } from './mcp.bff.service'
+import type { Request, Response } from 'express'
 
 describe('McpBffController - Unit Tests', () => {
   let controller: McpBffController
@@ -9,14 +10,14 @@ describe('McpBffController - Unit Tests', () => {
     mockService = {
       handleSseConnection: jest.fn().mockResolvedValue(undefined),
       handlePostMessage: jest.fn().mockResolvedValue(undefined),
-    } as any
+    } as unknown as jest.Mocked<McpBffService>
 
     controller = new McpBffController(mockService)
   })
 
   it('GET /api/mcp/sse should delegate to handleSseConnection', async () => {
-    const mockReq = {} as any
-    const mockRes = {} as any
+    const mockReq = {} as Request
+    const mockRes = {} as Response
 
     await controller.sseConnect(mockReq, mockRes)
 
@@ -24,8 +25,8 @@ describe('McpBffController - Unit Tests', () => {
   })
 
   it('POST /api/mcp/messages should delegate to handlePostMessage', async () => {
-    const mockReq = { query: { sessionId: 'sess-1' } } as any
-    const mockRes = {} as any
+    const mockReq = { query: { sessionId: 'sess-1' } } as unknown as Request
+    const mockRes = {} as unknown as Response
 
     await controller.handleMessage(mockReq, mockRes)
 

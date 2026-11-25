@@ -71,7 +71,7 @@ export async function seedCpqEnterpriseData(
       tenantId,
       dealId: dealIds[i],
       quoteNumber: `QTE-2026-${1001 + i}`,
-      status: ['DRAFT', 'SENT', 'ACCEPTED', 'ACCEPTED', 'SENT', 'DRAFT'][i % 6] as any,
+      status: ['DRAFT', 'SENT', 'ACCEPTED', 'ACCEPTED', 'SENT', 'DRAFT'][i % 6],
       validUntil: new Date(Date.now() + 45 * 86400000).toISOString().split('T')[0],
       subtotal,
       taxTotal: tax,

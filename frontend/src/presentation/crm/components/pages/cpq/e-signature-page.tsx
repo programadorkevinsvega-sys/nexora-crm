@@ -30,7 +30,7 @@ export function ESignaturePortalPage({ token }: { token: string }) {
         } else {
           setStep("OTP")
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Failed to load signature contract:", err)
       } finally {
         setLoading(false)
@@ -48,8 +48,8 @@ export function ESignaturePortalPage({ token }: { token: string }) {
       setProcessing(true)
       await ApiCpqRepository.verifyOtp(token, otpCode.trim())
       setStep("SIGN")
-    } catch (err: any) {
-      alert(`OTP Verification failed: ${err?.message}`)
+    } catch (err: unknown) {
+      alert(`OTP Verification failed: ${err instanceof Error ? err.message : String(err)}`)
     } finally {
       setProcessing(false)
     }
@@ -69,8 +69,8 @@ export function ESignaturePortalPage({ token }: { token: string }) {
       })
       setSignature(signed)
       setStep("SUCCESS")
-    } catch (err: any) {
-      alert(`Signature submission failed: ${err?.message}`)
+    } catch (err: unknown) {
+      alert(`Signature submission failed: ${err instanceof Error ? err.message : String(err)}`)
     } finally {
       setProcessing(false)
     }

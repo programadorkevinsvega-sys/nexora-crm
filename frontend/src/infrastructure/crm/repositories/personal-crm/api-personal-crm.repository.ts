@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { api, qs } from "../../api/api-client"
 import type {
   LifeEvent, CreateLifeEvent,
@@ -7,17 +6,28 @@ import type {
   Reminder, CreateReminder,
   Pet, AddPet,
 } from "@crm/contracts"
+import { LifeEventSchema, GiftSchema, DebtSchema, ReminderSchema, PetSchema } from "@crm/contracts"
+import type { ZodType } from "zod"
 
 export type { LifeEvent, CreateLifeEvent, Gift, CreateGift, Debt, CreateDebt, Reminder, CreateReminder, Pet, AddPet }
 export type GiftIdea = Gift
 export type RelationshipReminder = Reminder
 
+function parseList<T>(response: unknown, schema: ZodType<T>): { data: T[] } {
+  const rows = Array.isArray(response)
+    ? response
+    : typeof response === 'object' && response !== null && 'data' in response && Array.isArray(response.data)
+      ? response.data
+      : []
+  return { data: schema.array().parse(rows) }
+}
+
 export class ApiPersonalCrmRepository {
   static async listLifeEvents(params?: { contactId?: string } | string): Promise<{ data: LifeEvent[] }> {
     const contactId = typeof params === 'string' ? params : params?.contactId
     const url = `/api/personal-crm/life-events${qs({ contactId })}`
-    const res = await api.get<any>(url)
-    return res && Array.isArray(res.data) ? res : { data: Array.isArray(res) ? res : [] }
+    const res: unknown = await api.get<unknown>(url)
+    return parseList(res, LifeEventSchema)
   }
 
   static async createLifeEvent(dto: CreateLifeEvent): Promise<LifeEvent> {
@@ -27,8 +37,8 @@ export class ApiPersonalCrmRepository {
   static async listGifts(params?: { contactId?: string } | string): Promise<{ data: Gift[] }> {
     const contactId = typeof params === 'string' ? params : params?.contactId
     const url = `/api/personal-crm/gifts${qs({ contactId })}`
-    const res = await api.get<any>(url)
-    return res && Array.isArray(res.data) ? res : { data: Array.isArray(res) ? res : [] }
+    const res: unknown = await api.get<unknown>(url)
+    return parseList(res, GiftSchema)
   }
 
   static async createGift(dto: CreateGift): Promise<Gift> {
@@ -38,8 +48,8 @@ export class ApiPersonalCrmRepository {
   static async listDebts(params?: { contactId?: string } | string): Promise<{ data: Debt[] }> {
     const contactId = typeof params === 'string' ? params : params?.contactId
     const url = `/api/personal-crm/debts${qs({ contactId })}`
-    const res = await api.get<any>(url)
-    return res && Array.isArray(res.data) ? res : { data: Array.isArray(res) ? res : [] }
+    const res: unknown = await api.get<unknown>(url)
+    return parseList(res, DebtSchema)
   }
 
   static async createDebt(dto: CreateDebt): Promise<Debt> {
@@ -53,8 +63,8 @@ export class ApiPersonalCrmRepository {
   static async listReminders(params?: { contactId?: string } | string): Promise<{ data: Reminder[] }> {
     const contactId = typeof params === 'string' ? params : params?.contactId
     const url = `/api/personal-crm/reminders${qs({ contactId })}`
-    const res = await api.get<any>(url)
-    return res && Array.isArray(res.data) ? res : { data: Array.isArray(res) ? res : [] }
+    const res: unknown = await api.get<unknown>(url)
+    return parseList(res, ReminderSchema)
   }
 
   static async createReminder(dto: CreateReminder): Promise<Reminder> {
@@ -68,8 +78,8 @@ export class ApiPersonalCrmRepository {
   static async listPets(params?: { contactId?: string } | string): Promise<{ data: Pet[] }> {
     const contactId = typeof params === 'string' ? params : params?.contactId
     const url = `/api/personal-crm/pets${qs({ contactId })}`
-    const res = await api.get<any>(url)
-    return res && Array.isArray(res.data) ? res : { data: Array.isArray(res) ? res : [] }
+    const res: unknown = await api.get<unknown>(url)
+    return parseList(res, PetSchema)
   }
 
   static async addPet(dto: AddPet): Promise<Pet> {

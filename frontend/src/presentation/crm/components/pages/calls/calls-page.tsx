@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Plus, Phone, PhoneIncoming, PhoneOutgoing, Video, PhoneCall, Sparkles, Smile, Meh, Frown, Play } from "lucide-react"
+import { Plus, Phone, PhoneIncoming, PhoneOutgoing, Video, PhoneCall, Sparkles } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -30,7 +30,7 @@ const callSchema = z.object({
 type CallFormData = z.infer<typeof callSchema>
 
 export function CallsListPage() {
-  const { tenantId, userId } = useAuth()
+  const { tenantId } = useAuth()
   const [showCreate, setShowCreate] = useState(false)
   const [showDialer, setShowDialer] = useState(false)
   const [dialNumber, setDialNumber] = useState("")

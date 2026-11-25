@@ -1,8 +1,10 @@
 import { CpqBffController } from './cpq.bff.controller'
+import { CpqBffService } from './cpq.bff.service'
+import type { AuthenticatedUser } from '../../common/decorators/current-user.decorator'
 
 describe('CpqBffController - REST Gateway Tests', () => {
   let controller: CpqBffController
-  let mockService: any
+  let mockService: jest.Mocked<CpqBffService>
 
   beforeEach(() => {
     mockService = {
@@ -42,7 +44,7 @@ describe('CpqBffController - REST Gateway Tests', () => {
         token: 'token-abc',
         status: 'PENDING',
       }),
-    }
+    } as unknown as jest.Mocked<CpqBffService>
 
     controller = new CpqBffController(mockService)
   })
@@ -81,7 +83,7 @@ describe('CpqBffController - REST Gateway Tests', () => {
       quoteId: '00000000-0000-0000-0000-000000000001',
       requestedDiscountPercent: 25,
     }
-    const user = { tenantId: 'tenant-1', userId: 'user-1', sub: 'user-1' } as any
+    const user: AuthenticatedUser = { tenantId: 'tenant-1', userId: 'user-1', sub: 'user-1', role: 'admin' }
     const result = await controller.requestApproval(payload, user)
 
     expect(mockService.requestQuoteApproval).toHaveBeenCalledWith(payload, 'user-1', 'tenant-1')

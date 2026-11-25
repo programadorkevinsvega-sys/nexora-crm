@@ -3,7 +3,7 @@ import { NoteRepository } from '../../domain/repositories/note.repository'
 import { TaskRepository } from '../../domain/repositories/task.repository'
 import { CallRepository } from '../../domain/repositories/call.repository'
 import { GetNoteQuery, ListNotesQuery, GetTaskQuery, ListTasksQuery, GetCallQuery, ListCallsQuery } from './interactions.queries'
-import { NotFoundError, ConflictError } from '@crm/shared'
+import { NotFoundError } from '@crm/shared'
 
 @Injectable()
 export class GetNoteHandler {

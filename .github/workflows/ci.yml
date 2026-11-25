@@ -6,13 +6,23 @@ on:
   pull_request:
     branches: [main, master, develop]
   workflow_dispatch:
+    inputs:
+      confirm_production:
+        description: "Confirm the production release. GitHub Environment approval is also required."
+        type: choice
+        required: true
+        default: "no"
+        options:
+          - "no"
+          - "yes"
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
-  validate-backend:
-    name: Validate Backend & Packages
+  validate-migrations:
+    name: Validate database migrations
     runs-on: ubuntu-24.04
     services:
       postgres:
@@ -28,123 +38,195 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-
-      - name: Setup Node.js 24
-        uses: actions/setup-node@v7
+      - uses: actions/checkout@v7
+        name: Checkout repository
+      - uses: actions/setup-node@v7
+        name: Setup Node.js 24
         with:
           node-version: 24
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v6
+      - uses: pnpm/action-setup@v6
+        name: Install pnpm
         with:
           version: 12.21.0
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Validate database migrations
+      - name: Apply migrations
         env:
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/sistema_crm
-        run: |
-          pnpm --filter @crm/database db:migrate
-          pnpm --filter @crm/database db:migrate
+        run: pnpm --filter @crm/database db:migrate
+      - name: Verify migration idempotency
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/sistema_crm
+        run: pnpm --filter @crm/database db:migrate
 
-      - name: Typecheck Workspace
-        run: pnpm typecheck
-
-      - name: Lint Workspace
+  validate-lint:
+    name: Lint (zero warnings required)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        name: Checkout repository
+      - uses: actions/setup-node@v7
+        name: Setup Node.js 24
+        with:
+          node-version: 24
+      - uses: pnpm/action-setup@v6
+        name: Install pnpm
+        with:
+          version: 12.21.0
+      - name: Install dependencies
+        id: install-dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Lint every workspace package
         run: pnpm lint
+      - name: Enforce repository-wide no-any policy
+        if: always() && steps.install-dependencies.outcome == 'success'
+        run: pnpm check:no-any
 
-      - name: Start NATS JetStream for integration tests
+  validate-typecheck:
+    name: TypeScript type checks
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        name: Checkout repository
+      - uses: actions/setup-node@v7
+        name: Setup Node.js 24
+        with:
+          node-version: 24
+      - uses: pnpm/action-setup@v6
+        name: Install pnpm
+        with:
+          version: 12.21.0
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Typecheck workspace
+        run: pnpm typecheck
+      - name: Typecheck frontend
+        working-directory: ./frontend
+        run: npx tsc --noEmit
+
+  validate-tests:
+    name: Automated tests
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: sistema_crm
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d sistema_crm"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v7
+        name: Checkout repository
+      - uses: actions/setup-node@v7
+        name: Setup Node.js 24
+        with:
+          node-version: 24
+      - uses: pnpm/action-setup@v6
+        name: Install pnpm
+        with:
+          version: 12.21.0
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Start NATS JetStream
         run: |
           docker run -d --name ci-nats -p 4222:4222 -p 8222:8222 nats:2.15.3-alpine -js -m 8222
           for attempt in $(seq 1 30); do
-            if curl -fsS http://127.0.0.1:8222/healthz?js-enabled-only=true >/dev/null; then
+            if curl -fsS "http://127.0.0.1:8222/healthz?js-enabled-only=true" >/dev/null; then
               exit 0
             fi
             sleep 2
           done
           docker logs ci-nats
           exit 1
-
-      - name: Run Tests
+      - name: Prepare database for integration tests
         env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/sistema_crm
+        run: pnpm --filter @crm/database db:migrate
+      - name: Run unit and integration tests
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/sistema_crm
           NATS_URL: nats://127.0.0.1:4222
         run: pnpm test
 
-      - name: Build All Backend Services
-        run: pnpm build
-
-  validate-frontend:
-    name: Validate Frontend Next.js
+  validate-build:
+    name: Production builds
     runs-on: ubuntu-24.04
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-
-      - name: Setup Node.js 24
-        uses: actions/setup-node@v7
+      - uses: actions/checkout@v7
+        name: Checkout repository
+      - uses: actions/setup-node@v7
+        name: Setup Node.js 24
         with:
           node-version: 24
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v6
+      - uses: pnpm/action-setup@v6
+        name: Install pnpm
         with:
           version: 12.21.0
-
-      - name: Install frontend dependencies
+      - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Typecheck Frontend
-        working-directory: ./frontend
-        run: npx tsc --noEmit
-
-      - name: Build Frontend Production Bundle
-        working-directory: ./frontend
-        run: npx next build
+      - name: Build all backend services, packages, and frontend
+        run: pnpm build
 
   deploy-production:
-    name: Build and deploy production
+    name: Approved production deployment
     needs:
-      - validate-backend
-      - validate-frontend
-    if: github.ref == 'refs/heads/main'
+      - validate-migrations
+      - validate-lint
+      - validate-typecheck
+      - validate-tests
+      - validate-build
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      github.ref == 'refs/heads/main' &&
+      inputs.confirm_production == 'yes'
     runs-on: ubuntu-24.04
-    environment: production
+    environment:
+      name: production
     concurrency:
       group: production-deploy
       cancel-in-progress: false
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-
-      - name: Setup Node.js 24
-        uses: actions/setup-node@v7
+      - name: Verify that a human reviewer is required
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_API_URL: ${{ github.api_url }}
+          GH_REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          response="$(curl --fail --silent --show-error \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            "${GH_API_URL}/repos/${GH_REPOSITORY}/environments/production")"
+          if ! jq -e '.protection_rules | any(.type == "required_reviewers")' <<< "${response}" >/dev/null; then
+            echo "::error::No required-reviewer protection rule is configured for the production environment. Configure Settings > Environments > production > Required reviewers. Deployment is blocked."
+            exit 1
+          fi
+      - uses: actions/checkout@v7
+        name: Checkout repository
+      - uses: actions/setup-node@v7
+        name: Setup Node.js 24
         with:
           node-version: 24
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v6
+      - uses: pnpm/action-setup@v6
+        name: Install pnpm
         with:
           version: 12.21.0
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Build backend, packages, and frontend
+      - name: Build deployment workspace
         run: pnpm build
-
       - name: Validate deployment target
         env:
           DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
         run: test -n "$DEPLOY_HOST" || { echo "Missing production variable DEPLOY_HOST" >&2; exit 1; }
-
       - name: Connect runner to Tailscale
         uses: tailscale/github-action@v4
         with:
@@ -152,28 +234,28 @@ jobs:
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
           tags: tag:ci
           ping: ${{ vars.DEPLOY_HOST }}
-
       - name: Configure SSH
         env:
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
           DEPLOY_KNOWN_HOSTS: ${{ vars.DEPLOY_KNOWN_HOSTS }}
           DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
         run: |
+          set -euo pipefail
           test -n "$DEPLOY_SSH_KEY" || { echo "Missing production secret DEPLOY_SSH_KEY" >&2; exit 1; }
           test -n "$DEPLOY_KNOWN_HOSTS" || { echo "Missing production variable DEPLOY_KNOWN_HOSTS" >&2; exit 1; }
           test -n "$DEPLOY_HOST" || { echo "Missing production variable DEPLOY_HOST" >&2; exit 1; }
           install -m 700 -d "$HOME/.ssh"
-          printf '%s\n' "$DEPLOY_SSH_KEY" > "$HOME/.ssh/id_ed25519"
+          printf '%s\\n' "$DEPLOY_SSH_KEY" > "$HOME/.ssh/id_ed25519"
           chmod 600 "$HOME/.ssh/id_ed25519"
-          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          printf '%s\\n' "$DEPLOY_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
           chmod 600 "$HOME/.ssh/known_hosts"
-
       - name: Transfer compiled workspace
         env:
           DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
           DEPLOY_USER: ubuntu
           DEPLOY_DIR: /home/ubuntu/crm-service
         run: |
+          set -euo pipefail
           ssh -i "$HOME/.ssh/id_ed25519" \
             -o IdentitiesOnly=yes \
             -o BatchMode=yes \
@@ -188,13 +270,13 @@ jobs:
             --exclude='/coverage/' \
             -e "ssh -i $HOME/.ssh/id_ed25519 -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes" \
             ./ "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_DIR/"
-
       - name: Install production dependencies and restart PM2
         env:
           DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
           DEPLOY_USER: ubuntu
           DEPLOY_DIR: /home/ubuntu/crm-service
         run: |
+          set -euo pipefail
           ssh -i "$HOME/.ssh/id_ed25519" \
             -o IdentitiesOnly=yes \
             -o BatchMode=yes \

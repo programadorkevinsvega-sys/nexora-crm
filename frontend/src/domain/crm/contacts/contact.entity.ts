@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Entity } from "../common/entities/base.entity"
 
 export interface ContactProps {
@@ -39,8 +38,8 @@ export interface ContactProps {
   avatarUrl: string | null
   assignedUserId: string | null
   unsubscribedAt: string | null
-  metadata: Record<string, any>
-  customFields: Record<string, any>
+  metadata: Record<string, unknown>
+  customFields: Record<string, unknown>
 }
 
 export interface ContactCreateInput {
@@ -81,11 +80,19 @@ export interface ContactCreateInput {
   avatarUrl?: string | null
   assignedUserId?: string | null
   unsubscribedAt?: string | null
-  metadata?: Record<string, any>
-  customFields?: Record<string, any>
+  metadata?: Record<string, unknown>
+  customFields?: Record<string, unknown>
 }
 
 export type ContactUpdateInput = Partial<Omit<ContactCreateInput, "tenantId">>
+
+function assignContactProperty<K extends keyof ContactUpdateInput>(
+  props: ContactProps,
+  key: K,
+  value: ContactUpdateInput[K],
+): void {
+  if (value !== undefined) props[key] = value
+}
 
 export class Contact extends Entity<ContactProps> {
   get tenantId(): string { return this.props.tenantId }
@@ -125,8 +132,8 @@ export class Contact extends Entity<ContactProps> {
   get avatarUrl(): string | null { return this.props.avatarUrl }
   get assignedUserId(): string | null { return this.props.assignedUserId }
   get unsubscribedAt(): string | null { return this.props.unsubscribedAt }
-  get metadata(): Record<string, any> { return this.props.metadata }
-  get customFields(): Record<string, any> { return this.props.customFields }
+  get metadata(): Record<string, unknown> { return this.props.metadata }
+  get customFields(): Record<string, unknown> { return this.props.customFields }
 
   static create(props: ContactCreateInput, id: string, createdAt: Date | string, updatedAt: Date | string): Contact {
     return new Contact(id, createdAt, updatedAt, {
@@ -176,7 +183,7 @@ export class Contact extends Entity<ContactProps> {
     const keys = Object.keys(input) as Array<keyof ContactUpdateInput>
     for (const key of keys) {
       if (input[key] !== undefined) {
-        ;(this.props as any)[key] = input[key]
+        assignContactProperty(this.props, key, input[key])
       }
     }
     this.touch()

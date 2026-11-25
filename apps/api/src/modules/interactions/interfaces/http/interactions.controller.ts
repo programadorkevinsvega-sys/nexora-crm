@@ -97,7 +97,7 @@ export class InteractionsController {
   async createTask(@Body() dto: CreateTaskDto, @TenantId() tenantId: string, @UserId() userId: string) {
     const result = await this.createTaskHandler.execute(
       new CreateTaskCommand(
-        tenantId, dto.title, new Date(dto.dueDate), dto.assignedUserId,
+        tenantId, dto.title, new Date(dto.dueDate), dto.assignedUserId || userId,
         dto.contactId, dto.companyId, dto.dealId, dto.description, dto.isCompleted,
       ),
     )

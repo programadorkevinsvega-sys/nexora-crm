@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { SalesTeamRepository } from '../../domain/repositories/sales-team.repository'
 import { SalesQuotaRepository } from '../../domain/repositories/sales-quota.repository'
 import { GetTeamQuery, ListTeamsQuery, GetTeamMembersQuery, GetQuotaQuery, ListQuotasQuery } from './sales-team.queries'
-import { NotFoundError, ConflictError } from '@crm/shared'
+import { NotFoundError } from '@crm/shared'
 
 @Injectable()
 export class GetTeamHandler {

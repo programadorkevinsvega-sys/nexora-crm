@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Controller } from '@nestjs/common'
 import { GrpcMethod } from '@nestjs/microservices'
 import { RegisterHandler } from '../../application/commands/register.handler'
@@ -16,6 +15,37 @@ import {
   LoginSchema, ChangePasswordSchema, RefreshTokenSchema,
 } from '@crm/contracts'
 
+interface RegisterRequest {
+  name: string
+  email: string
+  password: string
+  company: string
+  ipAddress?: string
+  userAgent?: string
+}
+
+interface LoginRequest {
+  tenantId: string
+  email: string
+  password: string
+  ipAddress?: string
+  userAgent?: string
+  deviceId?: string
+  mfaCode?: string
+}
+
+interface RefreshTokenRequest {
+  tenantId: string
+  refreshToken: string
+}
+
+interface ChangePasswordRequest {
+  tenantId: string
+  userId: string
+  currentPassword: string
+  newPassword: string
+}
+
 @Controller()
 export class AuthLoginGrpcController {
   constructor(
@@ -28,7 +58,7 @@ export class AuthLoginGrpcController {
   ) {}
 
   @GrpcMethod('AuthService', 'Register')
-  async register(data: any) {
+  async register(data: RegisterRequest) {
     const result = await this.registerHandler.execute(
       new RegisterCommand(
         data.name,
@@ -43,7 +73,7 @@ export class AuthLoginGrpcController {
   }
 
   @GrpcMethod('AuthService', 'Login')
-  async login(data: any) {
+  async login(data: LoginRequest) {
     const input = validateOrThrow(LoginSchema, {
       tenantId: data.tenantId || '00000000-0000-0000-0000-000000000001',
       email: data.email,
@@ -71,7 +101,7 @@ export class AuthLoginGrpcController {
   }
 
   @GrpcMethod('AuthService', 'RefreshToken')
-  async refreshToken(data: any) {
+  async refreshToken(data: RefreshTokenRequest) {
     const input = validateOrThrow(RefreshTokenSchema, {
       tenantId: data.tenantId,
       refreshToken: data.refreshToken,
@@ -91,7 +121,7 @@ export class AuthLoginGrpcController {
   }
 
   @GrpcMethod('AuthService', 'ChangePassword')
-  async changePassword(data: any) {
+  async changePassword(data: ChangePasswordRequest) {
     const input = validateOrThrow(ChangePasswordSchema, {
       tenantId: data.tenantId,
       userId: data.userId,

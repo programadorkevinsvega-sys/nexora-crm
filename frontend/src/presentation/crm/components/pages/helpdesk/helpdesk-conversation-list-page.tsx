@@ -2,7 +2,6 @@
 
 import { useCallback, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Button } from "@/src/presentation/crm/components/ui/Button"
 import { DataTable, type ColumnDef } from "@/src/presentation/crm/components/common/DataTable"
 import { PageHeader } from "@/src/presentation/crm/components/common/PageHeader"
 import { SearchInput } from "@/src/presentation/crm/components/common/SearchInput"

@@ -10,7 +10,6 @@ import {
 import {
   GetProductHandler,
   ListProductsHandler,
-  GetQuoteApprovalHandler,
   ListPendingApprovalsHandler,
   GetSignatureByTokenHandler,
 } from '../../application/queries/cpq.handlers'

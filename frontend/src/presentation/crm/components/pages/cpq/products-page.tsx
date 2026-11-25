@@ -25,6 +25,16 @@ export const BILLING_MODELS: { value: ProductPricingType; label: string; badge: 
   { value: "CUSTOM", label: "Modelo Personalizado / Negociado", badge: "Personalizado", desc: "Esquema a medida" },
 ]
 
+function parsePricingType(value: string): ProductPricingType {
+  const option = BILLING_MODELS.find((model) => model.value === value)
+  if (!option) throw new TypeError(`Unsupported product pricing type: ${value}`)
+  return option.value
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
+}
+
 const DEFAULT_PRESETS: Partial<ProductTemplate>[] = [
   {
     name: "Licencia Cloud Pro (Mensual)",
@@ -96,8 +106,8 @@ export function ProductsPage() {
       ])
       setProducts(prodList)
       setCustomTemplates(tmplList)
-    } catch (err: any) {
-      console.error("Failed to load CPQ data:", err)
+    } catch (err: unknown) {
+      console.error("Failed to load CPQ data:", errorMessage(err))
     } finally {
       setLoading(false)
     }
@@ -179,8 +189,8 @@ export function ProductsPage() {
       }
       setShowModal(false)
       await fetchData()
-    } catch (err: any) {
-      alert(`Error al guardar producto: ${err?.message}`)
+    } catch (err: unknown) {
+      alert(`Error al guardar producto: ${errorMessage(err)}`)
     } finally {
       setSaving(false)
     }
@@ -206,8 +216,8 @@ export function ProductsPage() {
       setTemplateName("")
       setTemplateDescription("")
       await fetchData()
-    } catch (err: any) {
-      alert(`Error al crear plantilla: ${err?.message}`)
+    } catch (err: unknown) {
+      alert(`Error al crear plantilla: ${errorMessage(err)}`)
     } finally {
       setSaving(false)
     }
@@ -218,8 +228,8 @@ export function ProductsPage() {
     try {
       await ApiCpqRepository.deleteTemplate(templateId)
       await fetchData()
-    } catch (err: any) {
-      alert(`Error al eliminar plantilla: ${err?.message}`)
+    } catch (err: unknown) {
+      alert(`Error al eliminar plantilla: ${errorMessage(err)}`)
     }
   }
 
@@ -228,8 +238,8 @@ export function ProductsPage() {
     try {
       await ApiCpqRepository.deleteProduct(p.id)
       await fetchData()
-    } catch (err: any) {
-      alert(`Error al eliminar producto: ${err?.message}`)
+    } catch (err: unknown) {
+      alert(`Error al eliminar producto: ${errorMessage(err)}`)
     }
   }
 
@@ -237,8 +247,8 @@ export function ProductsPage() {
     try {
       await ApiCpqRepository.updateProduct(p.id, { isActive: !p.isActive })
       await fetchData()
-    } catch (err: any) {
-      alert(`Error al cambiar estado: ${err?.message}`)
+    } catch (err: unknown) {
+      alert(`Error al cambiar estado: ${errorMessage(err)}`)
     }
   }
 
@@ -278,7 +288,7 @@ export function ProductsPage() {
         </div>
         <div className="flex flex-wrap gap-1.5">
           {allTemplates.map((t, idx) => {
-            const isCustom = "id" in t && Boolean(t.id)
+            const customTemplateId = "id" in t && typeof t.id === "string" ? t.id : null
             return (
               <div key={idx} className="flex items-center group">
                 <Button
@@ -296,9 +306,9 @@ export function ProductsPage() {
                   <span className="font-semibold mr-1">{t.name}</span>
                   <span className="text-muted-foreground font-mono">(${t.defaultUnitPrice})</span>
                 </Button>
-                {isCustom && (
+                {customTemplateId && (
                   <button
-                    onClick={() => handleDeleteTemplate((t as any).id, t.name || "")}
+                    onClick={() => handleDeleteTemplate(customTemplateId, t.name || "")}
                     className="h-7 px-1 text-muted-foreground hover:text-destructive text-[11px] -ml-1 bg-background border border-l-0 rounded-r-md"
                     title="Eliminar plantilla guardada"
                   >
@@ -427,7 +437,7 @@ export function ProductsPage() {
                 <select
                   className="w-full px-3 py-2 border rounded-md text-sm bg-background font-medium"
                   value={pricingType}
-                  onChange={(e: any) => setPricingType(e.target.value)}
+                  onChange={(e) => setPricingType(parsePricingType(e.target.value))}
                 >
                   {BILLING_MODELS.map((m) => (
                     <option key={m.value} value={m.value}>
@@ -548,7 +558,7 @@ export function ProductsPage() {
                 <select
                   className="w-full px-3 py-2 border rounded-md text-sm bg-background font-medium"
                   value={templatePricingType}
-                  onChange={(e: any) => setTemplatePricingType(e.target.value)}
+                  onChange={(e) => setTemplatePricingType(parsePricingType(e.target.value))}
                 >
                   {BILLING_MODELS.map((m) => (
                     <option key={m.value} value={m.value}>

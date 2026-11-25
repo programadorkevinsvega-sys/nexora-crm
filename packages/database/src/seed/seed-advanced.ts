@@ -9,7 +9,7 @@ import {
   apiKeys, webhookEndpoints, webhookDeliveryLogs,
   auditLogs, webForms, metaIntegrations, metaLeadAdLogs,
 } from '@crm/database'
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 
 
 
@@ -63,7 +63,7 @@ export async function seedAdvancedData(
 
   // 3. Affiliates
   const existingProg = await db.query.affiliatePrograms?.findFirst?.({
-    where: (table: any, { and, eq }: any) => and(eq(table.tenantId, tenantId), eq(table.name, 'Programa de Partners & Referidos Enterprise')),
+    where: and(eq(affiliatePrograms.tenantId, tenantId), eq(affiliatePrograms.name, 'Programa de Partners & Referidos Enterprise')),
   }).catch(() => null)
   const progId = existingProg?.id || crypto.randomUUID()
   if (!existingProg) {
@@ -71,7 +71,7 @@ export async function seedAdvancedData(
   }
 
   const existingAff = await db.query.affiliates?.findFirst?.({
-    where: (table: any, { and, eq }: any) => and(eq(table.tenantId, tenantId), eq(table.referralCode, 'NEXORA-VIP')),
+    where: and(eq(affiliates.tenantId, tenantId), eq(affiliates.referralCode, 'NEXORA-VIP')),
   }).catch(() => null)
   const affId = existingAff?.id || crypto.randomUUID()
   if (!existingAff) {
@@ -100,7 +100,7 @@ export async function seedAdvancedData(
 
   // 5. Automations / Workflows
   const existingWf = await db.query.workflowDefinitions?.findFirst?.({
-    where: (table: any, { and, eq }: any) => and(eq(table.tenantId, tenantId), eq(table.name, 'Asignación Automática de Leads Enterprise')),
+    where: and(eq(workflowDefinitions.tenantId, tenantId), eq(workflowDefinitions.name, 'Asignación Automática de Leads Enterprise')),
   }).catch(() => null)
   const wfId = existingWf?.id || crypto.randomUUID()
   if (!existingWf) {
@@ -190,7 +190,7 @@ export async function seedAdvancedData(
   }).onConflictDoNothing()
 
   const existingWh = await db.query.webhookEndpoints?.findFirst?.({
-    where: (table: any, { and, eq }: any) => and(eq(table.tenantId, tenantId), eq(table.name, 'Webhook Servidor Corporativo')),
+    where: and(eq(webhookEndpoints.tenantId, tenantId), eq(webhookEndpoints.name, 'Webhook Servidor Corporativo')),
   }).catch(() => null)
   const whId = existingWh?.id || crypto.randomUUID()
   if (!existingWh) {

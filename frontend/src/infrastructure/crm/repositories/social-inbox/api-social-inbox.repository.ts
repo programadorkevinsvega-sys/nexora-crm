@@ -36,6 +36,6 @@ export const ApiSocialInboxRepository = {
     matchedRule?: SocialAutoResponderRule | null
     autoReplied: boolean
   }> {
-    return api.post<any>("/api/social-inbox/simulate", dto)
+    return api.post<{ comment: SocialComment; matchedRule?: SocialAutoResponderRule | null; autoReplied: boolean }>("/api/social-inbox/simulate", dto)
   },
 }

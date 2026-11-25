@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { container } from "./container"
 import { DI_TOKENS } from "./tokens"
 
@@ -61,13 +60,13 @@ export function registerCrmDependencies() {
   container.register(DI_TOKENS.TaskRepository, ApiTaskRepository)
   container.register(DI_TOKENS.CallRepository, ApiCallRepository)
 
-  const compRepo = ApiCompanyRepository as any
-  const contactRepo = ApiContactRepository as any
-  const dealRepo = ApiDealRepository as any
-  const pipelineRepo = ApiPipelineRepository as any
-  const noteRepo = ApiNoteRepository as any
-  const taskRepo = ApiTaskRepository as any
-  const callRepo = ApiCallRepository as any
+  const compRepo = ApiCompanyRepository
+  const contactRepo = ApiContactRepository
+  const dealRepo = ApiDealRepository
+  const pipelineRepo = ApiPipelineRepository
+  const noteRepo = ApiNoteRepository
+  const taskRepo = ApiTaskRepository
+  const callRepo = ApiCallRepository
 
   container.register(DI_TOKENS.ListCompanies, new ListCompaniesUseCase(compRepo))
   container.register(DI_TOKENS.GetCompany, new GetCompanyUseCase(compRepo))

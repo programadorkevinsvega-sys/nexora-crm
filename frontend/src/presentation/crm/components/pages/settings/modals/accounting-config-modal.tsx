@@ -27,13 +27,13 @@ export function AccountingConfigModal({ isOpen, onClose, onSuccess }: Accounting
     setTestResult(null)
     try {
       const res = await ApiIntegrationsRepository.testIntegration(
-        "ACCOUNTING" as any,
-        companyId || "test-company",
+        "ACCOUNTING",
+        companyId.trim(),
         "Test de sincronización contable"
       )
       setTestResult(res)
-    } catch (err: any) {
-      setTestResult({ success: false, message: err?.message || "Error al conectar con el sistema contable" })
+    } catch (err: unknown) {
+      setTestResult({ success: false, message: err instanceof Error ? err.message : "Error al conectar con el sistema contable" })
     } finally {
       setTesting(false)
     }
@@ -56,8 +56,8 @@ export function AccountingConfigModal({ isOpen, onClose, onSuccess }: Accounting
       })
       onSuccess()
       onClose()
-    } catch (err: any) {
-      alert(`Error al guardar: ${err?.message}`)
+    } catch (err: unknown) {
+      alert(`Error al guardar: ${err instanceof Error ? err.message : String(err)}`)
     } finally {
       setSaving(false)
     }
@@ -141,7 +141,7 @@ export function AccountingConfigModal({ isOpen, onClose, onSuccess }: Accounting
         )}
 
         <div className="flex items-center justify-between pt-2 border-t">
-          <Button type="button" variant="outline" size="sm" onClick={handleTest} disabled={testing || !apiKey.trim()}>
+          <Button type="button" variant="outline" size="sm" onClick={handleTest} disabled={testing || !apiKey.trim() || !companyId.trim()}>
             {testing ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <TrendingUp className="h-3.5 w-3.5 mr-1" />}
             Probar Conexión
           </Button>

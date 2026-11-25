@@ -1,9 +1,7 @@
-import {
-  Controller, Get, Post, Body, Headers, Query,
-} from '@nestjs/common'
+import { Controller, Get, Post, Body, Headers, Query } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiBody, ApiHeader } from '@nestjs/swagger'
 import { MetaLeadsBffService } from './meta-leads.bff.service'
-import type { MetaIntegration, MetaConfigUpdate, SimulateMetaLead } from '@crm/contracts'
+import type { MetaIntegration, MetaConfigUpdate, ConnectMetaPageInput } from '@crm/contracts'
 
 @ApiTags('Integración Meta & Facebook Leads (Meta Leads)')
 @ApiHeader({ name: 'X-Tenant-Id', required: false, description: 'ID del inquilino' })
@@ -29,52 +27,31 @@ export class MetaLeadsBffController {
 
   @Post('oauth-callback')
   @ApiOperation({ summary: 'Intercambiar código de autorización OAuth por Access Token' })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      required: ['code'],
-      properties: {
-        code: { type: 'string', example: 'AQD123456789...' },
-      },
-    },
-  })
-  async handleCallback(
-    @Body('code') code: string,
-    @Headers('X-Tenant-Id') tenantId?: string,
-  ): Promise<MetaIntegration> {
+  @ApiBody({ schema: { type: 'object', required: ['code'], properties: { code: { type: 'string', example: 'AQD123456789...' } } } })
+  async handleCallback(@Body('code') code: string, @Headers('X-Tenant-Id') tenantId?: string): Promise<MetaIntegration> {
     return this.service.handleOAuthCallback(code, tenantId)
   }
 
   @Post('fetch-pages')
   @ApiOperation({ summary: 'Listar Páginas de Facebook y Cuentas Publicitarias del usuario' })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      required: ['accessToken'],
-      properties: {
-        accessToken: { type: 'string', example: 'EAA...' },
-      },
-    },
-  })
-  async fetchPages(
-    @Body('accessToken') accessToken: string,
-  ) {
+  @ApiBody({ schema: { type: 'object', required: ['accessToken'], properties: { accessToken: { type: 'string', example: 'EAA...' } } } })
+  async fetchPages(@Body('accessToken') accessToken: string) {
     return this.service.fetchMetaPagesAndAccounts(accessToken)
   }
 
   @Post('connect')
   @ApiOperation({ summary: 'Conectar Página de Facebook seleccionada al CRM' })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        pageId: { type: 'string', example: '10987654321' },
-        pageName: { type: 'string', example: 'Mi Página de Empresa' },
-      },
-    },
-  })
+  @ApiBody({ schema: { type: 'object', properties: {
+    pageId: { type: 'string', example: '10987654321' },
+    pageName: { type: 'string', example: 'Mi Página de Empresa' },
+    pageAccessToken: { type: 'string' },
+    adAccountId: { type: 'string' },
+    adAccountName: { type: 'string' },
+    userAccessToken: { type: 'string' },
+    metaAppId: { type: 'string' },
+  } } })
   async connectAccount(
-    @Body() dto: any,
+    @Body() dto: ConnectMetaPageInput,
     @Headers('X-Tenant-Id') tenantId?: string,
   ): Promise<MetaIntegration> {
     return this.service.connectPage(dto, tenantId)
@@ -82,20 +59,12 @@ export class MetaLeadsBffController {
 
   @Post('config')
   @ApiOperation({ summary: 'Configurar creación automática de Deals al capturar Leads' })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        autoCreateDeal: { type: 'boolean', example: true },
-        targetPipelineId: { type: 'string', example: '00000000-0000-0000-0000-000000000001' },
-        targetStageId: { type: 'string', example: '00000000-0000-0000-0000-000000000002' },
-      },
-    },
-  })
-  async updateConfig(
-    @Body() dto: MetaConfigUpdate,
-    @Headers('X-Tenant-Id') tenantId?: string,
-  ): Promise<MetaIntegration> {
+  @ApiBody({ schema: { type: 'object', properties: {
+    autoCreateDeal: { type: 'boolean', example: true },
+    targetPipelineId: { type: 'string', example: '00000000-0000-0000-0000-000000000001' },
+    targetStageId: { type: 'string', example: '00000000-0000-0000-0000-000000000002' },
+  } } })
+  async updateConfig(@Body() dto: MetaConfigUpdate, @Headers('X-Tenant-Id') tenantId?: string): Promise<MetaIntegration> {
     return this.service.updateConfig(dto, tenantId)
   }
 

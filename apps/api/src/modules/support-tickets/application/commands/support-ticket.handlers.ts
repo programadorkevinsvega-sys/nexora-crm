@@ -13,12 +13,11 @@ import {
   TicketCreatedEvent,
   TicketStatusChangedEvent,
   TicketAssignedEvent,
-  TicketEscalatedEvent,
   TicketResolvedEvent,
   ReplyAddedEvent,
 } from '../../domain/events/support-ticket.events'
 import { OutboxService } from '../../../../common/outbox/outbox.service'
-import { NotFoundError, ConflictError } from '@crm/shared'
+import { NotFoundError } from '@crm/shared'
 
 @Injectable()
 export class CreateTicketHandler {

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { eq, and } from 'drizzle-orm'
 import {
   getDb,
@@ -16,29 +15,29 @@ export class AuthSessionsMfaDrizzleHelper {
 
   static async findSessionById(id: string): Promise<Session | null> {
     const row = await this.db.query.sessions.findFirst({
-      where: eq(sessionsTable.id, id) as any,
+      where: eq(sessionsTable.id, id),
     })
-    return row ? AuthMapper.sessionToDomain(row as any) : null
+    return row ? AuthMapper.sessionToDomain(row) : null
   }
 
   static async findSessionByRefreshTokenHash(tenantId: string, hash: string): Promise<Session | null> {
     const row = await this.db.query.sessions.findFirst({
       where: and(
-        eq(sessionsTable.tenantId, tenantId) as any,
-        eq(sessionsTable.refreshTokenHash, hash) as any,
-      ) as any,
+        eq(sessionsTable.tenantId, tenantId),
+        eq(sessionsTable.refreshTokenHash, hash),
+      ),
     })
-    return row ? AuthMapper.sessionToDomain(row as any) : null
+    return row ? AuthMapper.sessionToDomain(row) : null
   }
 
   static async listSessionsByUser(tenantId: string, userId: string): Promise<Session[]> {
     const rows = await this.db.query.sessions.findMany({
       where: and(
-        eq(sessionsTable.tenantId, tenantId) as any,
-        eq(sessionsTable.userId, userId) as any,
-      ) as any,
+        eq(sessionsTable.tenantId, tenantId),
+        eq(sessionsTable.userId, userId),
+      ),
     })
-    return rows.map((r) => AuthMapper.sessionToDomain(r as any))
+    return rows.map((r) => AuthMapper.sessionToDomain(r))
   }
 
   static async saveSession(session: Session): Promise<void> {
@@ -53,30 +52,30 @@ export class AuthSessionsMfaDrizzleHelper {
       expiresAt: session.expiresAt,
       isRevoked: session.isRevoked,
       createdAt: session.createdAt,
-    } as any).onConflictDoUpdate({
+    }).onConflictDoUpdate({
       target: sessionsTable.id,
       set: {
         refreshTokenHash: session.refreshTokenHash,
         isRevoked: session.isRevoked,
-      } as any,
+      },
     })
   }
 
   static async findMfaMethodsByUser(tenantId: string, userId: string): Promise<MfaMethod[]> {
     const rows = await this.db.query.mfaMethods.findMany({
       where: and(
-        eq(mfaMethodsTable.tenantId, tenantId) as any,
-        eq(mfaMethodsTable.userId, userId) as any,
-      ) as any,
+        eq(mfaMethodsTable.tenantId, tenantId),
+        eq(mfaMethodsTable.userId, userId),
+      ),
     })
-    return rows.map((r) => AuthMapper.mfaMethodToDomain(r as any))
+    return rows.map((r) => AuthMapper.mfaMethodToDomain(r))
   }
 
   static async findMfaMethodById(id: string): Promise<MfaMethod | null> {
     const row = await this.db.query.mfaMethods.findFirst({
-      where: eq(mfaMethodsTable.id, id) as any,
+      where: eq(mfaMethodsTable.id, id),
     })
-    return row ? AuthMapper.mfaMethodToDomain(row as any) : null
+    return row ? AuthMapper.mfaMethodToDomain(row) : null
   }
 
   static async saveMfaMethod(method: MfaMethod): Promise<void> {
@@ -89,31 +88,31 @@ export class AuthSessionsMfaDrizzleHelper {
       isPrimary: method.isPrimary,
       isActive: method.isActive,
       createdAt: method.createdAt,
-    } as any).onConflictDoUpdate({
+    }).onConflictDoUpdate({
       target: mfaMethodsTable.id,
       set: {
         secret: method.secret,
         isPrimary: method.isPrimary,
         isActive: method.isActive,
-      } as any,
+      },
     })
   }
 
   static async findRecoveryCodesByUser(userId: string): Promise<MfaRecoveryCode[]> {
     const rows = await this.db.query.mfaRecoveryCodes.findMany({
-      where: eq(recoveryCodesTable.userId, userId) as any,
+      where: eq(recoveryCodesTable.userId, userId),
     })
-    return rows.map((r) => AuthMapper.recoveryCodeToDomain(r as any))
+    return rows.map((r) => AuthMapper.recoveryCodeToDomain(r))
   }
 
   static async findUnusedRecoveryCodesByUser(userId: string): Promise<MfaRecoveryCode[]> {
     const rows = await this.db.query.mfaRecoveryCodes.findMany({
       where: and(
-        eq(recoveryCodesTable.userId, userId) as any,
-        eq(recoveryCodesTable.isUsed, false) as any,
-      ) as any,
+        eq(recoveryCodesTable.userId, userId),
+        eq(recoveryCodesTable.isUsed, false),
+      ),
     })
-    return rows.map((r) => AuthMapper.recoveryCodeToDomain(r as any))
+    return rows.map((r) => AuthMapper.recoveryCodeToDomain(r))
   }
 
   static async saveRecoveryCode(code: MfaRecoveryCode): Promise<void> {
@@ -124,9 +123,9 @@ export class AuthSessionsMfaDrizzleHelper {
       isUsed: code.isUsed,
       usedAt: code.usedAt,
       createdAt: code.createdAt,
-    } as any).onConflictDoUpdate({
+    }).onConflictDoUpdate({
       target: recoveryCodesTable.id,
-      set: { isUsed: code.isUsed, usedAt: code.usedAt } as any,
+      set: { isUsed: code.isUsed, usedAt: code.usedAt },
     })
   }
 
@@ -138,7 +137,7 @@ export class AuthSessionsMfaDrizzleHelper {
 
   static async deleteRecoveryCodesByUser(userId: string): Promise<void> {
     await this.db.delete(recoveryCodesTable).where(
-      eq(recoveryCodesTable.userId, userId) as any,
+      eq(recoveryCodesTable.userId, userId),
     )
   }
 }

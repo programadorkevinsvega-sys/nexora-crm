@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, text, timestamp, boolean, integer, jsonb, index } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, varchar, timestamp, boolean, integer, jsonb, index } from 'drizzle-orm/pg-core'
 
 export const deduplicationRules = pgTable(
   'deduplication_rules',

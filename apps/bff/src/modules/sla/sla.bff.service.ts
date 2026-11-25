@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { getDb, slaPolicies, slaEscalationRules, ticketSlaTrackers } from '@crm/database'
 import { eq, and, desc } from 'drizzle-orm'
 import type {
@@ -134,24 +134,24 @@ export class SlaBffService {
     ])
   }
 
-  private mapPolicy(r: any): SlaPolicy {
+  private mapPolicy(r: typeof slaPolicies.$inferSelect): SlaPolicy {
     return {
       ...r,
-      priority: r.priority as any,
+      priority: r.priority as SlaPolicy['priority'],
       createdAt: r.createdAt ? new Date(r.createdAt).toISOString() : new Date().toISOString(),
       updatedAt: r.updatedAt ? new Date(r.updatedAt).toISOString() : new Date().toISOString(),
     }
   }
 
-  private mapRule(r: any): SlaEscalationRule {
+  private mapRule(r: typeof slaEscalationRules.$inferSelect): SlaEscalationRule {
     return {
       ...r,
-      actionType: r.actionType as any,
+      actionType: r.actionType as SlaEscalationRule['actionType'],
       createdAt: r.createdAt ? new Date(r.createdAt).toISOString() : new Date().toISOString(),
     }
   }
 
-  private mapTracker(r: any): TicketSlaTracker {
+  private mapTracker(r: typeof ticketSlaTrackers.$inferSelect): TicketSlaTracker {
     return {
       ...r,
       firstResponseDueAt: r.firstResponseDueAt ? new Date(r.firstResponseDueAt).toISOString() : new Date().toISOString(),

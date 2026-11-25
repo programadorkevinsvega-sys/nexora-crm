@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { eq, and, asc, or, gt, ilike } from 'drizzle-orm'
+import { eq, and, asc, gt } from 'drizzle-orm'
 import { getDb, quotes as quotesTable } from '@crm/database'
 import { QuoteRepository, QuoteFilter, PaginatedQuotes } from '../domain/repositories/quote.repository'
 import { Quote, QuoteStatus } from '../domain/entities/quote.entity'

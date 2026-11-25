@@ -1,61 +1,118 @@
-import { NotificationChannel, NotificationTemplate, Notification, NotificationLog, NotificationPreference } from '../domain/entities/notification.entity'
+import {
+  notificationChannels,
+  notificationTemplates,
+  notificationQueue,
+  notificationLogs,
+  notificationPreferences,
+} from '@crm/database'
+import {
+  NotificationChannel, NotificationTemplate, Notification, NotificationLog, NotificationPreference,
+  type ChannelType, type ProviderType, type NotificationStatus,
+} from '../domain/entities/notification.entity'
+
+const CHANNEL_TYPES = new Set<ChannelType>(['EMAIL', 'PUSH', 'SLACK', 'WEBSOCKET', 'SMS'])
+const PROVIDER_TYPES = new Set<ProviderType>(['SES', 'RESEND', 'SMTP', 'FCM', 'SLACK_WEBHOOK', 'CUSTOM'])
+const NOTIFICATION_STATUSES = new Set<NotificationStatus>(['PENDING', 'QUEUED', 'SENDING', 'SENT', 'FAILED', 'CANCELLED'])
+
+function asJsonObject(value: unknown): Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : {}
+}
+
+function asJsonObjectOrNull(value: unknown): Record<string, unknown> | null {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : null
+}
+
+function asStringArray(value: unknown): string[] {
+  return Array.isArray(value) && value.every((item): item is string => typeof item === 'string')
+    ? value
+    : []
+}
+
+function channelType(value: string): ChannelType {
+  if (CHANNEL_TYPES.has(value as ChannelType)) return value as ChannelType
+  throw new TypeError(`Unsupported notification channel type: ${value}`)
+}
+
+function providerType(value: string): ProviderType {
+  if (PROVIDER_TYPES.has(value as ProviderType)) return value as ProviderType
+  throw new TypeError(`Unsupported notification provider type: ${value}`)
+}
+
+function notificationStatus(value: string): NotificationStatus {
+  if (NOTIFICATION_STATUSES.has(value as NotificationStatus)) return value as NotificationStatus
+  throw new TypeError(`Unsupported notification status: ${value}`)
+}
 
 export class NotificationsMapper {
-  static channelToDomain(r: any): NotificationChannel {
-    return new NotificationChannel(r.id, r.tenantId, r.channelType, r.providerType,
-      r.name, r.configJson ?? {}, r.isActive ?? true, r.createdAt, r.updatedAt)
+  static channelToDomain(row: typeof notificationChannels.$inferSelect): NotificationChannel {
+    return new NotificationChannel(
+      row.id, row.tenantId, channelType(row.channelType), providerType(row.providerType),
+      row.name, asJsonObject(row.configJson), row.isActive ?? true, row.createdAt, row.updatedAt,
+    )
   }
-  static channelToResponse(c: NotificationChannel) {
-    return { id: c.id, tenantId: c.tenantId, channelType: c.channelType, providerType: c.providerType,
-      name: c.name, configJson: c.configJson, isActive: c.isActive,
-      createdAt: c.createdAt.toISOString(), updatedAt: c.updatedAt.toISOString() }
-  }
-
-  static templateToDomain(r: any): NotificationTemplate {
-    return new NotificationTemplate(r.id, r.tenantId, r.channelType, r.templateKey,
-      r.subjectTemplate, r.bodyTemplate, r.variablesJson ?? [],
-      r.locale ?? 'en', r.createdAt, r.updatedAt)
-  }
-  static templateToResponse(t: NotificationTemplate) {
-    return { id: t.id, tenantId: t.tenantId, channelType: t.channelType, templateKey: t.templateKey,
-      subjectTemplate: t.subjectTemplate, bodyTemplate: t.bodyTemplate,
-      variables: t.variables, locale: t.locale,
-      createdAt: t.createdAt.toISOString(), updatedAt: t.updatedAt.toISOString() }
+  static channelToResponse(channel: NotificationChannel) {
+    return { id: channel.id, tenantId: channel.tenantId, channelType: channel.channelType, providerType: channel.providerType,
+      name: channel.name, configJson: channel.configJson, isActive: channel.isActive,
+      createdAt: channel.createdAt.toISOString(), updatedAt: channel.updatedAt.toISOString() }
   }
 
-  static notificationToDomain(r: any): Notification {
-    return new Notification(r.id, r.tenantId, r.channelType, r.channelId, r.templateId,
-      r.toAddress, r.subject, r.body, r.variablesUsedJson ?? null,
-      r.status ?? 'PENDING', r.priority ?? 0, r.attempts ?? 0, r.maxAttempts ?? 3,
-      r.lastError, r.scheduledAt, r.sentAt, r.createdAt)
+  static templateToDomain(row: typeof notificationTemplates.$inferSelect): NotificationTemplate {
+    return new NotificationTemplate(
+      row.id, row.tenantId, channelType(row.channelType), row.templateKey,
+      row.subjectTemplate, row.bodyTemplate, asStringArray(row.variablesJson),
+      row.locale ?? 'en', row.createdAt, row.updatedAt,
+    )
   }
-  static notificationToResponse(n: Notification) {
-    return { id: n.id, tenantId: n.tenantId, channelType: n.channelType, channelId: n.channelId,
-      templateId: n.templateId, toAddress: n.toAddress, subject: n.subject, body: n.body,
-      variablesUsed: n.variablesUsed, status: n.status, priority: n.priority,
-      attempts: n.attempts, maxAttempts: n.maxAttempts, lastError: n.lastError,
-      scheduledAt: n.scheduledAt?.toISOString() ?? null,
-      sentAt: n.sentAt?.toISOString() ?? null, createdAt: n.createdAt.toISOString() }
-  }
-
-  static logToDomain(r: any): NotificationLog {
-    return new NotificationLog(r.id, r.tenantId, r.queueId, r.channelType,
-      r.toAddress, r.subject, r.bodyPreview, r.status,
-      r.providerUsed, r.providerMessageId, r.errorMessage, r.sentAt)
-  }
-  static logToResponse(l: NotificationLog) {
-    return { id: l.id, tenantId: l.tenantId, queueId: l.queueId, channelType: l.channelType,
-      toAddress: l.toAddress, subject: l.subject, bodyPreview: l.bodyPreview,
-      status: l.status, providerUsed: l.providerUsed, providerMessageId: l.providerMessageId,
-      errorMessage: l.errorMessage, sentAt: l.sentAt.toISOString() }
+  static templateToResponse(template: NotificationTemplate) {
+    return { id: template.id, tenantId: template.tenantId, channelType: template.channelType, templateKey: template.templateKey,
+      subjectTemplate: template.subjectTemplate, bodyTemplate: template.bodyTemplate,
+      variables: template.variables, locale: template.locale,
+      createdAt: template.createdAt.toISOString(), updatedAt: template.updatedAt.toISOString() }
   }
 
-  static preferenceToDomain(r: any): NotificationPreference {
-    return new NotificationPreference(r.id, r.tenantId, r.userId, r.channelType,
-      r.isEnabled ?? true, r.createdAt, r.updatedAt)
+  static notificationToDomain(row: typeof notificationQueue.$inferSelect): Notification {
+    return new Notification(
+      row.id, row.tenantId, channelType(row.channelType), row.channelId, row.templateId,
+      row.toAddress, row.subject, row.body, asJsonObjectOrNull(row.variablesUsedJson),
+      notificationStatus(row.status), row.priority ?? 0, row.attempts, row.maxAttempts ?? 3,
+      row.lastError, row.scheduledAt, row.sentAt, row.createdAt,
+    )
   }
-  static preferenceToResponse(p: NotificationPreference) {
-    return { id: p.id, tenantId: p.tenantId, userId: p.userId, channelType: p.channelType,
-      isEnabled: p.isEnabled, createdAt: p.createdAt.toISOString(), updatedAt: p.updatedAt.toISOString() }
+  static notificationToResponse(notification: Notification) {
+    return { id: notification.id, tenantId: notification.tenantId, channelType: notification.channelType, channelId: notification.channelId,
+      templateId: notification.templateId, toAddress: notification.toAddress, subject: notification.subject, body: notification.body,
+      variablesUsed: notification.variablesUsed, status: notification.status, priority: notification.priority,
+      attempts: notification.attempts, maxAttempts: notification.maxAttempts, lastError: notification.lastError,
+      scheduledAt: notification.scheduledAt?.toISOString() ?? null,
+      sentAt: notification.sentAt?.toISOString() ?? null, createdAt: notification.createdAt.toISOString() }
+  }
+
+  static logToDomain(row: typeof notificationLogs.$inferSelect): NotificationLog {
+    return new NotificationLog(
+      row.id, row.tenantId, row.queueId, channelType(row.channelType),
+      row.toAddress, row.subject, row.bodyPreview, row.status,
+      row.providerUsed, row.providerMessageId, row.errorMessage, row.sentAt,
+    )
+  }
+  static logToResponse(log: NotificationLog) {
+    return { id: log.id, tenantId: log.tenantId, queueId: log.queueId, channelType: log.channelType,
+      toAddress: log.toAddress, subject: log.subject, bodyPreview: log.bodyPreview,
+      status: log.status, providerUsed: log.providerUsed, providerMessageId: log.providerMessageId,
+      errorMessage: log.errorMessage, sentAt: log.sentAt.toISOString() }
+  }
+
+  static preferenceToDomain(row: typeof notificationPreferences.$inferSelect): NotificationPreference {
+    return new NotificationPreference(
+      row.id, row.tenantId, row.userId, channelType(row.channelType),
+      row.isEnabled ?? true, row.createdAt, row.updatedAt,
+    )
+  }
+  static preferenceToResponse(preference: NotificationPreference) {
+    return { id: preference.id, tenantId: preference.tenantId, userId: preference.userId, channelType: preference.channelType,
+      isEnabled: preference.isEnabled, createdAt: preference.createdAt.toISOString(), updatedAt: preference.updatedAt.toISOString() }
   }
 }

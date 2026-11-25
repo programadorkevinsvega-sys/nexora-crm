@@ -5,11 +5,7 @@ import { IntegrationsBffService } from '../integrations/integrations.bff.service
 import { IntegrationsDispatcher } from '../integrations/integrations.dispatcher'
 import { SmtpEmailDispatcher } from '../integrations/dispatchers/smtp-email.dispatcher'
 import { AwsSesDispatcher } from '../integrations/dispatchers/aws-ses.dispatcher'
-import type {
-  InboxConversation,
-  InboxMessage,
-  SendInboxMessage,
-} from '@crm/contracts'
+import type { InboxConversation, InboxMessage, SendInboxMessage } from '@crm/contracts'
 
 const CACHE_TTL_MS = 10_000
 const CACHE_KEY_PREFIX = 'inbox:'
@@ -17,7 +13,6 @@ const CACHE_KEY_PREFIX = 'inbox:'
 @Injectable()
 export class InboxBffService {
   private readonly logger = new Logger(InboxBffService.name)
-
   constructor(
     private readonly api: ApiCoreGrpcClient,
     private readonly cache: CacheService,
@@ -30,7 +25,7 @@ export class InboxBffService {
   async listConversations(
     channel?: string,
     status?: string,
-    tenantId: string = '00000000-0000-0000-0000-000000000001',
+    tenantId = '00000000-0000-0000-0000-000000000001',
   ): Promise<InboxConversation[]> {
     const cacheKey = `${CACHE_KEY_PREFIX}convs:${tenantId}:${channel ?? 'all'}:${status ?? 'all'}`
     return this.cache.getOrSet<InboxConversation[]>(
@@ -40,54 +35,38 @@ export class InboxBffService {
     )
   }
 
-  async getConversation(
-    id: string,
-    tenantId: string = '00000000-0000-0000-0000-000000000001',
-  ): Promise<InboxConversation> {
+  async getConversation(id: string, tenantId = '00000000-0000-0000-0000-000000000001'): Promise<InboxConversation> {
     return this.api.getInboxConversation(tenantId, id)
   }
 
-  async sendMessage(
-    dto: SendInboxMessage,
-    tenantId: string = '00000000-0000-0000-0000-000000000001',
-  ): Promise<InboxMessage> {
-    const res = await this.api.sendInboxMessage({ tenantId, ...dto })
+  async sendMessage(dto: SendInboxMessage, tenantId = '00000000-0000-0000-0000-000000000001'): Promise<InboxMessage> {
+    const response = await this.api.sendInboxMessage({ tenantId, ...dto })
     this.cache.invalidate(CACHE_KEY_PREFIX)
-
-    // Attempt real dispatch over external channel using tenant credentials
     try {
       if (dto.channel === 'WHATSAPP') {
-        const waConfig = await this.integrationsService.getDecryptedConfig(tenantId, 'WHATSAPP_CLOUD')
-        if (waConfig) {
+        const config = await this.integrationsService.getDecryptedConfig(tenantId, 'WHATSAPP_CLOUD')
+        if (config) {
           this.logger.log(`Dispatching real WhatsApp message to ${dto.recipientIdentifier}`)
-          await this.dispatcher.dispatchTest('WHATSAPP_CLOUD', waConfig, dto.recipientIdentifier, dto.bodyText)
+          await this.dispatcher.dispatchTest('WHATSAPP_CLOUD', config, dto.recipientIdentifier, dto.bodyText)
         }
       } else if (dto.channel === 'EMAIL') {
         const smtpConfig = await this.integrationsService.getDecryptedConfig(tenantId, 'SMTP_EMAIL')
         const sesConfig = await this.integrationsService.getDecryptedConfig(tenantId, 'AWS_SES')
-
         if (smtpConfig) {
           this.logger.log(`Dispatching real SMTP email to ${dto.recipientIdentifier}`)
           await this.smtpDispatcher.sendEmail(
-            smtpConfig,
-            dto.recipientIdentifier,
-            dto.subject || 'Mensaje de Nexora CRM',
-            dto.bodyText,
+            smtpConfig, dto.recipientIdentifier, dto.subject || 'Mensaje de Nexora CRM', dto.bodyText,
           )
         } else if (sesConfig) {
           this.logger.log(`Dispatching real AWS SES email to ${dto.recipientIdentifier}`)
           await this.sesDispatcher.sendEmail(
-            sesConfig,
-            dto.recipientIdentifier,
-            dto.subject || 'Mensaje de Nexora CRM',
-            dto.bodyText,
+            sesConfig, dto.recipientIdentifier, dto.subject || 'Mensaje de Nexora CRM', dto.bodyText,
           )
         }
       }
-    } catch (err: any) {
-      this.logger.error(`External dispatch error in inbox sendMessage: ${err.message}`)
+    } catch (error: unknown) {
+      this.logger.error(`External dispatch error in inbox sendMessage: ${error instanceof Error ? error.message : String(error)}`)
     }
-
-    return res
+    return response
   }
 }

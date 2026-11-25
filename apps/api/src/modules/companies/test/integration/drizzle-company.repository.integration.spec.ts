@@ -1,5 +1,4 @@
 import { DrizzleCompanyRepository } from '../../infrastructure/drizzle-company.repository'
-import { Company } from '../../domain/entities/company.entity'
 import * as dbModule from '@crm/database'
 
 describe('DrizzleCompanyRepository - Persistence Integration Tests', () => {

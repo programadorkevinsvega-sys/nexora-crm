@@ -5,7 +5,7 @@ import { CustomerSegment } from '../../domain/entities/customer-segment.entity'
 import { EarnPointsCommand, RedeemPointsCommand, CreateSegmentCommand, AssignToSegmentCommand } from './loyalty.commands'
 import { PointsEarnedEvent, PointsRedeemedEvent, TierChangedEvent } from '../../domain/events/loyalty.events'
 import { OutboxService } from '../../../../common/outbox/outbox.service'
-import { NotFoundError, ConflictError } from '@crm/shared'
+import { NotFoundError } from '@crm/shared'
 
 @Injectable()
 export class EarnPointsHandler {

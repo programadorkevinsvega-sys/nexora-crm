@@ -1,4 +1,4 @@
-import { CircuitBreaker, CircuitState, retryWithBackoff, ICachePort } from '@crm/shared'
+import { CircuitBreaker, CircuitState, retryWithBackoff } from '@crm/shared'
 import { RedisCacheAdapter } from '../../cache/redis-cache.adapter'
 
 /**

@@ -1,4 +1,4 @@
-import { GetTeamHandler, ListTeamsHandler, GetQuotaHandler } from '../../application/queries/sales-team.handlers'
+import { GetTeamHandler, GetQuotaHandler } from '../../application/queries/sales-team.handlers'
 import { SalesTeam } from '../../domain/entities/sales-team.entity'
 import { SalesQuota } from '../../domain/entities/sales-quota.entity'
 import { NotFoundError } from '@crm/shared'

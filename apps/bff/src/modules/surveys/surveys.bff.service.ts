@@ -107,7 +107,6 @@ export class SurveysBffService {
     const total = rows.length
     const promoters = rows.filter((r) => r.category === 'PROMOTER' || r.category === 'SATISFIED').length
     const detractors = rows.filter((r) => r.category === 'DETRACTOR' || r.category === 'DISSATISFIED').length
-    const passives = total - promoters - detractors
 
     const promotersPct = Math.round((promoters / total) * 100)
     const detractorsPct = Math.round((detractors / total) * 100)
@@ -156,19 +155,19 @@ export class SurveysBffService {
     }
   }
 
-  private mapSurvey(r: any): CustomerSurvey {
+  private mapSurvey(r: typeof customerSurveys.$inferSelect): CustomerSurvey {
     return {
       ...r,
-      type: r.type as any,
-      triggerEvent: r.triggerEvent as any,
+      type: r.type as CustomerSurvey['type'],
+      triggerEvent: r.triggerEvent as CustomerSurvey['triggerEvent'],
       createdAt: r.createdAt ? new Date(r.createdAt).toISOString() : new Date().toISOString(),
     }
   }
 
-  private mapResponse(r: any): SurveyResponse {
+  private mapResponse(r: typeof surveyResponses.$inferSelect): SurveyResponse {
     return {
       ...r,
-      category: r.category as any,
+      category: r.category as SurveyResponseCategory,
       submittedAt: r.submittedAt ? new Date(r.submittedAt).toISOString() : new Date().toISOString(),
     }
   }

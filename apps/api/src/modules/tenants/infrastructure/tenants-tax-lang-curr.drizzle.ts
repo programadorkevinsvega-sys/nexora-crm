@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { eq, and } from 'drizzle-orm'
 import {
   getDb,
@@ -16,14 +15,14 @@ export class TenantsTaxLangCurrDrizzleHelper {
 
   static async listTaxConfigs(tenantId: string): Promise<TaxConfiguration[]> {
     const rows = await this.db.query.tenantTaxConfigurations.findMany({
-      where: eq(taxConfigsTable.tenantId, tenantId) as any,
+      where: eq(taxConfigsTable.tenantId, tenantId),
     })
-    return rows.map((r) => TenantsMapper.taxConfigToDomain(r as any))
+    return rows.map((r) => TenantsMapper.taxConfigToDomain(r))
   }
 
   static async findTaxConfigById(id: string): Promise<TaxConfiguration | null> {
-    const row = await this.db.query.tenantTaxConfigurations.findFirst({ where: eq(taxConfigsTable.id, id) as any })
-    return row ? TenantsMapper.taxConfigToDomain(row as any) : null
+    const row = await this.db.query.tenantTaxConfigurations.findFirst({ where: eq(taxConfigsTable.id, id) })
+    return row ? TenantsMapper.taxConfigToDomain(row) : null
   }
 
   static async saveTaxConfig(config: TaxConfiguration): Promise<void> {
@@ -37,24 +36,24 @@ export class TenantsTaxLangCurrDrizzleHelper {
       isActive: config.isActive,
       createdAt: config.createdAt,
       updatedAt: config.updatedAt,
-    } as any).onConflictDoUpdate({
+    }).onConflictDoUpdate({
       target: taxConfigsTable.id,
-      set: { taxName: config.taxName, taxPercentage: String(config.taxPercentage), updatedAt: config.updatedAt } as any,
+      set: { taxName: config.taxName, taxPercentage: String(config.taxPercentage), updatedAt: config.updatedAt },
     })
   }
 
   static async deleteTaxConfig(tenantId: string, id: string): Promise<void> {
-    await this.db.delete(taxConfigsTable).where(and(eq(taxConfigsTable.tenantId, tenantId), eq(taxConfigsTable.id, id)) as any)
+    await this.db.delete(taxConfigsTable).where(and(eq(taxConfigsTable.tenantId, tenantId), eq(taxConfigsTable.id, id)))
   }
 
   static async listLanguages(tenantId: string): Promise<TenantLanguage[]> {
-    const rows = await this.db.query.tenantLanguages.findMany({ where: eq(languagesTable.tenantId, tenantId) as any })
-    return rows.map((r) => TenantsMapper.languageToDomain(r as any))
+    const rows = await this.db.query.tenantLanguages.findMany({ where: eq(languagesTable.tenantId, tenantId) })
+    return rows.map((r) => TenantsMapper.languageToDomain(r))
   }
 
   static async findLanguageById(id: string): Promise<TenantLanguage | null> {
-    const row = await this.db.query.tenantLanguages.findFirst({ where: eq(languagesTable.id, id) as any })
-    return row ? TenantsMapper.languageToDomain(row as any) : null
+    const row = await this.db.query.tenantLanguages.findFirst({ where: eq(languagesTable.id, id) })
+    return row ? TenantsMapper.languageToDomain(row) : null
   }
 
   static async saveLanguage(lang: TenantLanguage): Promise<void> {
@@ -67,31 +66,31 @@ export class TenantsTaxLangCurrDrizzleHelper {
       isActive: lang.isActive,
       createdAt: lang.createdAt,
       updatedAt: lang.updatedAt,
-    } as any).onConflictDoUpdate({
+    }).onConflictDoUpdate({
       target: languagesTable.id,
-      set: { name: lang.name, isActive: lang.isActive, updatedAt: lang.updatedAt } as any,
+      set: { name: lang.name, isActive: lang.isActive, updatedAt: lang.updatedAt },
     })
   }
 
   static async deleteLanguage(tenantId: string, id: string): Promise<void> {
-    await this.db.delete(languagesTable).where(and(eq(languagesTable.tenantId, tenantId), eq(languagesTable.id, id)) as any)
+    await this.db.delete(languagesTable).where(and(eq(languagesTable.tenantId, tenantId), eq(languagesTable.id, id)))
   }
 
   static async setDefaultLanguage(tenantId: string, languageId: string): Promise<void> {
-    await this.db.update(languagesTable).set({ isDefault: false } as any)
-      .where(eq(languagesTable.tenantId, tenantId) as any)
-    await this.db.update(languagesTable).set({ isDefault: true } as any)
-      .where(and(eq(languagesTable.tenantId, tenantId), eq(languagesTable.id, languageId)) as any)
+    await this.db.update(languagesTable).set({ isDefault: false })
+      .where(eq(languagesTable.tenantId, tenantId))
+    await this.db.update(languagesTable).set({ isDefault: true })
+      .where(and(eq(languagesTable.tenantId, tenantId), eq(languagesTable.id, languageId)))
   }
 
   static async listCurrencies(tenantId: string): Promise<TenantCurrency[]> {
-    const rows = await this.db.query.tenantCurrencies.findMany({ where: eq(currenciesTable.tenantId, tenantId) as any })
-    return rows.map((r) => TenantsMapper.currencyToDomain(r as any))
+    const rows = await this.db.query.tenantCurrencies.findMany({ where: eq(currenciesTable.tenantId, tenantId) })
+    return rows.map((r) => TenantsMapper.currencyToDomain(r))
   }
 
   static async findCurrencyById(id: string): Promise<TenantCurrency | null> {
-    const row = await this.db.query.tenantCurrencies.findFirst({ where: eq(currenciesTable.id, id) as any })
-    return row ? TenantsMapper.currencyToDomain(row as any) : null
+    const row = await this.db.query.tenantCurrencies.findFirst({ where: eq(currenciesTable.id, id) })
+    return row ? TenantsMapper.currencyToDomain(row) : null
   }
 
   static async saveCurrency(curr: TenantCurrency): Promise<void> {
@@ -105,20 +104,20 @@ export class TenantsTaxLangCurrDrizzleHelper {
       isActive: curr.isActive,
       createdAt: curr.createdAt,
       updatedAt: curr.updatedAt,
-    } as any).onConflictDoUpdate({
+    }).onConflictDoUpdate({
       target: currenciesTable.id,
-      set: { name: curr.name, symbol: curr.symbol, updatedAt: curr.updatedAt } as any,
+      set: { name: curr.name, symbol: curr.symbol, updatedAt: curr.updatedAt },
     })
   }
 
   static async deleteCurrency(tenantId: string, id: string): Promise<void> {
-    await this.db.delete(currenciesTable).where(and(eq(currenciesTable.tenantId, tenantId), eq(currenciesTable.id, id)) as any)
+    await this.db.delete(currenciesTable).where(and(eq(currenciesTable.tenantId, tenantId), eq(currenciesTable.id, id)))
   }
 
   static async setBaseCurrency(tenantId: string, currencyId: string): Promise<void> {
-    await this.db.update(currenciesTable).set({ isBaseCurrency: false } as any)
-      .where(eq(currenciesTable.tenantId, tenantId) as any)
-    await this.db.update(currenciesTable).set({ isBaseCurrency: true } as any)
-      .where(and(eq(currenciesTable.tenantId, tenantId), eq(currenciesTable.id, currencyId)) as any)
+    await this.db.update(currenciesTable).set({ isBaseCurrency: false })
+      .where(eq(currenciesTable.tenantId, tenantId))
+    await this.db.update(currenciesTable).set({ isBaseCurrency: true })
+      .where(and(eq(currenciesTable.tenantId, tenantId), eq(currenciesTable.id, currencyId)))
   }
 }

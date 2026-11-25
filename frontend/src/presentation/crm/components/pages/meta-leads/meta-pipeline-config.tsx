@@ -1,9 +1,9 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { Kanban, Sparkles, Check, Save } from "lucide-react"
+import { Kanban, Save } from "lucide-react"
 import { Button } from "@/src/presentation/crm/components/ui/Button"
-import { usePipelinesList, useMetaUpdateConfig } from "@/src/application/crm/di/hooks"
+import { usePipelinesList, usePipelineBoard, useMetaUpdateConfig } from "@/src/application/crm/di/hooks"
 import type { MetaIntegration } from "@crm/contracts"
 
 interface MetaPipelineConfigProps {
@@ -12,7 +12,7 @@ interface MetaPipelineConfigProps {
 
 export function MetaPipelineConfig({ integration }: MetaPipelineConfigProps) {
   const { data: pipelinesResult } = usePipelinesList()
-  const pipelinesList: any[] = (pipelinesResult as any)?.data || (Array.isArray(pipelinesResult) ? pipelinesResult : [])
+  const pipelinesList = pipelinesResult?.data ?? []
   const { mutate: updateConfig, isPending } = useMetaUpdateConfig()
 
   const [autoCreateDeal, setAutoCreateDeal] = useState(integration.autoCreateDeal ?? true)
@@ -25,8 +25,8 @@ export function MetaPipelineConfig({ integration }: MetaPipelineConfigProps) {
     }
   }, [pipelinesList, selectedPipelineId])
 
-  const selectedPipeline = pipelinesList.find((p) => p.id === selectedPipelineId)
-  const stages = selectedPipeline?.stages || []
+  const { data: pipelineBoard } = usePipelineBoard(selectedPipelineId)
+  const stages = pipelineBoard?.stages ?? []
 
   const handleSave = () => {
     updateConfig({
@@ -72,8 +72,8 @@ export function MetaPipelineConfig({ integration }: MetaPipelineConfigProps) {
                 onChange={(e) => setSelectedPipelineId(e.target.value)}
                 className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2 text-zinc-100 focus:border-cyan-500 focus:outline-none text-xs"
               >
-                {pipelinesList.map((p) => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
+                {pipelinesList.map((pipeline) => (
+                  <option key={pipeline.id} value={pipeline.id}>{pipeline.name}</option>
                 ))}
               </select>
             </div>
@@ -86,8 +86,8 @@ export function MetaPipelineConfig({ integration }: MetaPipelineConfigProps) {
                 className="w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-2 text-zinc-100 focus:border-cyan-500 focus:outline-none text-xs"
               >
                 <option value="">Primera etapa del pipeline (Por defecto)</option>
-                {stages.map((s: any) => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
+                {stages.map((stage) => (
+                  <option key={stage.id} value={stage.id}>{stage.name}</option>
                 ))}
               </select>
             </div>

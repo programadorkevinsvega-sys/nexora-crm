@@ -10,6 +10,7 @@
   "scripts": {
     "build": "tsc",
     "mcp": "node dist/index.js",
+    "lint": "eslint src/ test/ --max-warnings=0",
     "typecheck": "tsc --noEmit",
     "test": "jest --passWithNoTests"
   },

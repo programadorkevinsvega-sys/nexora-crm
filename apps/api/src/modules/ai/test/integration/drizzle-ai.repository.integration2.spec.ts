@@ -3,31 +3,71 @@ import * as dbModule from '@crm/database'
 
 // ---------------------------------------------------------------------------
 // Mock builder helpers
+
+interface SelectResult extends PromiseLike<unknown[]> {
+  from(table: unknown): SelectResult
+  where(condition: unknown): SelectResult
+  limit(count: number): Promise<unknown[]>
+}
+
+interface InsertValuesResult extends PromiseLike<unknown> {
+  onConflictDoUpdate(): Promise<void>
+}
+
+interface InsertResult {
+  values(values: unknown): InsertValuesResult
+}
+
+type MockDatabase = {
+  select: jest.MockedFunction<() => SelectResult>
+  insert: jest.MockedFunction<() => InsertResult>
+}
+
+
 // ---------------------------------------------------------------------------
 
-function makeSelectChain(responsesByCall: unknown[][]) {
-  let callIdx = 0
-  return jest.fn().mockImplementation(() => {
-    const rows = responsesByCall[callIdx] ?? []
-    callIdx++
-    return {
-      from: jest.fn().mockReturnValue({
-        where: jest.fn().mockReturnValue({
-          limit: jest.fn().mockResolvedValue(rows),
-          then: (resolve: (v: unknown[]) => void) => Promise.resolve().then(() => resolve(rows as unknown[])),
-        }),
-        then: (resolve: (v: unknown[]) => void) => Promise.resolve().then(() => resolve(rows as unknown[])),
-      }),
+function makeSelectChain(responsesByCall: unknown[][]): jest.MockedFunction<() => SelectResult> {
+  let callIndex = 0
+  return jest.fn<SelectResult, []>().mockImplementation(() => {
+    const rows = responsesByCall[callIndex] ?? []
+    callIndex += 1
+    const whereResult: SelectResult = {
+      from: jest.fn<SelectResult, [unknown]>().mockImplementation(() => whereResult),
+      where: jest.fn<SelectResult, [unknown]>().mockImplementation(() => whereResult),
+      limit: jest.fn<Promise<unknown[]>, [number]>().mockResolvedValue(rows),
+      then<TResult1 = unknown[], TResult2 = never>(
+        onfulfilled?: ((value: unknown[]) => TResult1 | PromiseLike<TResult1>) | null,
+        onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null,
+      ): Promise<TResult1 | TResult2> {
+        return Promise.resolve(rows).then(onfulfilled, onrejected)
+      },
     }
+    const fromResult: SelectResult = {
+      from: jest.fn<SelectResult, [unknown]>().mockImplementation(() => fromResult),
+      where: jest.fn<SelectResult, [unknown]>().mockImplementation(() => whereResult),
+      limit: jest.fn<Promise<unknown[]>, [number]>().mockResolvedValue(rows),
+      then<TResult1 = unknown[], TResult2 = never>(
+        onfulfilled?: ((value: unknown[]) => TResult1 | PromiseLike<TResult1>) | null,
+        onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null,
+      ): Promise<TResult1 | TResult2> {
+        return Promise.resolve(rows).then(onfulfilled, onrejected)
+      },
+    }
+    return fromResult
   })
 }
 
-function makeInsertChain() {
-  const onConflictDoUpdate = jest.fn().mockResolvedValue(undefined)
-  return jest.fn().mockImplementation(() => ({
-    values: jest.fn().mockImplementation(() => ({
+function makeInsertChain(): jest.MockedFunction<() => InsertResult> {
+  const onConflictDoUpdate = jest.fn<Promise<void>, []>().mockResolvedValue(undefined)
+  return jest.fn<InsertResult, []>().mockImplementation(() => ({
+    values: jest.fn<InsertValuesResult, [unknown]>().mockImplementation(() => ({
       onConflictDoUpdate,
-      then: (resolve: (v: unknown) => void) => Promise.resolve().then(() => resolve(undefined)),
+      then<TResult1 = unknown, TResult2 = never>(
+        onfulfilled?: ((value: unknown) => TResult1 | PromiseLike<TResult1>) | null,
+        onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null,
+      ): Promise<TResult1 | TResult2> {
+        return Promise.resolve(undefined).then(onfulfilled, onrejected)
+      },
     })),
   }))
 }
@@ -38,12 +78,11 @@ function makeInsertChain() {
 
 describe('DrizzleAiRepository – generateMessageDraft', () => {
   let repository: DrizzleAiRepository
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let mockDb: any
+    let mockDb: MockDatabase
 
   beforeEach(() => {
-    mockDb = { select: jest.fn(), insert: makeInsertChain() }
-    jest.spyOn(dbModule, 'getDb').mockReturnValue(mockDb)
+    mockDb = { select: jest.fn<SelectResult, []>(), insert: makeInsertChain() }
+    jest.spyOn(dbModule, 'getDb').mockReturnValue(mockDb as unknown as ReturnType<typeof dbModule.getDb>)
     repository = new DrizzleAiRepository()
   })
 
@@ -97,12 +136,11 @@ describe('DrizzleAiRepository – generateMessageDraft', () => {
 
 describe('DrizzleAiRepository – generateContactExecutiveSummary', () => {
   let repository: DrizzleAiRepository
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let mockDb: any
+    let mockDb: MockDatabase
 
   beforeEach(() => {
-    mockDb = { select: jest.fn(), insert: makeInsertChain() }
-    jest.spyOn(dbModule, 'getDb').mockReturnValue(mockDb)
+    mockDb = { select: jest.fn<SelectResult, []>(), insert: makeInsertChain() }
+    jest.spyOn(dbModule, 'getDb').mockReturnValue(mockDb as unknown as ReturnType<typeof dbModule.getDb>)
     repository = new DrizzleAiRepository()
   })
 
@@ -133,12 +171,11 @@ describe('DrizzleAiRepository – generateContactExecutiveSummary', () => {
 
 describe('DrizzleAiRepository – predictChurnRisk', () => {
   let repository: DrizzleAiRepository
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let mockDb: any
+    let mockDb: MockDatabase
 
   beforeEach(() => {
-    mockDb = { select: jest.fn(), insert: makeInsertChain() }
-    jest.spyOn(dbModule, 'getDb').mockReturnValue(mockDb)
+    mockDb = { select: jest.fn<SelectResult, []>(), insert: makeInsertChain() }
+    jest.spyOn(dbModule, 'getDb').mockReturnValue(mockDb as unknown as ReturnType<typeof dbModule.getDb>)
     repository = new DrizzleAiRepository()
   })
 

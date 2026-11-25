@@ -14,6 +14,7 @@ import { ContactGift } from '../domain/entities/contact-gift.entity'
 import { ContactDebt } from '../domain/entities/contact-debt.entity'
 import { ContactReminder } from '../domain/entities/contact-reminder.entity'
 import { ContactPet } from '../domain/entities/contact-pet.entity'
+import { RelationshipType } from '../domain/entities/relationship-type.entity'
 import { PersonalCrmMapper } from './personal-crm.mapper'
 
 @Injectable()
@@ -34,7 +35,7 @@ export class DrizzlePersonalCrmRepository extends PersonalCrmRepository {
     const conditions = [eq(lifeEventsTable.tenantId, tenantId)]
     if (contactId && contactId.trim()) conditions.push(eq(lifeEventsTable.contactId, contactId))
     const rows = await this.db.query.lifeEvents.findMany({
-      where: and(...conditions) as any,
+      where: and(...conditions),
       orderBy: (t, { desc }) => [desc(t.happenedAt)],
     })
     return rows.map(PersonalCrmMapper.lifeEventToDomain)
@@ -52,7 +53,7 @@ export class DrizzlePersonalCrmRepository extends PersonalCrmRepository {
     const conditions = [eq(contactGiftsTable.tenantId, tenantId)]
     if (contactId && contactId.trim()) conditions.push(eq(contactGiftsTable.contactId, contactId))
     const rows = await this.db.query.contactGifts.findMany({
-      where: and(...conditions) as any,
+      where: and(...conditions),
       orderBy: (t, { desc }) => [desc(t.createdAt)],
     })
     return rows.map(PersonalCrmMapper.giftToDomain)
@@ -68,7 +69,7 @@ export class DrizzlePersonalCrmRepository extends PersonalCrmRepository {
 
   async findDebtById(tenantId: string, id: string): Promise<ContactDebt | null> {
     const row = await this.db.query.contactDebts.findFirst({
-      where: and(eq(contactDebtsTable.tenantId, tenantId)!, eq(contactDebtsTable.id, id)) as any,
+      where: and(eq(contactDebtsTable.tenantId, tenantId), eq(contactDebtsTable.id, id)),
     })
     return row ? PersonalCrmMapper.debtToDomain(row) : null
   }
@@ -77,7 +78,7 @@ export class DrizzlePersonalCrmRepository extends PersonalCrmRepository {
     const conditions = [eq(contactDebtsTable.tenantId, tenantId)]
     if (contactId && contactId.trim()) conditions.push(eq(contactDebtsTable.contactId, contactId))
     const rows = await this.db.query.contactDebts.findMany({
-      where: and(...conditions) as any,
+      where: and(...conditions),
       orderBy: (t, { desc }) => [desc(t.createdAt)],
     })
     return rows.map(PersonalCrmMapper.debtToDomain)
@@ -93,7 +94,7 @@ export class DrizzlePersonalCrmRepository extends PersonalCrmRepository {
 
   async findReminderById(tenantId: string, id: string): Promise<ContactReminder | null> {
     const row = await this.db.query.contactReminders.findFirst({
-      where: and(eq(contactRemindersTable.tenantId, tenantId)!, eq(contactRemindersTable.id, id)) as any,
+      where: and(eq(contactRemindersTable.tenantId, tenantId), eq(contactRemindersTable.id, id)),
     })
     return row ? PersonalCrmMapper.reminderToDomain(row) : null
   }
@@ -102,7 +103,7 @@ export class DrizzlePersonalCrmRepository extends PersonalCrmRepository {
     const conditions = [eq(contactRemindersTable.tenantId, tenantId)]
     if (contactId && contactId.trim()) conditions.push(eq(contactRemindersTable.contactId, contactId))
     const rows = await this.db.query.contactReminders.findMany({
-      where: and(...conditions) as any,
+      where: and(...conditions),
       orderBy: (t, { asc }) => [asc(t.nextDueDate)],
     })
     return rows.map(PersonalCrmMapper.reminderToDomain)
@@ -120,14 +121,14 @@ export class DrizzlePersonalCrmRepository extends PersonalCrmRepository {
     const conditions = [eq(contactPetsTable.tenantId, tenantId)]
     if (contactId && contactId.trim()) conditions.push(eq(contactPetsTable.contactId, contactId))
     const rows = await this.db.query.contactPets.findMany({
-      where: and(...conditions) as any,
+      where: and(...conditions),
       orderBy: (t, { asc }) => [asc(t.name)],
     })
     return rows.map(PersonalCrmMapper.petToDomain)
   }
 
 
-  async findRelationshipTypeById(_tenantId: string, _id: string): Promise<any> {
+  async findRelationshipTypeById(_tenantId: string, _id: string): Promise<RelationshipType | null> {
     return null
   }
 }

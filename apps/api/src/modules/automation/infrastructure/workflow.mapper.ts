@@ -1,35 +1,55 @@
 import { WorkflowDefinition } from '../domain/entities/workflow-definition.entity'
 import { WorkflowExecution } from '../domain/entities/workflow-execution.entity'
 import { WorkflowStepExecution } from '../domain/entities/workflow-step-execution.entity'
-import { WorkflowStatus, WorkflowExecutionStatus, WorkflowStepStatus, WorkflowStep } from '@crm/contracts'
+import {
+  WorkflowStatusSchema,
+  WorkflowExecutionStatusSchema,
+  WorkflowStepStatusSchema,
+  WorkflowStepSchema,
+} from '@crm/contracts'
+import type { WorkflowStep } from '@crm/contracts'
+import type { workflowDefinitions, workflowExecutions, workflowStepExecutions } from '@crm/database'
+
+type WorkflowDefinitionRow = typeof workflowDefinitions.$inferSelect
+type WorkflowExecutionRow = typeof workflowExecutions.$inferSelect
+type WorkflowStepExecutionRow = typeof workflowStepExecutions.$inferSelect
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function parseWorkflowSteps(value: unknown): WorkflowStep[] {
+  let source = value
+  if (isRecord(source)) source = Array.isArray(source.nodes) ? source.nodes : source.steps
+  const parsed = WorkflowStepSchema.array().safeParse(source)
+  if (!parsed.success) throw new TypeError('Persisted workflow steps do not match the workflow step contract')
+  return parsed.data
+}
+
+function parseOptionalRecord(value: unknown, field: string): Record<string, unknown> | null {
+  if (value === null || value === undefined) return null
+  if (!isRecord(value)) throw new TypeError(`Persisted workflow ${field} must be an object`)
+  return value
+}
 
 export class WorkflowMapper {
-  static definitionToDomain(row: any): WorkflowDefinition {
-    const rawSteps = row.stepsGraph
-    const stepsGraph: WorkflowStep[] = Array.isArray(rawSteps)
-      ? rawSteps
-      : Array.isArray(rawSteps?.nodes)
-        ? rawSteps.nodes
-        : Array.isArray(rawSteps?.steps)
-          ? rawSteps.steps
-          : []
-
+  static definitionToDomain(row: WorkflowDefinitionRow): WorkflowDefinition {
     return new WorkflowDefinition(
       row.id,
       row.tenantId,
       row.name,
       row.description ?? null,
       row.version,
-      row.status as WorkflowStatus,
+      WorkflowStatusSchema.parse(row.status),
       row.triggerEvent,
-      row.triggerFilter ?? null,
-      stepsGraph,
-      new Date(row.createdAt),
-      new Date(row.updatedAt),
+      parseOptionalRecord(row.triggerFilter, 'triggerFilter'),
+      parseWorkflowSteps(row.stepsGraph),
+      row.createdAt,
+      row.updatedAt,
     )
   }
 
-  static executionToDomain(row: any): WorkflowExecution {
+  static executionToDomain(row: WorkflowExecutionRow): WorkflowExecution {
     return new WorkflowExecution(
       row.id,
       row.tenantId,
@@ -37,31 +57,31 @@ export class WorkflowMapper {
       row.version,
       row.entityType,
       row.entityId,
-      row.status as WorkflowExecutionStatus,
+      WorkflowExecutionStatusSchema.parse(row.status),
       row.currentStepId,
-      row.contextData ?? null,
-      new Date(row.startedAt),
-      row.completedAt ? new Date(row.completedAt) : null,
-      row.cancelledAt ? new Date(row.cancelledAt) : null,
+      parseOptionalRecord(row.contextData, 'contextData'),
+      row.startedAt,
+      row.completedAt,
+      row.cancelledAt,
       row.errorMessage ?? null,
-      row.resumeAt ? new Date(row.resumeAt) : null,
+      row.resumeAt,
       row.resumeToken ?? null,
     )
   }
 
-  static stepExecutionToDomain(row: any): WorkflowStepExecution {
+  static stepExecutionToDomain(row: WorkflowStepExecutionRow): WorkflowStepExecution {
     return WorkflowStepExecution.rehydrate({
       id: row.id,
       tenantId: row.tenantId,
       executionId: row.executionId,
       stepId: row.stepId,
       idempotencyKey: row.idempotencyKey,
-      status: row.status as WorkflowStepStatus,
+      status: WorkflowStepStatusSchema.parse(row.status),
       attempts: row.attempts,
-      outputData: row.outputData ?? null,
+      outputData: parseOptionalRecord(row.outputData, 'step outputData'),
       errorMessage: row.errorMessage ?? null,
-      startedAt: new Date(row.startedAt),
-      completedAt: row.completedAt ? new Date(row.completedAt) : null,
+      startedAt: row.startedAt,
+      completedAt: row.completedAt,
     })
   }
 

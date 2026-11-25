@@ -24,6 +24,7 @@ import type { Quote } from '@crm/contracts'
 import type { Contract } from '@crm/contracts'
 import type { SalesTeam } from '@crm/contracts'
 import type { SalesQuota } from '@crm/contracts'
+import type { MetaIntegration, MetaLeadAdLog, SocialComment, SocialAutoResponderRule, WebForm } from '@crm/contracts'
 import type {
   AffiliateProgram, Affiliate, AffiliateCommission, AffiliatePayout,
   HelpdeskConversation, HelpdeskThread, HelpdeskMailbox,
@@ -32,11 +33,11 @@ import type {
   WorkflowDefinition, WorkflowExecution, WorkflowStep,
   LeadScoringRule, LeadScore, ScoringRuleCategory, ScoringCondition,
   Product, ProductTemplate, QuoteApproval, ESignature, ProductPricingType,
-  Customer360Profile, InboxConversation, InboxMessage, InboxChannel, InboxConversationStatus,
+  Customer360Profile, InboxConversation, InboxMessage, InboxChannel,
   RevenueMetrics, FunnelMetrics, CohortMetrics, RevenueForecast,
   KnowledgeBaseCategory, KnowledgeBaseArticle, CustomerPortalOverview,
   DealWinProbability, GeneratedMessageDraft, ContactExecutiveSummary, ChurnRiskPrediction,
-  ApiKey, CreatedApiKey, CreateApiKey, WebhookEndpoint, CreateWebhookEndpoint, WebhookDeliveryLog,
+  ApiKey, CreatedApiKey, WebhookEndpoint, WebhookDeliveryLog,
 } from '@crm/contracts'
 
 interface DeveloperGrpc {
@@ -332,7 +333,27 @@ interface MetaLeadsGrpc {
   saveLog: (data: { jsonInput: string }) => Observable<{ json: string }>
 }
 
-interface PaginatedResult<T> {
+export interface SubmitPublicWebFormResult {
+  success: boolean
+  message: string
+  redirectUrl: string | null
+  formId: string
+  tenantId: string
+  contactPayload: {
+    tenantId: string
+    firstName: string
+    lastName: string | null
+    email: string | null
+    phone: string | null
+    jobTitle: string | null
+    city: string | null
+    leadSource: string
+    leadStatus: string
+    metadata: Record<string, unknown>
+  }
+}
+
+export interface PaginatedResult<T> {
   data: T[]
   nextCursor: string | null
 }
@@ -402,22 +423,27 @@ export class ApiCoreGrpcClient implements OnModuleInit {
   private async unwrap<T>(obs: Observable<T>): Promise<T> {
     try {
       return await lastValueFrom(obs)
-    } catch (err: any) {
-      const msg = err?.details || err?.message || ''
+    } catch (err: unknown) {
+      const grpcError = typeof err === 'object' && err !== null
+        ? err as { code?: unknown; details?: unknown; message?: unknown }
+        : {}
+      const msg = typeof grpcError.details === 'string'
+        ? grpcError.details
+        : typeof grpcError.message === 'string' ? grpcError.message : ''
       const lower = msg.toLowerCase()
-      if (err?.code === 5 || lower.includes('not found')) {
+      if (grpcError.code === 5 || lower.includes('not found')) {
         throw new NotFoundException(msg.replace(/^\d+\s+[A-Z_]+:\s*/, ''))
       }
-      if (err?.code === 6 || lower.includes('already exists')) {
+      if (grpcError.code === 6 || lower.includes('already exists')) {
         throw new ConflictException(msg.replace(/^\d+\s+[A-Z_]+:\s*/, ''))
       }
-      if (err?.code === 16 || lower.includes('unauthorized')) {
+      if (grpcError.code === 16 || lower.includes('unauthorized')) {
         throw new UnauthorizedException(msg.replace(/^\d+\s+[A-Z_]+:\s*/, ''))
       }
-      if (err?.code === 7 || lower.includes('forbidden')) {
+      if (grpcError.code === 7 || lower.includes('forbidden')) {
         throw new ForbiddenException(msg.replace(/^\d+\s+[A-Z_]+:\s*/, ''))
       }
-      if (err?.code === 3 || lower.includes('invalid') || lower.includes('bad request')) {
+      if (grpcError.code === 3 || lower.includes('invalid') || lower.includes('bad request')) {
         throw new BadRequestException(msg.replace(/^\d+\s+[A-Z_]+:\s*/, ''))
       }
       throw err
@@ -1595,7 +1621,7 @@ export class ApiCoreGrpcClient implements OnModuleInit {
   async getWorkflowExecution(
     tenantId: string,
     executionId: string,
-  ): Promise<{ execution: WorkflowExecution; steps: any[] }> {
+  ): Promise<{ execution: WorkflowExecution; steps: WorkflowStep[] }> {
     const res = await lastValueFrom(
       this.automation.getWorkflowExecution({ tenantId, executionId }),
     )
@@ -2014,7 +2040,7 @@ export class ApiCoreGrpcClient implements OnModuleInit {
     userId?: string
     limit?: number
     cursor?: string
-  }): Promise<{ data: any[]; nextCursor: string | null }> {
+  }): Promise<{ data: unknown[]; nextCursor: string | null }> {
     const res = await lastValueFrom(this.audit.listAuditLogs(dto))
     return {
       data: (res.jsonItems || []).map((j: string) => JSON.parse(j)),
@@ -2022,50 +2048,50 @@ export class ApiCoreGrpcClient implements OnModuleInit {
     }
   }
 
-  async getAuditStats(tenantId: string): Promise<any> {
+  async getAuditStats(tenantId: string): Promise<unknown> {
     const res = await lastValueFrom(this.audit.getAuditStats({ tenantId }))
     return JSON.parse(res.json)
   }
 
   // ─── Social Inbox ──────────────────────────────────────────
 
-  async listComments(data: { tenantId: string; platform?: string; status?: string }): Promise<any[]> {
+  async listComments(data: { tenantId: string; platform?: string; status?: string }): Promise<SocialComment[]> {
     const res = await lastValueFrom(this.socialInbox.listComments(data))
-    return (res.jsonItems ?? []).map((j: string) => JSON.parse(j))
+    return (res.jsonItems ?? []).map((j: string) => JSON.parse(j) as SocialComment)
   }
 
-  async replyComment(data: { tenantId: string; commentId: string; replyMessage: string; repliedBy: string }): Promise<any> {
+  async replyComment(data: { tenantId: string; commentId: string; replyMessage: string; repliedBy: string }): Promise<SocialComment> {
     const res = await lastValueFrom(this.socialInbox.replyComment(data))
-    return JSON.parse(res.json)
+    return JSON.parse(res.json) as SocialComment
   }
 
-  async insertComment(data: any): Promise<any> {
+  async insertComment(data: unknown): Promise<SocialComment> {
     const res = await lastValueFrom(this.socialInbox.insertComment({ jsonInput: JSON.stringify(data) }))
-    return JSON.parse(res.json)
+    return JSON.parse(res.json) as SocialComment
   }
 
-  async updateCommentBot(data: { tenantId: string; commentId: string; replyMessage: string; repliedBy: string; repliedAt: string }): Promise<any> {
+  async updateCommentBot(data: { tenantId: string; commentId: string; replyMessage: string; repliedBy: string; repliedAt: string }): Promise<SocialComment> {
     const res = await lastValueFrom(this.socialInbox.updateCommentBot(data))
-    return JSON.parse(res.json)
+    return JSON.parse(res.json) as SocialComment
   }
 
-  async listRules(tenantId: string): Promise<any[]> {
+  async listRules(tenantId: string): Promise<SocialAutoResponderRule[]> {
     const res = await lastValueFrom(this.socialInbox.listRules({ tenantId }))
-    return (res.jsonItems ?? []).map((j: string) => JSON.parse(j))
+    return (res.jsonItems ?? []).map((j: string) => JSON.parse(j) as SocialAutoResponderRule)
   }
 
-  async saveRule(data: any): Promise<any> {
+  async saveRule(data: unknown): Promise<SocialAutoResponderRule> {
     const res = await lastValueFrom(this.socialInbox.saveRule({ jsonInput: JSON.stringify(data) }))
-    return JSON.parse(res.json)
+    return JSON.parse(res.json) as SocialAutoResponderRule
   }
 
   async deleteRule(tenantId: string, id: string): Promise<void> {
     await lastValueFrom(this.socialInbox.deleteRule({ tenantId, id }))
   }
 
-  async getEnabledRulesForPlatform(tenantId: string, platform: string): Promise<any[]> {
+  async getEnabledRulesForPlatform(tenantId: string, platform: string): Promise<SocialAutoResponderRule[]> {
     const res = await lastValueFrom(this.socialInbox.getEnabledRulesForPlatform({ tenantId, platform }))
-    return (res.jsonItems ?? []).map((j: string) => JSON.parse(j))
+    return (res.jsonItems ?? []).map((j: string) => JSON.parse(j) as SocialAutoResponderRule)
   }
 
   async autoCreateContact(tenantId: string, authorName: string, platform: string): Promise<void> {
@@ -2074,79 +2100,79 @@ export class ApiCoreGrpcClient implements OnModuleInit {
 
   // ─── Web Forms ──────────────────────────────────────────
 
-  async listWebForms(tenantId: string): Promise<any[]> {
+  async listWebForms(tenantId: string): Promise<WebForm[]> {
     const res = await lastValueFrom(this.webForms.listForms({ tenantId }))
-    return (res.jsonItems ?? []).map((j: string) => JSON.parse(j))
+    return (res.jsonItems ?? []).map((j: string) => JSON.parse(j) as WebForm)
   }
 
-  async getWebFormById(tenantId: string, id: string): Promise<any> {
+  async getWebFormById(tenantId: string, id: string): Promise<WebForm> {
     const res = await lastValueFrom(this.webForms.getFormById({ tenantId, id }))
-    return JSON.parse(res.json)
+    return JSON.parse(res.json) as WebForm
   }
 
-  async getPublicWebForm(idOrSlug: string): Promise<any> {
+  async getPublicWebForm(idOrSlug: string): Promise<WebForm> {
     const res = await lastValueFrom(this.webForms.getPublicForm({ idOrSlug }))
-    return JSON.parse(res.json)
+    return JSON.parse(res.json) as WebForm
   }
 
-  async createWebForm(data: any): Promise<any> {
+  async createWebForm(data: unknown): Promise<WebForm> {
     const res = await lastValueFrom(this.webForms.createForm({ jsonInput: JSON.stringify(data) }))
-    return JSON.parse(res.json)
+    return JSON.parse(res.json) as WebForm
   }
 
-  async updateWebForm(data: any): Promise<any> {
+  async updateWebForm(data: unknown): Promise<WebForm> {
     const res = await lastValueFrom(this.webForms.updateForm({ jsonInput: JSON.stringify(data) }))
-    return JSON.parse(res.json)
+    return JSON.parse(res.json) as WebForm
   }
 
   async deleteWebForm(tenantId: string, id: string): Promise<void> {
     await lastValueFrom(this.webForms.deleteForm({ tenantId, id }))
   }
 
-  async submitPublicWebForm(data: { idOrSlug: string; formData: Record<string, any>; ipAddress?: string; userAgent?: string }): Promise<any> {
+  async submitPublicWebForm(data: { idOrSlug: string; formData: Record<string, unknown>; ipAddress?: string; userAgent?: string }): Promise<SubmitPublicWebFormResult> {
     const res = await lastValueFrom(this.webForms.submitPublicForm({
       idOrSlug: data.idOrSlug,
       formDataJson: JSON.stringify(data.formData),
       ipAddress: data.ipAddress,
       userAgent: data.userAgent,
     }))
-    return JSON.parse(res.json)
+    return JSON.parse(res.json) as SubmitPublicWebFormResult
   }
 
-  async listWebFormSubmissions(tenantId: string, formId: string): Promise<any[]> {
+  async listWebFormSubmissions(tenantId: string, formId: string): Promise<unknown[]> {
     const res = await lastValueFrom(this.webForms.listSubmissions({ tenantId, formId }))
     return (res.jsonItems ?? []).map((j: string) => JSON.parse(j))
   }
 
   // ─── Meta Leads ─────────────────────────────────────────
 
-  async getMetaStatus(tenantId: string): Promise<any> {
+  async getMetaStatus(tenantId: string): Promise<MetaIntegration> {
     const res = await lastValueFrom(this.metaLeads.getStatus({ tenantId }))
-    return JSON.parse(res.json)
+    return JSON.parse(res.json) as MetaIntegration
   }
 
-  async connectMetaPage(data: any): Promise<any> {
+  async connectMetaPage(data: unknown): Promise<MetaIntegration> {
     const res = await lastValueFrom(this.metaLeads.connectPage({ jsonInput: JSON.stringify(data) }))
-    return JSON.parse(res.json)
+    return JSON.parse(res.json) as MetaIntegration
   }
 
-  async updateMetaConfig(data: any): Promise<any> {
+  async updateMetaConfig(data: unknown): Promise<MetaIntegration> {
     const res = await lastValueFrom(this.metaLeads.updateConfig({ jsonInput: JSON.stringify(data) }))
-    return JSON.parse(res.json)
+    return JSON.parse(res.json) as MetaIntegration
   }
 
   async disconnectMeta(tenantId: string): Promise<void> {
     await lastValueFrom(this.metaLeads.disconnect({ tenantId }))
   }
 
-  async listMetaLogs(tenantId: string, limit = 50): Promise<any[]> {
+  async listMetaLogs(tenantId: string, limit = 50): Promise<MetaLeadAdLog[]> {
     const res = await lastValueFrom(this.metaLeads.listLogs({ tenantId, limit }))
-    return (res.jsonItems ?? []).map((j: string) => JSON.parse(j))
+    return (res.jsonItems ?? []).map((j: string) => JSON.parse(j) as MetaLeadAdLog)
   }
 
-  async saveMetaLeadLog(data: any): Promise<any> {
+  async saveMetaLeadLog(data: unknown): Promise<MetaLeadAdLog> {
     const res = await lastValueFrom(this.metaLeads.saveLog({ jsonInput: JSON.stringify(data) }))
-    return JSON.parse(res.json)
+    return JSON.parse(res.json) as MetaLeadAdLog
   }
 }
 

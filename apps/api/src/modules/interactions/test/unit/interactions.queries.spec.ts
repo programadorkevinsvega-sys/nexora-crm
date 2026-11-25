@@ -2,12 +2,15 @@ import { GetNoteHandler, GetTaskHandler, GetCallHandler } from '../../applicatio
 import { Note } from '../../domain/entities/note.entity'
 import { Task } from '../../domain/entities/task.entity'
 import { Call } from '../../domain/entities/call.entity'
+import { NoteRepository } from '../../domain/repositories/note.repository'
+import { TaskRepository } from '../../domain/repositories/task.repository'
+import { CallRepository } from '../../domain/repositories/call.repository'
 import { NotFoundError } from '@crm/shared'
 
 describe('Interactions Queries - Unit Tests', () => {
-  let mockNoteRepo: any
-  let mockTaskRepo: any
-  let mockCallRepo: any
+  let mockNoteRepo: jest.Mocked<Pick<NoteRepository, 'findById' | 'list'>>
+  let mockTaskRepo: jest.Mocked<Pick<TaskRepository, 'findById' | 'list'>>
+  let mockCallRepo: jest.Mocked<Pick<CallRepository, 'findById' | 'list'>>
 
   beforeEach(() => {
     mockNoteRepo = { findById: jest.fn(), list: jest.fn() }
@@ -20,7 +23,7 @@ describe('Interactions Queries - Unit Tests', () => {
       const note = Note.create({ tenantId: 'tenant-1', content: 'Met with CFO', authorUserId: 'u-1' })
       mockNoteRepo.findById.mockResolvedValue(note)
 
-      const handler = new GetNoteHandler(mockNoteRepo)
+      const handler = new GetNoteHandler(mockNoteRepo as unknown as NoteRepository)
       const result = await handler.execute({ tenantId: 'tenant-1', id: note.id })
 
       expect(result).toBe(note)
@@ -29,7 +32,7 @@ describe('Interactions Queries - Unit Tests', () => {
     it('should throw NotFoundError if note missing', async () => {
       mockNoteRepo.findById.mockResolvedValue(null)
 
-      const handler = new GetNoteHandler(mockNoteRepo)
+      const handler = new GetNoteHandler(mockNoteRepo as unknown as NoteRepository)
       await expect(handler.execute({ tenantId: 'tenant-1', id: 'missing' })).rejects.toThrow(NotFoundError)
     })
   })
@@ -39,7 +42,7 @@ describe('Interactions Queries - Unit Tests', () => {
       const task = Task.create({ tenantId: 'tenant-1', title: 'Call back', dueDate: new Date(), assignedUserId: 'u-1' })
       mockTaskRepo.findById.mockResolvedValue(task)
 
-      const handler = new GetTaskHandler(mockTaskRepo)
+      const handler = new GetTaskHandler(mockTaskRepo as unknown as TaskRepository)
       const result = await handler.execute({ tenantId: 'tenant-1', id: task.id })
 
       expect(result).toBe(task)
@@ -51,7 +54,7 @@ describe('Interactions Queries - Unit Tests', () => {
       const call = Call.create({ tenantId: 'tenant-1', contactId: 'c-1', callType: 'INBOUND', happenedAt: new Date(), authorUserId: 'u-1' })
       mockCallRepo.findById.mockResolvedValue(call)
 
-      const handler = new GetCallHandler(mockCallRepo)
+      const handler = new GetCallHandler(mockCallRepo as unknown as CallRepository)
       const result = await handler.execute({ tenantId: 'tenant-1', id: call.id })
 
       expect(result).toBe(call)

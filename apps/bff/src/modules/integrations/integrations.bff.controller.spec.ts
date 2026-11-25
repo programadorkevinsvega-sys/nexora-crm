@@ -13,20 +13,20 @@ describe('IntegrationsBffController - Unit Tests', () => {
       saveConfig: jest.fn().mockResolvedValue({ ok: true }),
       testIntegration: jest.fn().mockResolvedValue({ success: true, message: 'OK' }),
       deleteConfig: jest.fn().mockResolvedValue({ ok: true }),
-    } as any
+    } as unknown as jest.Mocked<IntegrationsBffService>
 
     controller = new IntegrationsBffController(mockService)
   })
 
   it('GET /api/integrations should list provider statuses', async () => {
-    const mockReq = { headers: {} } as any
+    const mockReq = { headers: {} } as unknown as Parameters<IntegrationsBffController['listStatuses']>[0]
     const res = await controller.listStatuses(mockReq)
     expect(res).toHaveLength(1)
     expect(mockService.listStatuses).toHaveBeenCalled()
   })
 
   it('POST /api/integrations/WHATSAPP_CLOUD should save config', async () => {
-    const mockReq = { headers: {} } as any
+    const mockReq = { headers: {} } as unknown as Parameters<IntegrationsBffController['saveConfig']>[2]
     const body = {
       phoneNumberId: '123456789',
       wabaId: '987654321',
@@ -38,7 +38,7 @@ describe('IntegrationsBffController - Unit Tests', () => {
   })
 
   it('POST /api/integrations/WHATSAPP_CLOUD/test should test connection', async () => {
-    const mockReq = { headers: {} } as any
+    const mockReq = { headers: {} } as unknown as Parameters<IntegrationsBffController['testIntegration']>[2]
     const body = { recipient: '+573001234567', testMessage: 'Hola' }
     const res = await controller.testIntegration('WHATSAPP_CLOUD', body, mockReq)
     expect(res.success).toBe(true)

@@ -1,5 +1,4 @@
 import { DrizzleSchedulerRepository } from '../../infrastructure/drizzle-scheduler.repository'
-import { ScheduledTask } from '../../domain/entities/scheduler.entity'
 import * as dbModule from '@crm/database'
 
 describe('DrizzleSchedulerRepository - Persistence Integration Tests', () => {

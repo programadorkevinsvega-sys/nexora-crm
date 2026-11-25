@@ -2,11 +2,24 @@ import { DrizzleAuditRepository } from '../../infrastructure/drizzle-audit.repos
 import { AuditLog } from '../../domain/entities/audit.entity'
 import * as dbModule from '@crm/database'
 
+type AsyncMock = jest.MockedFunction<(...args: unknown[]) => Promise<unknown>>
+type SyncMock = jest.MockedFunction<(...args: unknown[]) => unknown>
+
+type MockDatabase = {
+  query: { auditLogs: { findFirst: AsyncMock; findMany: AsyncMock } }
+  insert: SyncMock
+}
+
 describe('DrizzleAuditRepository - Persistence Integration Tests', () => {
   let repository: DrizzleAuditRepository
-  let mockDb: any
+  let mockDb: MockDatabase
 
   beforeEach(() => {
+    const insert = jest.fn<unknown, unknown[]>().mockReturnValue({
+      values: jest.fn<unknown, unknown[]>().mockReturnValue({
+        onConflictDoNothing: jest.fn<Promise<void>, unknown[]>().mockResolvedValue(undefined),
+      }),
+    })
     mockDb = {
       query: {
         auditLogs: {
@@ -14,14 +27,10 @@ describe('DrizzleAuditRepository - Persistence Integration Tests', () => {
           findMany: jest.fn(),
         },
       },
-      insert: jest.fn().mockReturnValue({
-        values: jest.fn().mockReturnValue({
-          onConflictDoNothing: jest.fn().mockResolvedValue(undefined),
-        }),
-      }),
+      insert,
     }
 
-    jest.spyOn(dbModule, 'getDb').mockReturnValue(mockDb)
+    jest.spyOn(dbModule, 'getDb').mockReturnValue(mockDb as unknown as ReturnType<typeof dbModule.getDb>)
     repository = new DrizzleAuditRepository()
   })
 
@@ -38,6 +47,9 @@ describe('DrizzleAuditRepository - Persistence Integration Tests', () => {
       changedByUserId: 'user-1',
       moduleName: 'pipelines',
       correlationId: 'corr-uuid-1',
+      ipAddress: null,
+      userAgent: null,
+      metadataJson: null,
       createdAt: new Date(),
     })
 

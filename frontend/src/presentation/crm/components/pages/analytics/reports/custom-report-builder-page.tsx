@@ -23,10 +23,27 @@ import { ApiTicketRepository } from "@/src/infrastructure/crm/repositories/ticke
 import { ApiQuoteRepository } from "@/src/infrastructure/crm/repositories/contracts/api-quote.repository"
 import type { ReportDataSource, ReportColumn } from "./report-builder.types"
 
+type ReportRow = Record<string, unknown>
+
+function asReportRow(value: unknown): ReportRow {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? value as ReportRow
+    : {}
+}
+
+function extractReportRows(value: unknown): ReportRow[] {
+  if (Array.isArray(value)) return value.map(asReportRow)
+  const payload = asReportRow(value)
+  const rows = Array.isArray(payload.data) ? payload.data
+    : Array.isArray(payload.items) ? payload.items
+    : []
+  return rows.map(asReportRow)
+}
+
 export function CustomReportBuilderPage() {
   const [dataSource, setDataSource] = useState<ReportDataSource>("deals")
   const [columns, setColumns] = useState<ReportColumn[]>(SOURCE_COLUMNS.deals)
-  const [rawData, setRawData] = useState<Record<string, any>[]>([])
+  const [rawData, setRawData] = useState<ReportRow[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [dateRange, setDateRange] = useState("ALL")
@@ -41,28 +58,32 @@ export function CustomReportBuilderPage() {
   const loadData = async () => {
     try {
       setLoading(true)
-      let items: any[] = []
+      let items: ReportRow[] = []
       if (dataSource === "deals") {
-        const res = await ApiDealRepository.list({}, { limit: 100 })
-        const raw = Array.isArray(res) ? res : ((res as any)?.data || (res as any)?.items || [])
-        items = raw.map((d: any) => ({ ...d, amount: d.amount ?? d.value ?? 0 }))
+        const res: unknown = await ApiDealRepository.list({}, { limit: 100 })
+        items = extractReportRows(res).map((deal) => ({
+          ...deal,
+          amount: deal.amount ?? deal.value ?? 0,
+        }))
       } else if (dataSource === "contacts") {
-        const res = await ApiContactRepository.list({}, { limit: 100 })
-        const raw = Array.isArray(res) ? res : ((res as any)?.data || (res as any)?.items || [])
-        items = raw.map((c: any) => ({ ...c, fullName: `${c.firstName || ""} ${c.lastName || ""}`.trim() || c.name || "Sin nombre" }))
+        const res: unknown = await ApiContactRepository.list({}, { limit: 100 })
+        items = extractReportRows(res).map((contact) => ({
+          ...contact,
+          fullName: `${String(contact.firstName ?? "")} ${String(contact.lastName ?? "")}`.trim()
+            || String(contact.name ?? "Sin nombre"),
+        }))
       } else if (dataSource === "companies") {
-        const res = await ApiCompanyRepository.list({}, { limit: 100 })
-        items = Array.isArray(res) ? res : ((res as any)?.data || (res as any)?.items || [])
+        const res: unknown = await ApiCompanyRepository.list({}, { limit: 100 })
+        items = extractReportRows(res)
       } else if (dataSource === "tickets") {
-        const res = await ApiTicketRepository.list({}, { limit: 100 })
-        items = Array.isArray(res) ? res : ((res as any)?.data || (res as any)?.items || [])
+        const res: unknown = await ApiTicketRepository.list({}, { limit: 100 })
+        items = extractReportRows(res)
       } else if (dataSource === "quotes") {
-        const res = await ApiQuoteRepository.list({}, { limit: 100 })
-        items = Array.isArray(res) ? res : ((res as any)?.data || (res as any)?.items || [])
+        const res: unknown = await ApiQuoteRepository.list({}, { limit: 100 })
+        items = extractReportRows(res)
       }
       setRawData(items)
-    } catch (err) {
-      console.error("Error loading real database records for report", err)
+    } catch {
       setRawData([])
     } finally {
       setLoading(false)
@@ -85,8 +106,12 @@ export function CustomReportBuilderPage() {
       const statusField = dataSource === "contacts" ? "leadStatus" : "status"
       if (statusFilter !== "ALL" && String(row[statusField]) !== statusFilter) return false
 
-      if (dateRange !== "ALL" && row.createdAt) {
-        const rowDate = new Date(row.createdAt).getTime()
+      const createdAt = row.createdAt
+      if (
+        dateRange !== "ALL" &&
+        (typeof createdAt === "string" || typeof createdAt === "number" || createdAt instanceof Date)
+      ) {
+        const rowDate = new Date(createdAt).getTime()
         const now = Date.now()
         const dayMs = 86400000
         if (dateRange === "TODAY" && now - rowDate > dayMs) return false

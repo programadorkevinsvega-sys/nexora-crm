@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common'
 import { eq, and, ilike, gt, asc, inArray, sql } from 'drizzle-orm'
+import type { SQL } from 'drizzle-orm'
 import { getDb } from '@crm/database'
 import {
   roles as rolesTable,
@@ -15,54 +15,56 @@ import { UserRole } from '../domain/entities/user-role.entity'
 import { IamMapper } from './iam.mapper'
 import { assertTenantHasRemainingAdmin } from './tenant-admin-invariant'
 
+type Transaction = Parameters<Parameters<ReturnType<typeof getDb>['transaction']>[0]>[0]
+
 @Injectable()
 export class DrizzleIamRepository extends IamRepository {
   private get db() {
     return getDb()
   }
 
-  private async lockTenantRoleChanges(tx: any, tenantId: string): Promise<void> {
+  private async lockTenantRoleChanges(tx: Transaction, tenantId: string): Promise<void> {
     await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtextextended(${tenantId}, 0))`)
   }
 
-  private async tenantAdminUserIds(tx: any, tenantId: string, adminRoleId: string): Promise<string[]> {
-    const rows: Array<{ userId: string }> = await tx.select({ userId: userRolesTable.userId })
+  private async tenantAdminUserIds(tx: Transaction, tenantId: string, adminRoleId: string): Promise<string[]> {
+    const rows = await tx.select({ userId: userRolesTable.userId })
       .from(userRolesTable)
       .where(and(
         eq(userRolesTable.tenantId, tenantId),
         eq(userRolesTable.roleId, adminRoleId),
-      ) as any)
-    return [...new Set(rows.map((row: { userId: string }) => row.userId))]
+      ))
+    return [...new Set(rows.map((row) => row.userId))]
   }
 
   // ── Roles ──────────────────────────────────────────
 
   async findRoleById(id: string): Promise<Role | null> {
     const row = await this.db.query.roles.findFirst({
-      where: eq(rolesTable.id, id) as any,
+      where: eq(rolesTable.id, id),
     })
     if (!row) return null
-    return IamMapper.roleToDomain(row as any)
+    return IamMapper.roleToDomain(row)
   }
 
   async findRoleByName(tenantId: string, name: string): Promise<Role | null> {
     const row = await this.db.query.roles.findFirst({
       where: and(
-        eq(rolesTable.tenantId, tenantId) as any,
-        eq(rolesTable.name, name) as any,
-      ) as any,
+        eq(rolesTable.tenantId, tenantId),
+        eq(rolesTable.name, name),
+      ),
     })
     if (!row) return null
-    return IamMapper.roleToDomain(row as any)
+    return IamMapper.roleToDomain(row)
   }
 
   async listRoles(tenantId: string, search?: string, cursor?: string, limit = 20): Promise<PaginatedRoles> {
-    const conditions: any[] = [eq(rolesTable.tenantId, tenantId)]
+    const conditions: SQL[] = [eq(rolesTable.tenantId, tenantId)]
     if (cursor) conditions.push(gt(rolesTable.createdAt, new Date(cursor)))
-    if (search) conditions.push(ilike(rolesTable.name, `%${search}%`) as any)
+    if (search) conditions.push(ilike(rolesTable.name, `%${search}%`))
 
     const rows = await this.db.query.roles.findMany({
-      where: and(...conditions.filter(Boolean)) as any,
+      where: and(...conditions),
       limit: limit + 1,
       orderBy: [asc(rolesTable.createdAt), asc(rolesTable.id)],
     })
@@ -71,7 +73,7 @@ export class DrizzleIamRepository extends IamRepository {
     const data = hasMore ? rows.slice(0, limit) : rows
 
     return {
-      data: data.map(r => IamMapper.roleToDomain(r as any)),
+      data: data.map(r => IamMapper.roleToDomain(r)),
       nextCursor: hasMore ? data[data.length - 1].createdAt.toISOString() : null,
     }
   }
@@ -83,15 +85,15 @@ export class DrizzleIamRepository extends IamRepository {
         where: and(
           eq(rolesTable.tenantId, role.tenantId),
           eq(rolesTable.id, role.id),
-        ) as any,
+        ),
       })
       if (existing?.name.toLowerCase() === 'admin' && role.name.toLowerCase() !== 'admin') {
         throw new ConflictException('The tenant admin role name is reserved')
       }
       const row = IamMapper.roleToPersistence(role)
-      await tx.insert(rolesTable).values(row as any).onConflictDoUpdate({
+      await tx.insert(rolesTable).values(row).onConflictDoUpdate({
         target: rolesTable.id,
-        set: row as any,
+        set: row,
       })
     })
   }
@@ -100,7 +102,7 @@ export class DrizzleIamRepository extends IamRepository {
     await this.db.transaction(async (tx) => {
       await this.lockTenantRoleChanges(tx, tenantId)
       const role = await tx.query.roles.findFirst({
-        where: and(eq(rolesTable.tenantId, tenantId), eq(rolesTable.id, id)) as any,
+        where: and(eq(rolesTable.tenantId, tenantId), eq(rolesTable.id, id)),
       })
       if (!role) return
       if (role.name.toLowerCase() === 'admin') {
@@ -108,16 +110,16 @@ export class DrizzleIamRepository extends IamRepository {
       }
 
       await tx.delete(rolePermissionsTable).where(
-        eq(rolePermissionsTable.roleId, id) as any,
+        eq(rolePermissionsTable.roleId, id),
       )
       await tx.delete(userRolesTable).where(
         and(
-          eq(userRolesTable.tenantId, tenantId) as any,
-          eq(userRolesTable.roleId, id) as any,
-        ) as any,
+          eq(userRolesTable.tenantId, tenantId),
+          eq(userRolesTable.roleId, id),
+        ),
       )
       await tx.delete(rolesTable).where(
-        and(eq(rolesTable.tenantId, tenantId), eq(rolesTable.id, id)) as any,
+        and(eq(rolesTable.tenantId, tenantId), eq(rolesTable.id, id)),
       )
     })
   }
@@ -126,40 +128,40 @@ export class DrizzleIamRepository extends IamRepository {
 
   async findPermissionById(id: string): Promise<Permission | null> {
     const row = await this.db.query.permissions.findFirst({
-      where: eq(permissionsTable.id, id) as any,
+      where: eq(permissionsTable.id, id),
     })
     if (!row) return null
-    return IamMapper.permissionToDomain(row as any)
+    return IamMapper.permissionToDomain(row)
   }
 
   async findPermissionByModuleAction(module: string, action: string): Promise<Permission | null> {
     const row = await this.db.query.permissions.findFirst({
       where: and(
-        eq(permissionsTable.module, module) as any,
-        eq(permissionsTable.action, action) as any,
-      ) as any,
+        eq(permissionsTable.module, module),
+        eq(permissionsTable.action, action),
+      ),
     })
     if (!row) return null
-    return IamMapper.permissionToDomain(row as any)
+    return IamMapper.permissionToDomain(row)
   }
 
   async listPermissions(module?: string): Promise<PaginatedPermissions> {
-    const conditions: any[] = []
+    const conditions: SQL[] = []
     if (module) conditions.push(eq(permissionsTable.module, module))
 
     const rows = await this.db.query.permissions.findMany({
-      where: conditions.length ? and(...conditions) as any : undefined,
+      where: conditions.length ? and(...conditions) : undefined,
       orderBy: [asc(permissionsTable.module), asc(permissionsTable.action)],
     })
 
-    return { data: rows.map(r => IamMapper.permissionToDomain(r as any)) }
+    return { data: rows.map(r => IamMapper.permissionToDomain(r)) }
   }
 
   async savePermission(permission: Permission): Promise<void> {
     const row = IamMapper.permissionToPersistence(permission)
-    await this.db.insert(permissionsTable).values(row as any).onConflictDoUpdate({
+    await this.db.insert(permissionsTable).values(row).onConflictDoUpdate({
       target: permissionsTable.id,
-      set: row as any,
+      set: row,
     })
   }
 
@@ -167,29 +169,29 @@ export class DrizzleIamRepository extends IamRepository {
 
   async findRolePermissions(roleId: string): Promise<Permission[]> {
     const rpRows = await this.db.query.rolePermissions.findMany({
-      where: eq(rolePermissionsTable.roleId, roleId) as any,
+      where: eq(rolePermissionsTable.roleId, roleId),
     })
     if (!rpRows.length) return []
 
     const permissionIds = rpRows.map(r => r.permissionId)
     const rows = await this.db.query.permissions.findMany({
-      where: inArray(permissionsTable.id, permissionIds) as any,
+      where: inArray(permissionsTable.id, permissionIds),
     })
-    return rows.map(r => IamMapper.permissionToDomain(r as any))
+    return rows.map(r => IamMapper.permissionToDomain(r))
   }
 
   async assignPermissionToRole(roleId: string, permissionId: string): Promise<void> {
     await this.db.insert(rolePermissionsTable).values({
       roleId, permissionId,
-    } as any).onConflictDoNothing()
+    }).onConflictDoNothing()
   }
 
   async removePermissionFromRole(roleId: string, permissionId: string): Promise<void> {
     await this.db.delete(rolePermissionsTable).where(
       and(
-        eq(rolePermissionsTable.roleId, roleId) as any,
-        eq(rolePermissionsTable.permissionId, permissionId) as any,
-      ) as any,
+        eq(rolePermissionsTable.roleId, roleId),
+        eq(rolePermissionsTable.permissionId, permissionId),
+      ),
     )
   }
 
@@ -207,11 +209,11 @@ export class DrizzleIamRepository extends IamRepository {
       .from(userRolesTable)
       .innerJoin(rolesTable, eq(userRolesTable.roleId, rolesTable.id))
       .where(and(
-        eq(userRolesTable.tenantId, tenantId) as any,
-        eq(userRolesTable.userId, userId) as any,
-        eq(rolesTable.tenantId, tenantId) as any,
-      ) as any)
-    return rows.map(r => IamMapper.userRoleToDomain(r as any))
+        eq(userRolesTable.tenantId, tenantId),
+        eq(userRolesTable.userId, userId),
+        eq(rolesTable.tenantId, tenantId),
+      ))
+    return rows.map(r => IamMapper.userRoleToDomain(r))
   }
 
   async findUserPermissions(tenantId: string, userId: string): Promise<Permission[]> {
@@ -220,23 +222,23 @@ export class DrizzleIamRepository extends IamRepository {
       .from(userRolesTable)
       .innerJoin(rolesTable, eq(userRolesTable.roleId, rolesTable.id))
       .where(and(
-        eq(userRolesTable.tenantId, tenantId) as any,
-        eq(userRolesTable.userId, userId) as any,
-        eq(rolesTable.tenantId, tenantId) as any,
-      ) as any)
+        eq(userRolesTable.tenantId, tenantId),
+        eq(userRolesTable.userId, userId),
+        eq(rolesTable.tenantId, tenantId),
+      ))
     if (!urRows.length) return []
 
     const roleIds = urRows.map(r => r.roleId)
     const rpRows = await this.db.query.rolePermissions.findMany({
-      where: inArray(rolePermissionsTable.roleId, roleIds) as any,
+      where: inArray(rolePermissionsTable.roleId, roleIds),
     })
     if (!rpRows.length) return []
 
     const permissionIds = rpRows.map(r => r.permissionId)
     const rows = await this.db.query.permissions.findMany({
-      where: inArray(permissionsTable.id, permissionIds) as any,
+      where: inArray(permissionsTable.id, permissionIds),
     })
-    return rows.map(r => IamMapper.permissionToDomain(r as any))
+    return rows.map(r => IamMapper.permissionToDomain(r))
   }
 
   async assignRoleToUser(assignment: UserRole): Promise<void> {
@@ -246,7 +248,7 @@ export class DrizzleIamRepository extends IamRepository {
         where: and(
           eq(rolesTable.tenantId, assignment.tenantId),
           eq(rolesTable.id, assignment.roleId),
-        ) as any,
+        ),
       })
       if (!role) throw new NotFoundException('Role not found')
       await tx.insert(userRolesTable).values({
@@ -255,7 +257,7 @@ export class DrizzleIamRepository extends IamRepository {
         tenantId: assignment.tenantId,
         branchId: assignment.branchId,
         grantedAt: assignment.grantedAt,
-      } as any).onConflictDoNothing()
+      }).onConflictDoNothing()
     })
   }
 
@@ -266,7 +268,7 @@ export class DrizzleIamRepository extends IamRepository {
         where: and(
           eq(rolesTable.tenantId, tenantId),
           eq(rolesTable.id, assignment.roleId),
-        ) as any,
+        ),
       })
       if (!targetRole) throw new NotFoundException('Role not found')
       const previousRows = await tx
@@ -280,16 +282,16 @@ export class DrizzleIamRepository extends IamRepository {
         .from(userRolesTable)
         .innerJoin(rolesTable, eq(userRolesTable.roleId, rolesTable.id))
         .where(and(
-          eq(userRolesTable.tenantId, tenantId) as any,
-          eq(userRolesTable.userId, userId) as any,
-          eq(rolesTable.tenantId, tenantId) as any,
-        ) as any)
+          eq(userRolesTable.tenantId, tenantId),
+          eq(userRolesTable.userId, userId),
+          eq(rolesTable.tenantId, tenantId),
+        ))
 
       const adminRole = await tx.query.roles.findFirst({
         where: and(
           eq(rolesTable.tenantId, tenantId),
           ilike(rolesTable.name, 'admin'),
-        ) as any,
+        ),
       })
       if (adminRole && previousRows.some((row) => row.roleId === adminRole.id)) {
         const adminUsers = await this.tenantAdminUserIds(tx, tenantId, adminRole.id)
@@ -297,9 +299,9 @@ export class DrizzleIamRepository extends IamRepository {
       }
 
       await tx.delete(userRolesTable).where(and(
-        eq(userRolesTable.tenantId, tenantId) as any,
-        eq(userRolesTable.userId, userId) as any,
-      ) as any)
+        eq(userRolesTable.tenantId, tenantId),
+        eq(userRolesTable.userId, userId),
+      ))
 
       await tx.insert(userRolesTable).values({
         userId: assignment.userId,
@@ -307,9 +309,9 @@ export class DrizzleIamRepository extends IamRepository {
         tenantId: assignment.tenantId,
         branchId: assignment.branchId,
         grantedAt: assignment.grantedAt,
-      } as any)
+      })
 
-      return previousRows.map((row) => IamMapper.userRoleToDomain(row as any))
+      return previousRows.map((row) => IamMapper.userRoleToDomain(row))
     })
   }
 
@@ -320,17 +322,17 @@ export class DrizzleIamRepository extends IamRepository {
         where: and(
           eq(rolesTable.tenantId, tenantId),
           eq(rolesTable.id, roleId),
-        ) as any,
+        ),
       })
       if (role?.name.toLowerCase() === 'admin') {
         const adminUsers = await this.tenantAdminUserIds(tx, tenantId, roleId)
         assertTenantHasRemainingAdmin(adminUsers, userId, false)
       }
       await tx.delete(userRolesTable).where(and(
-        eq(userRolesTable.tenantId, tenantId) as any,
-        eq(userRolesTable.userId, userId) as any,
-        eq(userRolesTable.roleId, roleId) as any,
-      ) as any)
+        eq(userRolesTable.tenantId, tenantId),
+        eq(userRolesTable.userId, userId),
+        eq(userRolesTable.roleId, roleId),
+      ))
     })
   }
 

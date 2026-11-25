@@ -1,4 +1,4 @@
-import { CreateTagHandler, UpdateTagHandler, DeleteTagHandler } from '../../application/commands/tag.handlers'
+import { CreateTagHandler, UpdateTagHandler } from '../../application/commands/tag.handlers'
 import { Tag } from '../../domain/entities/tag.entity'
 
 describe('Tags Module - Unit Tests', () => {

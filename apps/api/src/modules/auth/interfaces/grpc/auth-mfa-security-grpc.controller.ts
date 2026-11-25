@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Controller } from '@nestjs/common'
 import { GrpcMethod } from '@nestjs/microservices'
 import {
@@ -26,6 +25,46 @@ import {
   UpdatePasswordPolicySchema, CreateIpRestrictionSchema, CreateOAuthProviderSchema,
 } from '@crm/contracts'
 
+interface SetupMfaRequest {
+  tenantId: string
+  userId: string
+  type: string
+  phone?: string
+  email?: string
+}
+
+interface VerifyMfaRequest {
+  tenantId: string
+  userId: string
+  code: string
+  methodId: string
+}
+
+interface UpdatePasswordPolicyRequest {
+  tenantId: string
+  minLength?: number
+  requireUppercase?: boolean
+  requireNumbers?: boolean
+  requireSymbols?: boolean
+  expireDays?: number
+  preventReuseLastN?: number
+}
+
+interface CreateIpRestrictionRequest {
+  tenantId: string
+  userId?: string
+  ipAddress: string
+  type: string
+  description?: string
+}
+
+interface CreateOAuthProviderRequest {
+  tenantId: string
+  providerName: string
+  clientId: string
+  clientSecret: string
+}
+
 @Controller()
 export class AuthMfaSecurityGrpcController {
   constructor(
@@ -48,7 +87,7 @@ export class AuthMfaSecurityGrpcController {
   ) {}
 
   @GrpcMethod('AuthService', 'SetupMfa')
-  async setupMfa(data: any) {
+  async setupMfa(data: SetupMfaRequest) {
     const input = validateOrThrow(SetupMfaSchema, {
       tenantId: data.tenantId,
       userId: data.userId,
@@ -63,7 +102,7 @@ export class AuthMfaSecurityGrpcController {
   }
 
   @GrpcMethod('AuthService', 'VerifyMfa')
-  async verifyMfa(data: any) {
+  async verifyMfa(data: VerifyMfaRequest) {
     const input = validateOrThrow(VerifyMfaSchema, {
       tenantId: data.tenantId,
       userId: data.userId,
@@ -77,7 +116,7 @@ export class AuthMfaSecurityGrpcController {
   }
 
   @GrpcMethod('AuthService', 'DisableMfa')
-  async disableMfa(data: any) {
+  async disableMfa(data: VerifyMfaRequest) {
     const input = validateOrThrow(VerifyMfaSchema, {
       tenantId: data.tenantId,
       userId: data.userId,
@@ -123,7 +162,7 @@ export class AuthMfaSecurityGrpcController {
   }
 
   @GrpcMethod('AuthService', 'UpdatePasswordPolicy')
-  async updatePasswordPolicy(data: any) {
+  async updatePasswordPolicy(data: UpdatePasswordPolicyRequest) {
     const input = validateOrThrow(UpdatePasswordPolicySchema, {
       tenantId: data.tenantId,
       minLength: data.minLength,
@@ -162,7 +201,7 @@ export class AuthMfaSecurityGrpcController {
   }
 
   @GrpcMethod('AuthService', 'CreateIpRestriction')
-  async createIpRestriction(data: any) {
+  async createIpRestriction(data: CreateIpRestrictionRequest) {
     const input = validateOrThrow(CreateIpRestrictionSchema, {
       tenantId: data.tenantId,
       userId: data.userId,
@@ -198,7 +237,7 @@ export class AuthMfaSecurityGrpcController {
   }
 
   @GrpcMethod('AuthService', 'CreateOAuthProvider')
-  async createOAuthProvider(data: any) {
+  async createOAuthProvider(data: CreateOAuthProviderRequest) {
     const input = validateOrThrow(CreateOAuthProviderSchema, {
       tenantId: data.tenantId,
       providerName: data.providerName,

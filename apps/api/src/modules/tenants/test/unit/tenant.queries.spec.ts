@@ -1,4 +1,4 @@
-import { GetTenantHandler, GetBrandingHandler, ListBranchesHandler } from '../../application/queries/tenants.handlers'
+import { GetTenantHandler, GetBrandingHandler } from '../../application/queries/tenants.handlers'
 import { Tenant } from '../../domain/entities/tenant.entity'
 import { TenantBranding } from '../../domain/entities/branding.entity'
 import { NotFoundException } from '@nestjs/common'

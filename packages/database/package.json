@@ -12,7 +12,7 @@
     "db:seed": "tsx src/seed/seed.ts",
     "db:migrate": "tsx src/migrate.ts",
     "db:truncate": "tsx src/truncate.ts",
-    "lint": "eslint src/",
+    "lint": "eslint src/ --max-warnings=0",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

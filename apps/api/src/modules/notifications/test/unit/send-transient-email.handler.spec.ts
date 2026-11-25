@@ -2,6 +2,10 @@ import {
   SendTransientEmailCommand,
   SendTransientEmailHandler,
 } from '../../application/send-transient-email.handler'
+import { NotificationsRepository } from '../../domain/repositories/notifications.repository'
+import { OutboxService } from '../../../../common/outbox/outbox.service'
+import { ProviderFactory } from '../../infrastructure/providers/provider-factory'
+import { EmailProvider } from '../../infrastructure/providers/interfaces'
 
 describe('SendTransientEmailHandler', () => {
   const tenantId = '00000000-0000-4000-8000-000000000001'
@@ -9,33 +13,31 @@ describe('SendTransientEmailHandler', () => {
   const subject = 'Accept your invitation'
   const secretUrl = 'https://crm.example.com/accept-invitation#token=one-time-secret-value'
 
-  let repository: {
-    saveNotification: jest.Mock
-    saveLog: jest.Mock
-  }
-  let outbox: { publish: jest.Mock }
-  let provider: { send: jest.Mock }
-  let factory: { getEmailProvider: jest.Mock }
+  let repository: jest.Mocked<Pick<NotificationsRepository, 'saveNotification' | 'saveLog'>>
+  let outbox: jest.Mocked<Pick<OutboxService, 'publish'>>
+  let provider: jest.Mocked<EmailProvider>
+  let factory: jest.Mocked<Pick<ProviderFactory, 'getEmailProvider'>>
   let handler: SendTransientEmailHandler
 
   beforeEach(() => {
     repository = {
-      saveNotification: jest.fn().mockResolvedValue(undefined),
-      saveLog: jest.fn().mockResolvedValue(undefined),
+      saveNotification: jest.fn<ReturnType<NotificationsRepository['saveNotification']>, Parameters<NotificationsRepository['saveNotification']>>().mockResolvedValue(undefined),
+      saveLog: jest.fn<ReturnType<NotificationsRepository['saveLog']>, Parameters<NotificationsRepository['saveLog']>>().mockResolvedValue(undefined),
     }
-    outbox = { publish: jest.fn().mockResolvedValue(undefined) }
+    outbox = { publish: jest.fn<ReturnType<OutboxService['publish']>, Parameters<OutboxService['publish']>>().mockResolvedValue(undefined) }
     provider = {
-      send: jest.fn().mockResolvedValue({
+      name: 'TEST',
+      send: jest.fn<ReturnType<EmailProvider['send']>, Parameters<EmailProvider['send']>>().mockResolvedValue({
         success: true,
         provider: 'RESEND',
         providerMessageId: 'message-123',
       }),
     }
-    factory = { getEmailProvider: jest.fn().mockReturnValue(provider) }
+    factory = { getEmailProvider: jest.fn<EmailProvider, []>().mockReturnValue(provider) }
     handler = new SendTransientEmailHandler(
-      repository as any,
-      outbox as any,
-      factory as any,
+      repository as unknown as NotificationsRepository,
+      outbox as unknown as OutboxService,
+      factory as unknown as ProviderFactory,
     )
   })
 

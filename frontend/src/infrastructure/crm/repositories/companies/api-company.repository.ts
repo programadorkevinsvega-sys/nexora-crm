@@ -30,7 +30,7 @@ export interface CompanyFilters {
 
 export const ApiCompanyRepository = {
   async list(filters: CompanyFilters = {}, pagination?: { limit?: number; cursor?: string } | Pagination): Promise<PaginatedResult<Company>> {
-    const params = { ...filters, cursor: (pagination as any)?.cursor ?? undefined, limit: (pagination as any)?.limit ?? 20 }
+    const params = { ...filters, cursor: pagination?.cursor ?? undefined, limit: pagination?.limit ?? 20 }
     return api.get<PaginatedResult<Company>>(`/api/companies${qs(params)}`)
   },
   async getById(id: string): Promise<Company> {

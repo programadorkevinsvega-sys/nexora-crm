@@ -4,6 +4,10 @@ import { authenticator } from 'otplib'
 import { MfaMethod } from '../../domain/entities/mfa-method.entity'
 import { LoginCommand } from './auth.commands'
 import { LoginHandler } from './login.handler'
+import { AuthRepository } from '../../domain/repositories/auth.repository'
+import { OutboxService } from '../../../../common/outbox/outbox.service'
+import { JwtService } from '@nestjs/jwt'
+import { UserLookupService } from './user-lookup.service'
 
 describe('LoginHandler MFA enforcement', () => {
   const originalDatabaseUrl = process.env.DATABASE_URL
@@ -15,10 +19,14 @@ describe('LoginHandler MFA enforcement', () => {
   let handler: LoginHandler
   let passwordHash: string
   let secret: string
-  let repository: any
-  let outbox: any
-  let jwtService: any
-  let userLookup: any
+  type RepositoryMock = jest.Mocked<Pick<AuthRepository, 'findMfaMethodsByUser' | 'findUnusedRecoveryCodesByUser' | 'saveRecoveryCode' | 'saveSession'>>
+  type OutboxMock = jest.Mocked<Pick<OutboxService, 'publish'>>
+  type UserLookupMock = jest.Mocked<Pick<UserLookupService, 'findByTenantAndEmail' | 'findByEmail'>>
+  let repository: RepositoryMock
+  let outbox: OutboxMock
+  let jwtService: JwtService
+  let signAsync: jest.SpyInstance<ReturnType<JwtService['signAsync']>, Parameters<JwtService['signAsync']>>
+  let userLookup: UserLookupMock
 
   beforeEach(async () => {
     delete process.env.DATABASE_URL
@@ -27,15 +35,16 @@ describe('LoginHandler MFA enforcement', () => {
     secret = authenticator.generateSecret()
 
     repository = {
-      findMfaMethodsByUser: jest.fn(),
-      findUnusedRecoveryCodesByUser: jest.fn().mockResolvedValue([]),
-      saveRecoveryCode: jest.fn().mockResolvedValue(undefined),
-      saveSession: jest.fn().mockResolvedValue(undefined),
+      findMfaMethodsByUser: jest.fn<ReturnType<AuthRepository['findMfaMethodsByUser']>, Parameters<AuthRepository['findMfaMethodsByUser']>>(),
+      findUnusedRecoveryCodesByUser: jest.fn<ReturnType<AuthRepository['findUnusedRecoveryCodesByUser']>, Parameters<AuthRepository['findUnusedRecoveryCodesByUser']>>().mockResolvedValue([]),
+      saveRecoveryCode: jest.fn<ReturnType<AuthRepository['saveRecoveryCode']>, Parameters<AuthRepository['saveRecoveryCode']>>().mockResolvedValue(undefined),
+      saveSession: jest.fn<ReturnType<AuthRepository['saveSession']>, Parameters<AuthRepository['saveSession']>>().mockResolvedValue(undefined),
     }
-    outbox = { publish: jest.fn().mockResolvedValue(undefined) }
-    jwtService = { signAsync: jest.fn().mockResolvedValue('unexpected-token') }
+    outbox = { publish: jest.fn<ReturnType<OutboxService['publish']>, Parameters<OutboxService['publish']>>().mockResolvedValue(undefined) }
+    jwtService = new JwtService({ secret: 'test-signing-secret' })
+    signAsync = jest.spyOn(jwtService, 'signAsync').mockResolvedValue('unexpected-token')
     userLookup = {
-      findByTenantAndEmail: jest.fn().mockResolvedValue({
+      findByTenantAndEmail: jest.fn<ReturnType<UserLookupService['findByTenantAndEmail']>, Parameters<UserLookupService['findByTenantAndEmail']>>().mockResolvedValue({
         id: userId,
         email,
         passwordHash,
@@ -45,7 +54,7 @@ describe('LoginHandler MFA enforcement', () => {
     repository.findMfaMethodsByUser.mockResolvedValue([
       new MfaMethod('method-id', tenantId, userId, 'TOTP', secret, true, true, new Date()),
     ])
-    handler = new LoginHandler(repository, outbox, jwtService, userLookup)
+    handler = new LoginHandler(repository as unknown as AuthRepository, outbox as unknown as OutboxService, jwtService as unknown as JwtService, userLookup as unknown as UserLookupService)
   })
 
   afterAll(() => {
@@ -63,7 +72,7 @@ describe('LoginHandler MFA enforcement', () => {
     })
     expect(result).not.toHaveProperty('accessToken')
     expect(result).not.toHaveProperty('refreshToken')
-    expect(jwtService.signAsync).not.toHaveBeenCalled()
+    expect(signAsync).not.toHaveBeenCalled()
     expect(repository.saveSession).not.toHaveBeenCalled()
     expect(outbox.publish).not.toHaveBeenCalled()
   })
@@ -80,7 +89,7 @@ describe('LoginHandler MFA enforcement', () => {
 
   it('issues a session only after a valid TOTP code', async () => {
     const validCode = authenticator.generate(secret)
-    jwtService.signAsync
+    signAsync
       .mockResolvedValueOnce('access-token')
       .mockResolvedValueOnce('refresh-token')
 
