@@ -28,8 +28,6 @@ export function DealDetailPage() {
   if (isLoading) return <Skeleton className="h-96" />
   if (!deal) return <div className="text-body text-ash">Oportunidad no encontrada</div>
 
-
-
   return (
     <div className="space-y-6">
       <PageHeader
@@ -76,9 +74,8 @@ export function DealDetailPage() {
               </div>
               <div>
                 <p className="text-caption text-muted-foreground">Fecha Estimada de Cierre</p>
-                <p className="text-body font-mono text-foreground">{deal.closeDate ? new Date(deal.expectedCloseDate).toLocaleDateString() : "—"}</p>
+                <p className="text-body font-mono text-foreground">{deal.closeDate ? new Date(deal.closeDate!).toLocaleDateString() : "—"}</p>
               </div>
-
 
             </div>
           </EntityCard>
