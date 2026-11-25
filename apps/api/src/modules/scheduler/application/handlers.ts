@@ -57,8 +57,8 @@ export class ExecuteTaskHandler {
       await this.repo.updateTask(updated)
       await this.outbox.publish(new TaskExecutedEvent(done.id, done.taskId, done.tenantId, 'completed'))
       return done
-    } catch (error: any) {
-      const failed = new TaskExecution(exec.id, exec.taskId, exec.tenantId, 'failed', exec.startedAt, new Date(), null, error.message, 1)
+    } catch (error: unknown) {
+      const failed = new TaskExecution(exec.id, exec.taskId, exec.tenantId, 'failed', exec.startedAt, new Date(), null, error instanceof Error ? error.message : String(error), 1)
       await this.repo.saveExecution(failed)
       await this.outbox.publish(new TaskExecutedEvent(failed.id, failed.taskId, failed.tenantId, 'failed'))
       return failed
@@ -66,11 +66,11 @@ export class ExecuteTaskHandler {
   }
 }
 @Injectable()
-export class ListTasksHandler { constructor(private readonly repo: SchedulerRepository) {} async execute(q: any) { return this.repo.listTasks(q) } }
+export class ListTasksHandler { constructor(private readonly repo: SchedulerRepository) {} async execute(q: Parameters<SchedulerRepository['listTasks']>[0]) { return this.repo.listTasks(q) } }
 @Injectable()
 export class GetTaskHandler { constructor(private readonly repo: SchedulerRepository) {} async execute(id: string) { const t = await this.repo.findTaskById(id); if (!t) throw new NotFoundException('Task not found'); return t } }
 @Injectable()
-export class ListExecutionsHandler { constructor(private readonly repo: SchedulerRepository) {} async execute(q: any) { return this.repo.listExecutions(q) } }
+export class ListExecutionsHandler { constructor(private readonly repo: SchedulerRepository) {} async execute(q: Parameters<SchedulerRepository['listExecutions']>[0]) { return this.repo.listExecutions(q) } }
 @Injectable()
 export class CreateReminderHandler {
   constructor(private readonly repo: SchedulerRepository, private readonly outbox: OutboxService) {}
@@ -91,7 +91,7 @@ export class UpdateReminderHandler {
 @Injectable()
 export class DeleteReminderHandler { constructor(private readonly repo: SchedulerRepository) {} async execute(id: string): Promise<void> { const r = await this.repo.findReminderById(id); if (!r) return; if (r.repeatRemaining && r.repeatRemaining > 1) { const updated = new Reminder(r.id, r.tenantId, r.userId, r.title, r.description, r.entityType, r.entityId, r.remindAt, true, r.notified, r.repeatInterval, r.repeatCount, r.repeatRemaining! - 1, r.createdAt, new Date()); await this.repo.updateReminder(updated) } else { await this.repo.updateReminder(new Reminder(r.id, r.tenantId, r.userId, r.title, r.description, r.entityType, r.entityId, r.remindAt, true, r.notified, r.repeatInterval, r.repeatCount, 0, r.createdAt, new Date())) } } }
 @Injectable()
-export class ListRemindersHandler { constructor(private readonly repo: SchedulerRepository) {} async execute(q: any) { return this.repo.listReminders(q) } }
+export class ListRemindersHandler { constructor(private readonly repo: SchedulerRepository) {} async execute(q: Parameters<SchedulerRepository['listReminders']>[0]) { return this.repo.listReminders(q) } }
 @Injectable()
 export class GetReminderHandler { constructor(private readonly repo: SchedulerRepository) {} async execute(id: string) { const r = await this.repo.findReminderById(id); if (!r) throw new NotFoundException('Reminder not found'); return r } }
 @Injectable()
@@ -116,7 +116,7 @@ export class DeleteSlaConfigHandler {
   async execute(id: string): Promise<void> { const c = await this.repo.findSlaConfigById(id); if (!c) return; await this.repo.updateSlaConfig(new SlaConfig(c.id, c.tenantId, c.name, c.entityType, c.conditionField, c.conditionOperator, c.conditionValue, c.responseTimeMinutes, c.resolutionTimeMinutes, c.escalationUserId, c.escalationEmail, false, c.createdAt, new Date())) }
 }
 @Injectable()
-export class ListSlaConfigsHandler { constructor(private readonly repo: SchedulerRepository) {} async execute(q: any) { return this.repo.listSlaConfigs(q) } }
+export class ListSlaConfigsHandler { constructor(private readonly repo: SchedulerRepository) {} async execute(q: Parameters<SchedulerRepository['listSlaConfigs']>[0]) { return this.repo.listSlaConfigs(q) } }
 @Injectable()
 export class CheckSlaViolationsHandler {
   constructor(private readonly repo: SchedulerRepository, private readonly outbox: OutboxService) {}
@@ -135,7 +135,7 @@ export class CheckSlaViolationsHandler {
   }
 }
 @Injectable()
-export class ListSlaViolationsHandler { constructor(private readonly repo: SchedulerRepository) {} async execute(q: any) { return this.repo.listSlaViolations(q) } }
+export class ListSlaViolationsHandler { constructor(private readonly repo: SchedulerRepository) {} async execute(q: Parameters<SchedulerRepository['listSlaViolations']>[0]) { return this.repo.listSlaViolations(q) } }
 @Injectable()
 export class ResolveSlaViolationHandler {
   constructor(private readonly repo: SchedulerRepository) {}
