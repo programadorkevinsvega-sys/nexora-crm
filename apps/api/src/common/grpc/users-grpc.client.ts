@@ -60,7 +60,7 @@ export class UsersGrpcClient implements OnModuleInit {
 
   async findById(tenantId: string, userId: string): Promise<Pick<UserLookup, 'id' | 'passwordHash'> | null> {
     try {
-      const res: any = await lastValueFrom(
+      const res = await lastValueFrom(
         this.usersService.getById({ tenantId, id: userId }),
       )
       if (!res?.json) return null
