@@ -176,7 +176,7 @@ export class UsersProfilesDevicesDrizzleHelper {
       row.id, row.tenantId, row.userId,
       row.deviceIdentifier, toDevicePlatform(row.platform),
       row.deviceModel, row.osVersion,
-      row.pushNotificationToken, row.isTrustedDevice,
+      row.pushNotificationToken, row.isTrustedDevice ?? false,
       row.lastActiveAt, row.createdAt, row.updatedAt,
     )
   }
