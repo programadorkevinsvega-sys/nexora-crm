@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { container } from "./container"
 import { DI_TOKENS } from "./tokens"
 
@@ -131,22 +130,22 @@ export function registerOperationsDependencies() {
   container.register(DI_TOKENS.ScoringRepository, ApiScoringRepository)
   container.register(DI_TOKENS.CpqRepository, ApiCpqRepository)
 
-  const ticketRepo = ApiTicketRepository as any
-  const replyRepo = ApiTicketReplyRepository as any
-  const campaignRepo = ApiCampaignRepository as any
-  const contractRepo = ApiContractRepository as any
-  const quoteRepo = ApiQuoteRepository as any
-  const teamRepo = ApiSalesTeamRepository as any
-  const helpdeskRepo = ApiHelpdeskRepository as any
-  const mailboxRepo = ApiMailboxRepository as any
-  const threadRepo = ApiThreadRepository as any
-  const affiliateRepo = ApiAffiliateRepository as any
-  const programRepo = ApiAffiliateProgramRepository as any
-  const commissionRepo = ApiCommissionRepository as any
-  const payoutRepo = ApiPayoutRepository as any
-  const personalRepo = ApiPersonalCrmRepository as any
-  const loyaltyRepo = ApiLoyaltyRepository as any
-  const tagRepo = ApiTagRepository as any
+  const ticketRepo = ApiTicketRepository
+  const replyRepo = ApiTicketReplyRepository
+  const campaignRepo = ApiCampaignRepository
+  const contractRepo = ApiContractRepository
+  const quoteRepo = ApiQuoteRepository
+  const teamRepo = ApiSalesTeamRepository
+  const helpdeskRepo = ApiHelpdeskRepository
+  const mailboxRepo = ApiMailboxRepository
+  const threadRepo = ApiThreadRepository
+  const affiliateRepo = ApiAffiliateRepository
+  const programRepo = ApiAffiliateProgramRepository
+  const commissionRepo = ApiCommissionRepository
+  const payoutRepo = ApiPayoutRepository
+  const personalRepo = ApiPersonalCrmRepository
+  const loyaltyRepo = ApiLoyaltyRepository
+  const tagRepo = ApiTagRepository
 
   container.register(DI_TOKENS.ListTickets, new ListTicketsUseCase(ticketRepo))
   container.register(DI_TOKENS.GetTicket, new GetTicketUseCase(ticketRepo))
