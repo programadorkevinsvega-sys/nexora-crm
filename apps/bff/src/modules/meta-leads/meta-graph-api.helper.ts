@@ -1,14 +1,14 @@
 import { Logger } from '@nestjs/common'
 import type { MetaLeadForm } from '@crm/contracts'
 
-interface MetaPage {
+export interface MetaPage {
   id: string
   name: string
   access_token?: string
   category?: string
 }
 
-interface MetaAdAccount {
+export interface MetaAdAccount {
   id: string
   name: string
 }
