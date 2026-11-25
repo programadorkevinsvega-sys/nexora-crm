@@ -113,7 +113,15 @@ export const ApiAffiliateRepository = {
   },
 
   async create(data: AffiliateCreateInput): Promise<Affiliate> {
-    const { tenantId: _tenantId, ...request } = data
+    const request = {
+      programId: data.programId,
+      customerId: data.customerId,
+      referralCode: data.referralCode,
+      referralLink: data.referralLink,
+      parentAffiliateId: data.parentAffiliateId,
+      mlmLevel: data.mlmLevel,
+      status: data.status,
+    }
     return api.post<Affiliate>("/api/affiliates", request)
   },
 
@@ -135,7 +143,15 @@ export const ApiAffiliateRepository = {
   },
 
   async createProgram(data: AffiliateProgramCreateInput): Promise<AffiliateProgram> {
-    const { tenantId: _tenantId, ...request } = data
+    const request = {
+      name: data.name,
+      commissionType: data.commissionType,
+      commissionValue: data.commissionValue,
+      cookieDurationDays: data.cookieDurationDays,
+      isMultiLevel: data.isMultiLevel,
+      maxMlmLevels: data.maxMlmLevels,
+      isActive: data.isActive,
+    }
     return api.post<AffiliateProgram>("/api/affiliates/programs", request)
   },
 
