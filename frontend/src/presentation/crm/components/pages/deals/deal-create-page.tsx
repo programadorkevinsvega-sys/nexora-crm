@@ -9,7 +9,8 @@ import { Card } from "@/src/presentation/crm/components/ui/Card"
 import { PageHeader } from "@/src/presentation/crm/components/common/PageHeader"
 import { ErrorState } from "@/src/presentation/components/error-state"
 import { useAuth } from "@/src/presentation/hooks/use-auth"
-import { usePipelinesList, useCreateDeal } from "@src/application/crm/di/hooks"
+import { usePipelinesList, usePipelineBoard, useCreateDeal } from "@src/application/crm/di/hooks"
+import type { DealCreateInput } from "@/src/domain/crm/deals/deal.entity"
 
 export function CreateDealPage() {
   const router = useRouter()
@@ -20,13 +21,12 @@ export function CreateDealPage() {
   const [stageId, setStageId] = useState("")
   const [value, setValue] = useState("")
   const [currency, setCurrency] = useState("USD")
-  const [forecastCategory, setForecastCategory] = useState("PIPELINE")
-  const [probability, setProbability] = useState("")
   const [closeDate, setCloseDate] = useState("")
 
-  const { data: pipelinesData, isError, error } = usePipelinesList({ tenantId: tenantId! })
-
-  const selectedPipeline = pipelinesData?.data.find((p: any) => p.id === pipelineId)
+  const { data: pipelinesData, isError, error } = usePipelinesList({ tenantId: tenantId ?? undefined })
+  const { data: pipelineBoard, isLoading: stagesLoading } = usePipelineBoard(pipelineId)
+  const selectedPipeline = pipelinesData?.data.find((pipeline) => pipeline.id === pipelineId)
+  const selectedStage = pipelineBoard?.stages.find((stage) => stage.id === stageId)
 
   const { mutate: createDeal, isPending } = useCreateDeal()
 
@@ -52,8 +52,8 @@ export function CreateDealPage() {
           <label className="text-caption text-ash font-medium">Pipeline *</label>
           <Select value={pipelineId} onChange={(e) => { setPipelineId(e.target.value); setStageId("") }}>
             <option value="">Seleccionar Pipeline</option>
-            {pipelinesData?.data.map((p: any) => (
-              <option key={p.id} value={p.id}>{p.name}</option>
+            {pipelinesData?.data.map((pipeline) => (
+              <option key={pipeline.id} value={pipeline.id}>{pipeline.name}</option>
             ))}
           </Select>
         </div>
@@ -63,8 +63,8 @@ export function CreateDealPage() {
             <label className="text-caption text-ash font-medium">Etapa Comercial *</label>
             <Select value={stageId} onChange={(e) => setStageId(e.target.value)}>
               <option value="">Seleccionar Etapa</option>
-              {selectedPipeline.stages.map((s: any) => (
-                <option key={s.id} value={s.id}>{s.name} ({s.probabilityPercent}%)</option>
+              {pipelineBoard?.stages.map((stage) => (
+                <option key={stage.id} value={stage.id}>{stage.name} ({stage.probabilityPercent ?? 0}%)</option>
               ))}
             </Select>
           </div>
@@ -86,28 +86,29 @@ export function CreateDealPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label className="text-caption text-ash font-medium">Categoría Forecasting</label>
-            <Select value={forecastCategory} onChange={(e) => setForecastCategory(e.target.value)}>
-              <option value="PIPELINE">Pipeline (Abierto)</option>
-              <option value="BEST_CASE">Best Case (Probable)</option>
-              <option value="COMMIT">Commit (Comprometido)</option>
-              <option value="CLOSED">Closed (Cerrado Ganado)</option>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <label className="text-caption text-ash font-medium">Fecha Estimada Cierre</label>
-            <Input type="date" value={closeDate} onChange={(e) => setCloseDate(e.target.value)} />
-          </div>
+        <div className="space-y-2">
+          <label className="text-caption text-ash font-medium">Fecha Estimada Cierre</label>
+          <Input type="date" value={closeDate} onChange={(e) => setCloseDate(e.target.value)} />
         </div>
 
         <div className="flex justify-end gap-3 pt-4">
           <Button variant="ghost" onClick={() => router.back()}>Cancelar</Button>
-          <Button onClick={() => createDeal(
-                { tenantId: tenantId!, pipelineId, stageId, name, value: value ? Number(value) : null, currency, probability: probability ? Number(probability) : null, closeDate: closeDate || null, forecastCategory } as any,
-                { onSuccess: () => router.push(`/pipelines/${pipelineId}`) }
-              )} disabled={!name || !pipelineId || !stageId || isPending} className="bg-cyan-600 hover:bg-cyan-500 text-white">
+          <Button onClick={() => {
+            if (!tenantId || !selectedStage) return
+            const parsedValue = value.trim() ? Number(value) : null
+            if (parsedValue !== null && (!Number.isFinite(parsedValue) || parsedValue < 0)) return
+            const input: DealCreateInput = {
+              tenantId,
+              pipelineId,
+              stageId,
+              name: name.trim(),
+              value: parsedValue,
+              currency,
+              probability: selectedStage.probabilityPercent,
+              closeDate: closeDate || null,
+            }
+            createDeal(input, { onSuccess: () => router.push(`/pipelines/${pipelineId}`) })
+          }} disabled={!name.trim() || !pipelineId || !stageId || !tenantId || isPending || stagesLoading} className="bg-cyan-600 hover:bg-cyan-500 text-white">
             {isPending ? "Guardando..." : "Crear Oportunidad"}
           </Button>
         </div>
