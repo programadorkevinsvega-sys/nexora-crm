@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { eq, ilike, and, asc, or, gt } from 'drizzle-orm'
+import { eq, ilike, and, asc, gt } from 'drizzle-orm'
 import { getDb, campaigns as campaignsTable, campaignMembers as campaignMembersTable } from '@crm/database'
 import { CampaignRepository, CampaignFilter, PaginatedCampaigns, PaginatedCampaignMembers } from '../domain/repositories/campaign.repository'
 import { Campaign } from '../domain/entities/campaign.entity'
@@ -14,14 +14,14 @@ export class DrizzleCampaignRepository extends CampaignRepository {
 
   async findById(tenantId: string, id: string): Promise<Campaign | null> {
     const row = await this.db.query.campaigns.findFirst({
-      where: and(eq(campaignsTable.tenantId, tenantId)!, eq(campaignsTable.id, id)) as any,
+      where: and(eq(campaignsTable.tenantId, tenantId)!, eq(campaignsTable.id, id)),
     })
     return row ? CampaignMapper.toDomain(row) : null
   }
 
   async findMemberById(tenantId: string, id: string): Promise<CampaignMember | null> {
     const row = await this.db.query.campaignMembers.findFirst({
-      where: and(eq(campaignMembersTable.tenantId, tenantId)!, eq(campaignMembersTable.id, id)) as any,
+      where: and(eq(campaignMembersTable.tenantId, tenantId)!, eq(campaignMembersTable.id, id)),
     })
     return row ? CampaignMapper.memberToDomain(row) : null
   }
@@ -31,14 +31,13 @@ export class DrizzleCampaignRepository extends CampaignRepository {
 
     if (filter.cursor) conditions.push(gt(campaignsTable.createdAt, new Date(filter.cursor)))
     if (filter.search) {
-      conditions.push(or(ilike(campaignsTable.name, `%${filter.search}%`))!,
-      )
+      conditions.push(ilike(campaignsTable.name, `%${filter.search}%`))
     }
     if (filter.status) conditions.push(eq(campaignsTable.status, filter.status))
     if (filter.type) conditions.push(eq(campaignsTable.type, filter.type))
 
     const rows = await this.db.query.campaigns.findMany({
-      where: and(...conditions.filter(Boolean)!) as any,
+      where: and(...conditions),
       limit: filter.limit + 1,
       orderBy: [asc(campaignsTable.createdAt), asc(campaignsTable.id)],
     })
@@ -61,7 +60,7 @@ export class DrizzleCampaignRepository extends CampaignRepository {
     if (cursor) conditions.push(gt(campaignMembersTable.createdAt, new Date(cursor))!)
 
     const rows = await this.db.query.campaignMembers.findMany({
-      where: and(...conditions.filter(Boolean)!) as any,
+      where: and(...conditions.filter(Boolean)!),
       limit: limit + 1,
       orderBy: [asc(campaignMembersTable.createdAt), asc(campaignMembersTable.id)],
     })
