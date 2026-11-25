@@ -13,14 +13,14 @@ export class DrizzleAffiliateProgramRepository extends AffiliateProgramRepositor
 
   async findById(tenantId: string, id: string): Promise<AffiliateProgram | null> {
     const row = await this.db.query.affiliatePrograms.findFirst({
-      where: and(eq(affiliateProgramsTable.tenantId, tenantId)!, eq(affiliateProgramsTable.id, id)) as any,
+      where: and(eq(affiliateProgramsTable.tenantId, tenantId), eq(affiliateProgramsTable.id, id)),
     })
     return row ? AffiliateMapper.programToDomain(row) : null
   }
 
   async findByName(tenantId: string, name: string): Promise<AffiliateProgram | null> {
     const row = await this.db.query.affiliatePrograms.findFirst({
-      where: and(eq(affiliateProgramsTable.tenantId, tenantId)!, eq(affiliateProgramsTable.name, name)) as any,
+      where: and(eq(affiliateProgramsTable.tenantId, tenantId), eq(affiliateProgramsTable.name, name)),
     })
     return row ? AffiliateMapper.programToDomain(row) : null
   }
@@ -35,7 +35,7 @@ export class DrizzleAffiliateProgramRepository extends AffiliateProgramRepositor
     if (filter.isActive !== undefined) conditions.push(eq(affiliateProgramsTable.isActive, filter.isActive))
 
     const rows = await this.db.query.affiliatePrograms.findMany({
-      where: and(...conditions.filter(Boolean)!) as any,
+      where: and(...conditions),
       limit: filter.limit + 1,
       orderBy: [asc(affiliateProgramsTable.createdAt), asc(affiliateProgramsTable.id)],
     })
