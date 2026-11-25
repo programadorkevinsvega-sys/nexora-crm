@@ -1,32 +1,40 @@
 import { CreateRoleHandler, UpdateRoleHandler, AssignRoleHandler } from '../../application/commands/iam.handlers'
 import { Role } from '../../domain/entities/role.entity'
+import { User } from '../../../users/domain/entities/user.entity'
 import { ConflictException } from '@nestjs/common'
+import { IamRepository } from '../../domain/repositories/iam.repository'
+import { OutboxService } from '../../../../common/outbox/outbox.service'
+import { UserRepository } from '../../../users/domain/repositories/user.repository'
 
 describe('IAM Module - Unit Tests', () => {
-  let mockRepo: any
-  let mockOutbox: any
-  let mockUsers: any
+  type RepoMock = jest.Mocked<Pick<IamRepository, 'findRoleByName' | 'findRoleById' | 'saveRole' | 'assignRoleToUser'>>
+  type OutboxMock = jest.Mocked<Pick<OutboxService, 'publish'>>
+  type UsersMock = jest.Mocked<Pick<UserRepository, 'findById'>>
+  let mockRepo: RepoMock
+  let mockOutbox: OutboxMock
+  let mockUsers: UsersMock
 
   beforeEach(() => {
     mockRepo = {
-      findRoleByName: jest.fn(),
-      findRoleById: jest.fn(),
-      saveRole: jest.fn().mockResolvedValue(undefined),
-      findUserRole: jest.fn(),
-      assignRoleToUser: jest.fn().mockResolvedValue(undefined),
+      findRoleByName: jest.fn<IamRepository['findRoleByName']>(),
+      findRoleById: jest.fn<IamRepository['findRoleById']>(),
+      saveRole: jest.fn<IamRepository['saveRole']>().mockResolvedValue(undefined),
+      assignRoleToUser: jest.fn<IamRepository['assignRoleToUser']>().mockResolvedValue(undefined),
     }
     mockOutbox = {
-      publish: jest.fn().mockResolvedValue(undefined),
+      publish: jest.fn<OutboxService['publish']>().mockResolvedValue(undefined),
     }
     mockUsers = {
-      findById: jest.fn().mockResolvedValue({ id: 'user-99', tenantId: 'tenant-1' }),
+      findById: jest.fn<UserRepository['findById']>().mockResolvedValue(
+        User.create({ tenantId: 'tenant-1', email: 'user@example.test', profileType: 'NATURAL_PERSON' }),
+      ),
     }
   })
 
   describe('CreateRoleHandler', () => {
     it('should create and persist a new role', async () => {
       mockRepo.findRoleByName.mockResolvedValue(null)
-      const handler = new CreateRoleHandler(mockRepo, mockOutbox)
+      const handler = new CreateRoleHandler(mockRepo as unknown as IamRepository, mockOutbox as unknown as OutboxService)
 
       const role = await handler.execute({
         tenantId: 'tenant-1',
@@ -44,7 +52,7 @@ describe('IAM Module - Unit Tests', () => {
       const existing = Role.create({ tenantId: 'tenant-1', name: 'Admin' })
       mockRepo.findRoleByName.mockResolvedValue(existing)
 
-      const handler = new CreateRoleHandler(mockRepo, mockOutbox)
+      const handler = new CreateRoleHandler(mockRepo as unknown as IamRepository, mockOutbox as unknown as OutboxService)
       await expect(handler.execute({
         tenantId: 'tenant-1',
         name: 'Admin',
@@ -57,7 +65,7 @@ describe('IAM Module - Unit Tests', () => {
       const role = Role.create({ tenantId: 'tenant-1', name: 'Rep' })
       mockRepo.findRoleById.mockResolvedValue(role)
 
-      const handler = new UpdateRoleHandler(mockRepo, mockOutbox)
+      const handler = new UpdateRoleHandler(mockRepo as unknown as IamRepository, mockOutbox as unknown as OutboxService)
       const updated = await handler.execute({ tenantId: 'tenant-1', id: role.id, name: 'Senior Rep' })
 
       expect(updated.name).toBe('Senior Rep')
@@ -70,9 +78,15 @@ describe('IAM Module - Unit Tests', () => {
     it('should assign role to user and prevent duplicate assignments', async () => {
       const role = Role.create({ tenantId: 'tenant-1', name: 'Rep' })
       mockRepo.findRoleById.mockResolvedValue(role)
-      mockRepo.findUserRole.mockResolvedValue(null)
+      mockUsers.findById.mockResolvedValue(
+        User.create({ tenantId: 'tenant-1', email: 'user@example.test', profileType: 'NATURAL_PERSON' }),
+      )
 
-      const handler = new AssignRoleHandler(mockRepo, mockUsers, mockOutbox)
+      const handler = new AssignRoleHandler(
+        mockRepo as unknown as IamRepository,
+        mockUsers as unknown as UserRepository,
+        mockOutbox as unknown as OutboxService,
+      )
       await handler.execute({
         tenantId: 'tenant-1',
         userId: 'user-99',
@@ -89,7 +103,11 @@ describe('IAM Module - Unit Tests', () => {
       mockRepo.findRoleById.mockResolvedValue(role)
       mockUsers.findById.mockResolvedValue(null)
 
-      const handler = new AssignRoleHandler(mockRepo, mockUsers, mockOutbox)
+      const handler = new AssignRoleHandler(
+        mockRepo as unknown as IamRepository,
+        mockUsers as unknown as UserRepository,
+        mockOutbox as unknown as OutboxService,
+      )
       await expect(handler.execute({
         tenantId: 'tenant-1',
         userId: 'user-99',
