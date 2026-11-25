@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { eq, desc } from 'drizzle-orm'
 import {
   getDb,
@@ -9,7 +8,22 @@ import {
 } from '@crm/database'
 import { InboxConversation } from '../domain/entities/inbox-conversation.entity'
 import { InboxMessage } from '../domain/entities/inbox-message.entity'
-import { InboxChannel, InboxConversationStatus } from '@crm/contracts'
+import { InboxChannel, InboxConversationStatus, InboxMessageStatus, InboxMessageStatusSchema } from '@crm/contracts'
+
+function toLeadTemperature(value: unknown): 'COLD' | 'WARM' | 'HOT' {
+  if (value === 'COLD' || value === 'WARM' || value === 'HOT') return value
+  throw new TypeError(`Invalid lead temperature: ${String(value)}`)
+}
+
+function toMessageDirection(value: unknown): 'INBOUND' | 'OUTBOUND' {
+  if (value === 'INBOUND' || value === 'OUTBOUND') return value
+  throw new TypeError(`Invalid inbox message direction: ${String(value)}`)
+}
+
+function toMessageStatus(value: unknown, fallback: InboxMessageStatus): InboxMessageStatus {
+  if (value === null || value === undefined || value === '') return fallback
+  return InboxMessageStatusSchema.parse(value)
+}
 
 export class InboxConversationsDrizzleHelper {
   private static get db() { return getDb() }
@@ -47,7 +61,7 @@ export class InboxConversationsDrizzleHelper {
           const sc = await this.db.select().from(leadScores).where(eq(leadScores.contactId, contactId)).limit(1)
           if (sc.length > 0) {
             score = sc[0].score
-            temp = sc[0].temperature as any
+            temp = toLeadTemperature(sc[0].temperature)
           }
         }
 
@@ -74,13 +88,13 @@ export class InboxConversationsDrizzleHelper {
                   m.id,
                   latest.id,
                   'WHATSAPP',
-                  (m.direction as any) || 'OUTBOUND',
+                  toMessageDirection(m.direction),
                   m.direction === 'INBOUND' ? contactName : 'Agente',
                   m.direction === 'INBOUND' ? phone : 'Sistema',
                   m.direction === 'INBOUND' ? 'Sistema' : phone,
                   m.messageBody,
                   null,
-                  (m.status as any) || 'DELIVERED',
+                  toMessageStatus(m.status, 'DELIVERED'),
                   m.sentAt ?? new Date(),
                 ),
             ),
@@ -142,13 +156,13 @@ export class InboxConversationsDrizzleHelper {
                   e.id,
                   latest.id,
                   'EMAIL',
-                  (e.direction as any) || 'OUTBOUND',
+                  toMessageDirection(e.direction),
                   e.fromAddress,
                   e.fromAddress,
                   e.toAddress,
                   e.bodyText || '',
                   e.bodyHtml ?? null,
-                  (e.status as any) || 'SENT',
+                  toMessageStatus(e.status, 'SENT'),
                   e.sentAt ?? new Date(),
                 ),
             ),
