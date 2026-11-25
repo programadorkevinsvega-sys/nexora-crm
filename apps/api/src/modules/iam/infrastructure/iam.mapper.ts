@@ -1,31 +1,11 @@
 import { Role } from '../domain/entities/role.entity'
 import { Permission } from '../domain/entities/permission.entity'
 import { UserRole } from '../domain/entities/user-role.entity'
+import type { roles, permissions, userRoles } from '@crm/database'
 
-type RoleRow = {
-  id: string
-  tenantId: string
-  name: string
-  description: string | null
-  isSystemRole: boolean | null
-  createdAt: Date
-  updatedAt: Date
-}
-
-type PermissionRow = {
-  id: string
-  module: string
-  action: string
-  description: string | null
-}
-
-type UserRoleRow = {
-  userId: string
-  roleId: string
-  tenantId: string
-  branchId: string | null
-  grantedAt: Date
-}
+type RoleRow = typeof roles.$inferSelect
+type PermissionRow = typeof permissions.$inferSelect
+type UserRoleRow = Pick<typeof userRoles.$inferSelect, 'userId' | 'roleId' | 'tenantId' | 'branchId' | 'grantedAt'>
 
 export class IamMapper {
   static roleToDomain(row: RoleRow): Role {
