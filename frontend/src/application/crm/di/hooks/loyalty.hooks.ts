@@ -47,7 +47,7 @@ export function useRedeemPoints() {
   })
 }
 
-export function useSegmentsList(params?: Parameters<ListSegmentsUseCase['execute']>[0] {
+export function useSegmentsList(params?: Parameters<ListSegmentsUseCase['execute']>[0]) {
   return useQuery({
     queryKey: ["loyalty", "segments", params],
     queryFn: async () => {
