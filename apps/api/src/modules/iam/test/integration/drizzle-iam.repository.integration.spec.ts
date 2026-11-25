@@ -2,25 +2,32 @@ import { DrizzleIamRepository } from '../../infrastructure/drizzle-iam.repositor
 import { Role } from '../../domain/entities/role.entity'
 import * as dbModule from '@crm/database'
 
+type AsyncMock = jest.MockedFunction<(...args: unknown[]) => Promise<unknown>>
+type SyncMock = jest.MockedFunction<(...args: unknown[]) => unknown>
+
+type MockTransaction = {
+  query: { roles: { findFirst: AsyncMock } }
+  execute: AsyncMock
+  insert: SyncMock
+}
+
+type MockDatabase = {
+  query: {
+    roles: { findFirst: AsyncMock; findMany: AsyncMock }
+    permissions: { findFirst: AsyncMock }
+    userRoles: { findFirst: AsyncMock }
+  }
+  insert: SyncMock
+  transaction: jest.MockedFunction<(callback: (tx: MockTransaction) => Promise<unknown>) => Promise<unknown>>
+}
+
 describe('DrizzleIamRepository - Persistence Integration Tests', () => {
   let repository: DrizzleIamRepository
-  let mockDb: {
-    query: {
-      roles: { findFirst: jest.Mock; findMany: jest.Mock }
-      permissions: { findFirst: jest.Mock }
-      userRoles: { findFirst: jest.Mock }
-    }
-    insert: jest.Mock
-    transaction: jest.Mock
-  }
-  let mockTx: {
-    query: { roles: { findFirst: jest.Mock } }
-    execute: jest.Mock
-    insert: jest.Mock
-  }
+  let mockDb: MockDatabase
+  let mockTx: MockTransaction
 
   beforeEach(() => {
-    const insert = jest.fn().mockReturnValue({
+    const insert = jest.fn<unknown, unknown[]>().mockReturnValue({
       values: jest.fn().mockReturnValue({
         onConflictDoUpdate: jest.fn().mockResolvedValue(undefined),
       }),
@@ -48,7 +55,7 @@ describe('DrizzleIamRepository - Persistence Integration Tests', () => {
         },
       },
       insert,
-      transaction: jest.fn(async (callback: (tx: typeof mockTx) => Promise<unknown>) => callback(mockTx)),
+      transaction: jest.fn<Promise<unknown>, [(tx: MockTransaction) => Promise<unknown>]>().mockImplementation(async (callback) => callback(mockTx)),
     }
 
     jest.spyOn(dbModule, 'getDb').mockReturnValue(mockDb as unknown as ReturnType<typeof dbModule.getDb>)
